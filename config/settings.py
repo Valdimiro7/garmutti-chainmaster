@@ -19,6 +19,9 @@ ENV = os.getenv("DJANGO_ENV", "local")
 allowed_hosts = os.getenv("DJANGO_ALLOWED_HOSTS", "")
 ALLOWED_HOSTS = [h.strip() for h in allowed_hosts.split(",") if h.strip()]
 
+if DEBUG and not ALLOWED_HOSTS:
+    ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+
 # CSRF trusted origins (necessário quando tens domínio/https)
 csrf_origins = os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "")
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in csrf_origins.split(",") if o.strip()]
@@ -73,15 +76,12 @@ WSGI_APPLICATION = "config.wsgi.application"
 # =========================
 # Database (DATABASE_URL)
 # =========================
-# Se DATABASE_URL não existir, usa SQLite (ideal para local)
 DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
 
 if DATABASE_URL:
-    # Suporta sqlite:///db.sqlite3 e postgres://...
     parsed = urlparse(DATABASE_URL)
 
     if parsed.scheme.startswith("sqlite"):
-        # sqlite:///db.sqlite3
         db_path = DATABASE_URL.replace("sqlite:///", "")
         DATABASES = {
             "default": {
@@ -89,8 +89,8 @@ if DATABASE_URL:
                 "NAME": BASE_DIR / db_path,
             }
         }
-    else:
-        # postgres://USER:PASSWORD@HOST:PORT/DBNAME
+
+    elif parsed.scheme in ["postgres", "postgresql"]:
         DATABASES = {
             "default": {
                 "ENGINE": "django.db.backends.postgresql",
@@ -101,6 +101,25 @@ if DATABASE_URL:
                 "PORT": parsed.port or 5432,
             }
         }
+
+    elif parsed.scheme == "mysql":
+        DATABASES = {
+            "default": {
+                "ENGINE": "django.db.backends.mysql",
+                "NAME": parsed.path.lstrip("/"),
+                "USER": parsed.username,
+                "PASSWORD": parsed.password,
+                "HOST": parsed.hostname or "localhost",
+                "PORT": parsed.port or 3306,
+                "OPTIONS": {
+                    "charset": "utf8mb4",
+                },
+            }
+        }
+
+    else:
+        raise ValueError(f"Unsupported database scheme: {parsed.scheme}")
+
 else:
     DATABASES = {
         "default": {
