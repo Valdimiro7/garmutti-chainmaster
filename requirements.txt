@@ -34,6 +34,8 @@ msal==1.30.0                   # Autenticação com Microsoft (Azure AD)
 python-dateutil==2.9.0.post0   # Manipulação avançada de datas
 rules==3.4                     # Regras de negócios
 
+PyMySQL==1.1.1
+
 # ================================
 # PDF & Processamento HTML
 # ================================
