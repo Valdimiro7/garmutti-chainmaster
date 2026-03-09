@@ -31,14 +31,24 @@ CSRF_TRUSTED_ORIGINS = [o.strip() for o in csrf_origins.split(",") if o.strip()]
 # APPS
 # =========================================================
 INSTALLED_APPS = [
+    "admin_material.apps.AdminMaterialDashboardConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "widget_tweaks",
     "procurement",
 ]
+
+
+# =========================================================
+# AUTH / LOGIN / LOGOUT
+# =========================================================
+LOGIN_URL = "procurement:login"
+LOGIN_REDIRECT_URL = "procurement:dashboard"
+LOGOUT_REDIRECT_URL = "https://garmutti.co.mz/"
 
 # =========================================================
 # MIDDLEWARE

@@ -65,6 +65,12 @@
         <p>
             System successfully running 🚀
         </p>
+        <form method="post" action="{% url 'procurement:logout' %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">
+                Logout
+            </button>
+        </form>
 
     </div>
 
