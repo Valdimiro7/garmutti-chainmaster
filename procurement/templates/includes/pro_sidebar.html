@@ -28,32 +28,10 @@
 
       <!-- RFQ -->
       <li class="nav-item">
-        <a data-bs-toggle="collapse" href="#menu-rfq" class="nav-link text-dark" aria-controls="menu-rfq" role="button" aria-expanded="false">
+        <a class="nav-link {% if 'rfqs' == segment %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}" href="{% url 'procurement:rfqs' %}">
           <i class="material-symbols-rounded opacity-5">request_quote</i>
           <span class="nav-link-text ms-2 ps-1">RFQ</span>
         </a>
-        <div class="collapse" id="menu-rfq">
-          <ul class="nav">
-            <li class="nav-item">
-              <a class="nav-link text-dark" href="{% url 'procurement:rfqs' %}">
-                <span class="sidenav-mini-icon">L</span>
-                <span class="sidenav-normal ms-2 ps-1">Lista de RFQs</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-dark" href="#">
-                <span class="sidenav-mini-icon">N</span>
-                <span class="sidenav-normal ms-2 ps-1">Novo RFQ</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-dark" href="#">
-                <span class="sidenav-mini-icon">P</span>
-                <span class="sidenav-normal ms-2 ps-1">Pipeline / Estado</span>
-              </a>
-            </li>
-          </ul>
-        </div>
       </li>
 
       <!-- Cotações -->
@@ -287,6 +265,27 @@
         <a class="nav-link {% if 'permissoes' == segment %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}" href="{% url 'procurement:permissions' %}">
           <i class="material-symbols-rounded opacity-5">admin_panel_settings</i>
           <span class="nav-link-text ms-1">Permissões</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link text-dark" href="#">
+          <i class="material-symbols-rounded opacity-5">payments</i>
+          <span class="nav-link-text ms-1">Moedas</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link text-dark" href="#">
+          <i class="material-symbols-rounded opacity-5">playlist_add_check</i>
+          <span class="nav-link-text ms-1">Status List</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link text-dark" href="#">
+          <i class="material-symbols-rounded opacity-5">apartment</i>
+          <span class="nav-link-text ms-1">Organização</span>
         </a>
       </li>
       {% endif %}

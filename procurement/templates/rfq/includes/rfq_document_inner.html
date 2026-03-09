@@ -181,11 +181,7 @@
   <div class="doc-header">
     <div style="flex:1;">
       <div class="doc-brand">
-        {% if organizacao and organizacao.logo %}
-          <img src="{% static organizacao.logo %}" alt="Logo" class="doc-logo">
-        {% else %}
-          <div class="doc-logo" style="border:1px solid #ddd; display:flex; align-items:center; justify-content:center;">LOGO</div>
-        {% endif %}
+        <img src="{% static 'assets/img/logo-ct-dark.png' %}" alt="Garmutti Logo" class="doc-logo">
 
         <div>
           <h1 class="doc-brand-title">
