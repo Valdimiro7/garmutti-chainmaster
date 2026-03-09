@@ -1,0 +1,825 @@
+{% extends "layouts/pro_base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="container-fluid py-3">
+
+  {% if messages %}
+  <div id="django-messages" style="display:none;">
+    {% for message in messages %}
+      <span data-tags="{{ message.tags }}">{{ message }}</span>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm rfq-hero-card">
+        <div class="card-body p-4 p-md-5">
+          <div class="row align-items-center g-4">
+            <div class="col-lg-8">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="rfq-hero-icon">
+                  <i class="material-symbols-rounded">request_quote</i>
+                </div>
+                <div>
+                  <h3 class="mb-1 fw-bold text-dark">RFQ</h3>
+                  <p class="text-muted mb-0">Gestão centralizada de pedidos de cotação recebidos e registados no sistema.</p>
+                </div>
+              </div>
+              <div class="d-flex flex-wrap gap-2">
+                <span class="badge rounded-pill rfq-soft-badge">Número Automático</span>
+                <span class="badge rounded-pill rfq-soft-badge">Itens Dinâmicos</span>
+                <span class="badge rounded-pill rfq-soft-badge">Anexos</span>
+                <span class="badge rounded-pill rfq-soft-badge">Cliente</span>
+              </div>
+            </div>
+
+            <div class="col-lg-4">
+              <div class="rfq-stats-grid">
+                <div class="mini-stat-card">
+                  <span class="mini-stat-label">Total de RFQ</span>
+                  <h4 class="mb-0">{{ total }}</h4>
+                </div>
+                <div class="mini-stat-card">
+                  <span class="mini-stat-label">Novos</span>
+                  <h4 class="mb-0 text-primary">{{ total_novos }}</h4>
+                </div>
+                <div class="mini-stat-card">
+                  <span class="mini-stat-label">Fechados</span>
+                  <h4 class="mb-0 text-success">{{ total_fechados }}</h4>
+                </div>
+                <div class="mini-stat-card">
+                  <span class="mini-stat-label">Cancelados</span>
+                  <h4 class="mb-0 text-danger">{{ total_cancelados }}</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="rfq-hero-accent"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm rfq-main-card">
+        <div class="card-body p-0">
+
+          <div class="rfq-topbar px-4 pt-4 pb-3">
+            <div class="row align-items-center g-3">
+              <div class="col-lg-8">
+                <h5 class="mb-1 fw-bold text-dark">Lista de RFQ</h5>
+                <p class="text-muted mb-0">Todos os pedidos de cotação registados no sistema.</p>
+              </div>
+              <div class="col-lg-4 d-flex justify-content-lg-end">
+                <button type="button" class="btn btn-primary btn-modern btn-rfq" id="btnOpenCreateRFQ">
+                  <i class="material-symbols-rounded me-1">add</i>
+                  Novo RFQ
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="px-4 pb-4">
+            <div class="table-responsive mt-3">
+              <table id="rfqsTable" class="table align-items-center mb-0 rfq-table w-100">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Número</th>
+                    <th>Cliente</th>
+                    <th>Origem</th>
+                    <th>Data</th>
+                    <th>Prazo de Entrega</th>
+                    <th>Itens</th>
+                    <th>Estado</th>
+                    <th class="text-center">Acções</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for rfq in rfqs %}
+                  <tr>
+                    <td>{{ forloop.counter }}</td>
+
+                    <td>
+                      <div class="d-flex flex-column">
+                        <span class="fw-semibold text-dark">{{ rfq.numero }}</span>
+                        <span class="table-subtext">
+                          Criado por:
+                          {% if rfq.criado_por %}
+                            {{ rfq.criado_por.get_full_name|default:rfq.criado_por.username }}
+                          {% else %}
+                            —
+                          {% endif %}
+                        </span>
+                      </div>
+                    </td>
+
+                    <td>
+                      <div class="d-flex align-items-center gap-2">
+                        <div class="avatar-circle-rfq">{{ rfq.cliente.iniciais }}</div>
+                        <div>
+                          <span class="fw-semibold text-dark d-block">{{ rfq.cliente.nome }}</span>
+                          <span class="table-subtext">
+                            {% if rfq.pessoa_contacto %}{{ rfq.pessoa_contacto }}{% else %}—{% endif %}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td>
+                      <span class="origem-pill origem-manual">Manual</span>
+                    </td>
+
+                    <td>{{ rfq.data_rfq|date:"d/m/Y" }}</td>
+
+                    <td>
+                      {% if rfq.prazo_entrega %}
+                        {{ rfq.prazo_entrega|date:"d/m/Y" }}
+                      {% else %}
+                        <span class="text-muted">—</span>
+                      {% endif %}
+                    </td>
+
+                    <td>
+                      <span class="nuit-pill">{{ rfq.itens.count }} item(ns)</span>
+                    </td>
+
+                    <td>
+                      <span class="status-pill"
+                            style="background-color: {{ rfq.estado.cor }}15; color: {{ rfq.estado.cor }}; border: 1px solid {{ rfq.estado.cor }}40;">
+                        {{ rfq.estado.nome }}
+                      </span>
+                    </td>
+
+                    <td class="text-center">
+                      <div class="dropdown">
+                        <button class="btn btn-sm btn-icon-only btn-action-menu" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                          <i class="material-symbols-rounded">more_vert</i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm">
+                          <li>
+                            <a class="dropdown-item btn-edit-rfq" href="#" data-id="{{ rfq.id }}">
+                              <i class="material-symbols-rounded me-2 align-middle">edit</i>Editar
+                            </a>
+                          </li>
+                          <li><hr class="dropdown-divider"></li>
+                          <li>
+                            <a class="dropdown-item text-danger btn-delete-rfq" href="#"
+                               data-id="{{ rfq.id }}"
+                               data-name="{{ rfq.numero }}">
+                              <i class="material-symbols-rounded me-2 align-middle">delete</i>Remover
+                            </a>
+                          </li>
+                        </ul>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% include "includes/pro_footer.html" %}
+</div>
+
+<div class="modal fade" id="rfqModal" tabindex="-1" aria-labelledby="rfqModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-lg modal-modern">
+
+      <div class="modal-header border-0 pb-0">
+        <div>
+          <h5 class="modal-title fw-bold" id="rfqModalLabel">Novo RFQ</h5>
+          <p class="text-muted mb-0 small">Preencha os dados do pedido de cotação.</p>
+        </div>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <form id="rfqForm" method="post" action="{% url 'procurement:rfqs_create' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="rfq_id" id="rfq_id">
+
+        <div class="modal-body pt-3">
+
+          <div class="modal-section-title mb-3">
+            <i class="material-symbols-rounded me-2">description</i>Dados Gerais
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-3">
+              <label class="form-label">Número</label>
+              <input type="text" class="form-control modern-input" id="rfq_numero_preview" value="{{ default_numero }}" disabled>
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label">Data do RFQ <span class="text-danger">*</span></label>
+              <input type="date" name="data_rfq" id="rfq_data_rfq" class="form-control modern-input" value="{{ today }}" required>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Cliente <span class="text-danger">*</span></label>
+              <select name="cliente_id" id="rfq_cliente_id" class="form-select modern-input" required>
+                <option value="">— Seleccione —</option>
+                {% for cliente in clientes %}
+                  <option value="{{ cliente.id }}"
+                          data-email="{{ cliente.email|default:'' }}"
+                          data-telefone="{{ cliente.telefone|default:'' }}"
+                          data-contacto="{{ cliente.pessoa_contacto|default:'' }}">
+                    {{ cliente.nome }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Pessoa de Contacto</label>
+              <input type="text" name="pessoa_contacto" id="rfq_pessoa_contacto" class="form-control modern-input">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Telefone</label>
+              <input type="text" name="telefone_cliente" id="rfq_telefone_cliente" class="form-control modern-input">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Email</label>
+              <input type="email" name="email_cliente" id="rfq_email_cliente" class="form-control modern-input">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Prazo de Entrega</label>
+              <input type="date" name="prazo_entrega" id="rfq_prazo_entrega" class="form-control modern-input">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Local de Entrega</label>
+              <input type="text" name="local_entrega" id="rfq_local_entrega" class="form-control modern-input" placeholder="Maputo, armazém, escritório, obra, etc.">
+            </div>
+          </div>
+
+          <div class="modal-section-title mb-3 d-flex justify-content-between align-items-center">
+            <div>
+              <i class="material-symbols-rounded me-2">inventory_2</i>Itens Solicitados
+            </div>
+            <button type="button" class="btn btn-sm btn-rfq btn-modern py-2 px-3" id="btnAddItem">
+              <i class="material-symbols-rounded me-1">add</i>Adicionar Linha
+            </button>
+          </div>
+
+          <div class="table-responsive mb-4">
+            <table class="table align-middle rfq-items-table mb-0">
+              <thead>
+                <tr>
+                  <th style="width:50px;">#</th>
+                  <th>Descrição</th>
+                  <th style="width:130px;">Quantidade</th>
+                  <th style="width:170px;">Unidade</th>
+                  <th>Comentários</th>
+                  <th>Especificações</th>
+                  <th style="width:80px;" class="text-center">Acção</th>
+                </tr>
+              </thead>
+              <tbody id="rfqItemsBody"></tbody>
+            </table>
+          </div>
+
+          <div class="modal-section-title mb-3">
+            <i class="material-symbols-rounded me-2">attach_file</i>Anexos
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-12">
+              <label class="form-label">Ficheiros</label>
+              <input type="file" name="anexos" id="rfq_anexos" class="form-control modern-input" multiple>
+              <small class="text-muted">Pode seleccionar um ou vários anexos.</small>
+            </div>
+          </div>
+
+          <div class="modal-section-title mb-3">
+            <i class="material-symbols-rounded me-2">notes</i>Observações
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-12">
+              <label class="form-label">Observações</label>
+              <textarea name="observacoes" id="rfq_observacoes" class="form-control modern-input" rows="3"></textarea>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-outline-secondary btn-modern" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary btn-modern btn-rfq">
+            <i class="material-symbols-rounded me-1">save</i>Guardar RFQ
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+{% block extra_js %}
+
+<link href="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.8/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/datatables.net-responsive-bs5@2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
+
+<style>
+  .rfq-hero-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+  }
+
+  .rfq-hero-accent {
+    position: absolute;
+    right: -60px;
+    top: -60px;
+    width: 220px;
+    height: 220px;
+    background: radial-gradient(circle, rgba(46,62,130,0.16) 0%, rgba(46,62,130,0) 70%);
+    pointer-events: none;
+  }
+
+  .rfq-hero-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #2E3E82 0%, #4256ad 100%);
+    color: #fff;
+    box-shadow: 0 12px 30px rgba(46,62,130,0.20);
+  }
+
+  .rfq-hero-icon i { font-size: 30px; }
+
+  .rfq-soft-badge {
+    background: #eef2ff;
+    color: #2E3E82;
+    border: 1px solid #dae3ff;
+    font-weight: 600;
+    padding: 0.50rem 0.90rem;
+  }
+
+  .rfq-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .rfq-main-card {
+    border-radius: 22px;
+    overflow: hidden;
+  }
+
+  .rfq-topbar {
+    border-bottom: 1px solid #edf0f7;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
+  }
+
+  .btn-modern {
+    border-radius: 14px !important;
+    padding: 0.75rem 1.1rem !important;
+    font-weight: 600 !important;
+    box-shadow: none !important;
+    text-transform: none !important;
+  }
+
+  .btn-rfq {
+    background: linear-gradient(135deg, #2E3E82 0%, #4256ad 100%) !important;
+    border: none !important;
+    color: #fff !important;
+    box-shadow: 0 10px 24px rgba(46,62,130,0.22) !important;
+  }
+
+  .rfq-table thead th {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #6c757d;
+    font-weight: 700;
+    border-bottom: 1px solid #eef1f6 !important;
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+    background: #fbfcfe;
+  }
+
+  .rfq-table tbody td {
+    vertical-align: middle;
+    border-bottom: 1px solid #f3f5f9 !important;
+    padding-top: 0.85rem !important;
+    padding-bottom: 0.85rem !important;
+  }
+
+  .table-subtext {
+    font-size: 0.77rem;
+    color: #8a93a2;
+  }
+
+  .avatar-circle-rfq {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eef2ff;
+    color: #2E3E82;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  .nuit-pill {
+    display: inline-flex;
+    align-items: center;
+    background: #eef2ff;
+    color: #2E3E82;
+    border: 1px solid #dae3ff;
+    border-radius: 8px;
+    padding: 3px 10px;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+
+  .origem-pill {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.74rem;
+    font-weight: 700;
+  }
+
+  .origem-manual {
+    background: #eef2ff;
+    color: #2E3E82;
+    border: 1px solid #dae3ff;
+  }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.42rem 0.80rem;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 700;
+  }
+
+  .btn-action-menu {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px !important;
+    border: 1px solid #e9edf5 !important;
+    background: #fff !important;
+    color: #495057 !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-modern {
+    border-radius: 22px;
+  }
+
+  .modal-section-title {
+    display: flex;
+    align-items: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: #2E3E82;
+    border-bottom: 1px solid #dae3ff;
+    padding-bottom: 8px;
+  }
+
+  .modern-input {
+    border-radius: 14px !important;
+    border: 1px solid #dfe5ef !important;
+    min-height: 46px;
+    box-shadow: none !important;
+  }
+
+  .modern-input:focus {
+    border-color: #2E3E82 !important;
+    box-shadow: 0 0 0 0.2rem rgba(46,62,130,0.10) !important;
+  }
+
+  .rfq-items-table thead th {
+    background: #f8faff;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: #6c757d;
+    border-bottom: 1px solid #e8edf7 !important;
+  }
+
+  .rfq-items-table tbody td {
+    border-bottom: 1px solid #f1f4fa !important;
+    vertical-align: middle;
+  }
+
+  .btn-remove-item {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px !important;
+    border: none !important;
+    background: #fff1f1 !important;
+    color: #dc3545 !important;
+  }
+
+  .mini-stat-card {
+    background: #fff;
+    border: 1px solid #edf0f7;
+    border-radius: 18px;
+    padding: 18px 16px;
+    box-shadow: 0 8px 22px rgba(15,23,42,0.04);
+  }
+
+  .mini-stat-label {
+    display: block;
+    font-size: 0.78rem;
+    color: #6c757d;
+    margin-bottom: 6px;
+  }
+
+  .dataTables_wrapper .dataTables_paginate .pagination {
+    display: flex !important;
+    gap: 4px !important;
+    flex-wrap: wrap !important;
+  }
+
+  .dataTables_wrapper .dataTables_paginate .pagination .page-item .page-link {
+    all: unset !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 36px !important;
+    height: 36px !important;
+    padding: 0 10px !important;
+    border-radius: 10px !important;
+    border: 1px solid #e7ebf3 !important;
+    background: #fff !important;
+    color: #495057 !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+  }
+
+  .dataTables_wrapper .dataTables_paginate .pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #2E3E82 0%, #4256ad 100%) !important;
+    border-color: #2E3E82 !important;
+    color: #fff !important;
+  }
+
+  div.dataTables_wrapper div.dataTables_filter input,
+  div.dataTables_wrapper div.dataTables_length select {
+    border-radius: 12px !important;
+    border: 1px solid #dfe5ef !important;
+    min-height: 38px;
+    box-shadow: none !important;
+  }
+
+  @media (max-width: 991.98px) {
+    .rfq-stats-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net@1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-responsive@2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-responsive-bs5@2.5.0/js/responsive.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+$(document).ready(function () {
+  const rfqModalEl = document.getElementById('rfqModal');
+  const rfqModal = new bootstrap.Modal(rfqModalEl);
+
+  const msgContainer = document.getElementById('django-messages');
+  if (msgContainer) {
+    msgContainer.querySelectorAll('span[data-tags]').forEach(function (span) {
+      const isError = span.getAttribute('data-tags').includes('error');
+      Swal.fire({
+        icon: isError ? 'error' : 'success',
+        title: isError ? 'Erro' : 'Sucesso',
+        text: span.textContent.trim(),
+        confirmButtonColor: '#2E3E82',
+        timer: isError ? undefined : 3000,
+        timerProgressBar: !isError,
+        showConfirmButton: isError,
+      });
+    });
+  }
+
+  $('#rfqsTable').DataTable({
+    responsive: true,
+    autoWidth: false,
+    pageLength: 10,
+    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'Todos']],
+    language: {
+      search: 'Pesquisar:',
+      lengthMenu: 'Mostrar _MENU_ registos',
+      info: 'Mostrando _START_ a _END_ de _TOTAL_ registos',
+      infoEmpty: 'Mostrando 0 a 0 de 0 registos',
+      infoFiltered: '(filtrado de _MAX_ registos no total)',
+      zeroRecords: 'Nenhum registo encontrado',
+      emptyTable: 'Sem dados disponíveis',
+      paginate: { first: 'Primeiro', last: 'Último', next: 'Seguinte', previous: 'Anterior' }
+    },
+    columnDefs: [{ orderable: false, targets: [8] }]
+  });
+
+  function buildItemRow(index, data = {}) {
+    return `
+      <tr class="rfq-item-row">
+        <td class="item-index fw-bold text-muted">${index}</td>
+        <td>
+          <input type="text" name="item_descricao[]" class="form-control modern-input" value="${data.descricao || ''}" required>
+        </td>
+        <td>
+          <input type="number" name="item_quantidade[]" class="form-control modern-input" value="${data.quantidade || '1'}" min="0.01" step="0.01" required>
+        </td>
+        <td>
+          <select name="item_unidade_id[]" class="form-select modern-input">
+            <option value="">— Unidade —</option>
+            {% for unidade in unidades %}
+              <option value="{{ unidade.id }}">{{ unidade.nome }} ({{ unidade.sigla }})</option>
+            {% endfor %}
+          </select>
+        </td>
+        <td>
+          <input type="text" name="item_comentarios[]" class="form-control modern-input" value="${data.comentarios || ''}">
+        </td>
+        <td>
+          <input type="text" name="item_especificacoes[]" class="form-control modern-input" value="${data.especificacoes || ''}">
+        </td>
+        <td class="text-center">
+          <button type="button" class="btn btn-remove-item">
+            <i class="material-symbols-rounded">delete</i>
+          </button>
+        </td>
+      </tr>
+    `;
+  }
+
+  function refreshItemIndexes() {
+    $('#rfqItemsBody .rfq-item-row').each(function(index) {
+      $(this).find('.item-index').text(index + 1);
+    });
+  }
+
+  function addItemRow(data = {}) {
+    const nextIndex = $('#rfqItemsBody .rfq-item-row').length + 1;
+    $('#rfqItemsBody').append(buildItemRow(nextIndex, data));
+
+    const lastRow = $('#rfqItemsBody .rfq-item-row').last();
+    if (data.unidade_id) {
+      lastRow.find('select[name="item_unidade_id[]"]').val(String(data.unidade_id));
+    }
+  }
+
+  function resetForm() {
+    $('#rfqForm')[0].reset();
+    $('#rfq_id').val('');
+    $('#rfqModalLabel').text('Novo RFQ');
+    $('#rfqForm').attr('action', "{% url 'procurement:rfqs_create' %}");
+    $('#rfq_numero_preview').val('{{ default_numero }}');
+    $('#rfq_data_rfq').val('{{ today }}');
+    $('#rfqItemsBody').html('');
+    addItemRow();
+  }
+
+  $('#btnOpenCreateRFQ').on('click', function () {
+    resetForm();
+    rfqModal.show();
+  });
+
+  $('#btnAddItem').on('click', function () {
+    addItemRow();
+  });
+
+  $(document).on('click', '.btn-remove-item', function () {
+    const rows = $('#rfqItemsBody .rfq-item-row').length;
+    if (rows <= 1) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Atenção',
+        text: 'O RFQ deve ter pelo menos uma linha de item.',
+        confirmButtonColor: '#2E3E82'
+      });
+      return;
+    }
+
+    $(this).closest('tr').remove();
+    refreshItemIndexes();
+  });
+
+  $('#rfq_cliente_id').on('change', function () {
+    const opt = $(this).find('option:selected');
+    $('#rfq_email_cliente').val(opt.data('email') || '');
+    $('#rfq_telefone_cliente').val(opt.data('telefone') || '');
+    $('#rfq_pessoa_contacto').val(opt.data('contacto') || '');
+  });
+
+  $(document).on('click', '.btn-edit-rfq', function (e) {
+    e.preventDefault();
+    const id = $(this).data('id');
+    resetForm();
+
+    $.ajax({
+      url: `/rfqs/${id}/json/`,
+      type: 'GET',
+      success: function (r) {
+        $('#rfqModalLabel').text('Editar RFQ');
+        $('#rfq_id').val(r.id);
+        $('#rfq_numero_preview').val(r.numero);
+        $('#rfq_cliente_id').val(r.cliente_id);
+        $('#rfq_data_rfq').val(r.data_rfq);
+        $('#rfq_prazo_entrega').val(r.prazo_entrega);
+        $('#rfq_local_entrega').val(r.local_entrega);
+        $('#rfq_email_cliente').val(r.email_cliente);
+        $('#rfq_telefone_cliente').val(r.telefone_cliente);
+        $('#rfq_pessoa_contacto').val(r.pessoa_contacto);
+        $('#rfq_observacoes').val(r.observacoes);
+
+        $('#rfqItemsBody').html('');
+        if (r.itens && r.itens.length) {
+          r.itens.forEach(function (item) {
+            addItemRow(item);
+          });
+        } else {
+          addItemRow();
+        }
+
+        $('#rfqForm').attr('action', `/rfqs/${r.id}/update/`);
+        rfqModal.show();
+      },
+      error: function () {
+        Swal.fire({
+          icon: 'error',
+          title: 'Erro',
+          text: 'Não foi possível carregar os dados do RFQ.',
+          confirmButtonColor: '#2E3E82'
+        });
+      }
+    });
+  });
+
+  $(document).on('click', '.btn-delete-rfq', function (e) {
+    e.preventDefault();
+    const id = $(this).data('id');
+    const nome = $(this).data('name');
+
+    Swal.fire({
+      title: 'Remover RFQ?',
+      html: `Tem a certeza que deseja remover <strong>${nome}</strong>? Esta acção é irreversível.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sim, remover',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#dc3545',
+      cancelButtonColor: '#6c757d'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/rfqs/${id}/delete/`;
+
+        const csrf = document.createElement('input');
+        csrf.type = 'hidden';
+        csrf.name = 'csrfmiddlewaretoken';
+        csrf.value = '{{ csrf_token }}';
+
+        form.appendChild(csrf);
+        document.body.appendChild(form);
+        form.submit();
+      }
+    });
+  });
+
+  resetForm();
+});
+</script>
+
+{% endblock extra_js %}

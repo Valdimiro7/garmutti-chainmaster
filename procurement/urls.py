@@ -34,6 +34,14 @@ from procurement.views.fornecedores.fornecedores_view import (
     delete_fornecedor_view,
 )
 
+from procurement.views.rfq.rfq_view import (
+    rfqs_view,
+    rfq_detail_json_view,
+    create_rfq_view,
+    update_rfq_view,
+    delete_rfq_view,
+)
+
 
 
 
@@ -43,6 +51,13 @@ urlpatterns = [
     path("", dashboard, name="dashboard"),
     path("login/", ProcurementLoginView.as_view(), name="login"),
     path("logout/", LogoutView.as_view(), name="logout"),
+    
+    # ── RFQs ───────────────────────────────────────────────────────────────────────
+    path('rfqs/', rfqs_view, name='rfqs'),
+    path('rfqs/create/', create_rfq_view, name='rfqs_create'),
+    path('rfqs/<int:rfq_id>/json/', rfq_detail_json_view, name='rfqs_detail_json'),
+    path('rfqs/<int:rfq_id>/update/', update_rfq_view, name='rfqs_update'),
+    path('rfqs/<int:rfq_id>/delete/', delete_rfq_view, name='rfqs_delete'),
     
     
     #Fornecesores
