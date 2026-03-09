@@ -1,0 +1,1026 @@
+{% extends "layouts/pro_base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="container-fluid py-3">
+
+  {% if messages %}
+    <div class="row mb-3">
+      <div class="col-12">
+        {% for message in messages %}
+          <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show shadow-sm border-0" role="alert" style="border-radius: 14px;">
+            {{ message }}
+            <button type="button" class="btn-close shadow-none" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- HERO -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm permissions-hero-card">
+        <div class="card-body p-4 p-md-5">
+          <div class="row align-items-center g-4">
+            <div class="col-lg-8">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="permissions-hero-icon">
+                  <i class="material-symbols-rounded">admin_panel_settings</i>
+                </div>
+                <div>
+                  <h3 class="mb-1 fw-bold text-dark">Permissões</h3>
+                  <p class="text-muted mb-0">
+                    Gestão moderna de funcionários, funções e acessos do sistema.
+                  </p>
+                </div>
+              </div>
+
+              <div class="d-flex flex-wrap gap-2">
+                <span class="badge rounded-pill permissions-soft-badge">Funcionários</span>
+                <span class="badge rounded-pill permissions-soft-badge">Funções</span>
+                <span class="badge rounded-pill permissions-soft-badge">Controlo de acessos</span>
+              </div>
+            </div>
+
+            <div class="col-lg-4">
+              <div class="permissions-stats-grid">
+                <div class="mini-stat-card">
+                  <span class="mini-stat-label">Total de Funcionários</span>
+                  <h4 class="mb-0">{{ users|length }}</h4>
+                </div>
+                <div class="mini-stat-card">
+                  <span class="mini-stat-label">Total de Funções</span>
+                  <h4 class="mb-0">{{ groups|length }}</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="permissions-hero-accent"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm permissions-main-card">
+        <div class="card-body p-0">
+
+          <!-- TOPBAR -->
+          <div class="permissions-topbar px-4 pt-4 pb-3">
+            <div class="row align-items-center g-3">
+              <div class="col-lg-7">
+                <ul class="nav nav-pills permissions-tabs" id="permissionsTabs" role="tablist">
+                  <li class="nav-item" role="presentation">
+                    <button
+                      class="nav-link active"
+                      id="funcionarios-tab"
+                      data-bs-toggle="tab"
+                      data-bs-target="#funcionarios-pane"
+                      type="button"
+                      role="tab"
+                      aria-controls="funcionarios-pane"
+                      aria-selected="true">
+                      <i class="material-symbols-rounded me-2">group</i>
+                      Funcionários
+                    </button>
+                  </li>
+
+                  <li class="nav-item" role="presentation">
+                    <button
+                      class="nav-link"
+                      id="funcoes-tab"
+                      data-bs-toggle="tab"
+                      data-bs-target="#funcoes-pane"
+                      type="button"
+                      role="tab"
+                      aria-controls="funcoes-pane"
+                      aria-selected="false">
+                      <i class="material-symbols-rounded me-2">badge</i>
+                      Funções
+                    </button>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="col-lg-5">
+                <div class="d-flex flex-wrap justify-content-lg-end gap-2">
+                  <button type="button" class="btn btn-outline-dark btn-modern" id="btnOpenCreateUser">
+                    <i class="material-symbols-rounded me-1">person_add</i>
+                    Criar Funcionário
+                  </button>
+
+                  <button type="button" class="btn btn-primary btn-modern btn-garmutti" id="btnOpenCreateGroup">
+                    <i class="material-symbols-rounded me-1">add_moderator</i>
+                    Criar Função
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CONTENT -->
+          <div class="tab-content px-4 pb-4" id="permissionsTabsContent">
+
+            <!-- FUNCIONARIOS -->
+            <div class="tab-pane fade show active" id="funcionarios-pane" role="tabpanel" aria-labelledby="funcionarios-tab" tabindex="0">
+              <div class="permissions-section-header mb-3">
+                <div>
+                  <h5 class="mb-1 fw-bold text-dark">Lista de Funcionários</h5>
+                  <p class="text-muted mb-0">
+                    Todos os utilizadores registados e respectivas funções atribuídas.
+                  </p>
+                </div>
+              </div>
+
+              <div class="table-responsive">
+                <table id="employeesTable" class="table align-items-center mb-0 permissions-table w-100">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Utilizador</th>
+                      <th>Nome</th>
+                      <th>Email</th>
+                      <th>Funções</th>
+                      <th>Estado</th>
+                      <th>Último Login</th>
+                      <th class="text-center">Acções</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for user in users %}
+                    <tr>
+                      <td>{{ forloop.counter }}</td>
+
+                      <td>
+                        <div class="d-flex align-items-center gap-2">
+                          <div class="avatar-circle">
+                            {% if user.first_name %}
+                              {{ user.first_name|slice:":1"|upper }}
+                            {% else %}
+                              {{ user.username|slice:":1"|upper }}
+                            {% endif %}
+                          </div>
+                          <div>
+                            <span class="fw-semibold text-dark d-block">{{ user.username }}</span>
+                            {% if user.is_superuser %}
+                              <span class="table-subtext">Superutilizador</span>
+                            {% elif user.is_staff %}
+                              <span class="table-subtext">Staff</span>
+                            {% else %}
+                              <span class="table-subtext">Utilizador</span>
+                            {% endif %}
+                          </div>
+                        </div>
+                      </td>
+
+                      <td>
+                        {% if user.first_name or user.last_name %}
+                          {{ user.first_name }} {{ user.last_name }}
+                        {% else %}
+                          <span class="text-muted">—</span>
+                        {% endif %}
+                      </td>
+
+                      <td>
+                        {% if user.email %}
+                          {{ user.email }}
+                        {% else %}
+                          <span class="text-muted">—</span>
+                        {% endif %}
+                      </td>
+
+                      <td>
+                        <div class="d-flex flex-wrap gap-1">
+                          {% for group in user.groups.all %}
+                            <span class="badge permission-badge">{{ group.name }}</span>
+                          {% empty %}
+                            <span class="text-muted small">Sem função atribuída</span>
+                          {% endfor %}
+                        </div>
+                      </td>
+
+                      <td>
+                        {% if user.is_active %}
+                          <span class="status-pill status-active">Activo</span>
+                        {% else %}
+                          <span class="status-pill status-inactive">Inactivo</span>
+                        {% endif %}
+                      </td>
+
+                      <td>
+                        {% if user.last_login %}
+                          {{ user.last_login|date:"d/m/Y H:i" }}
+                        {% else %}
+                          <span class="text-muted">Nunca</span>
+                        {% endif %}
+                      </td>
+
+                      <td class="text-center">
+                        <div class="dropdown">
+                          <button class="btn btn-sm btn-icon-only btn-action-menu" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="material-symbols-rounded">more_vert</i>
+                          </button>
+                          <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm">
+                            <li>
+                              <a class="dropdown-item btn-edit-user" href="#" data-id="{{ user.id }}">
+                                <i class="material-symbols-rounded me-2 align-middle">edit</i>
+                                Editar
+                              </a>
+                            </li>
+
+                            <li>
+                              <a class="dropdown-item btn-toggle-user-status"
+                                 href="#"
+                                 data-id="{{ user.id }}"
+                                 data-name="{{ user.username }}"
+                                 data-status="{% if user.is_active %}1{% else %}0{% endif %}">
+                                <i class="material-symbols-rounded me-2 align-middle">
+                                  {% if user.is_active %}block{% else %}check_circle{% endif %}
+                                </i>
+                                {% if user.is_active %}Desactivar{% else %}Activar{% endif %}
+                              </a>
+                            </li>
+                          </ul>
+                        </div>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- FUNCOES -->
+            <div class="tab-pane fade" id="funcoes-pane" role="tabpanel" aria-labelledby="funcoes-tab" tabindex="0">
+              <div class="permissions-section-header mb-3">
+                <div>
+                  <h5 class="mb-1 fw-bold text-dark">Lista de Funções</h5>
+                  <p class="text-muted mb-0">
+                    Grupos do sistema usados para controlo de permissões e acessos.
+                  </p>
+                </div>
+              </div>
+
+              <div class="table-responsive">
+                <table id="groupsTable" class="table align-items-center mb-0 permissions-table w-100">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Função</th>
+                      <th>Total de Membros</th>
+                      <th>Descrição</th>
+                      <th class="text-center">Acções</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for group in groups %}
+                    <tr>
+                      <td>{{ forloop.counter }}</td>
+                      <td>
+                        <div class="d-flex align-items-center gap-2">
+                          <div class="group-icon-circle">
+                            <i class="material-symbols-rounded">shield_person</i>
+                          </div>
+                          <div>
+                            <span class="fw-semibold text-dark d-block">{{ group.name }}</span>
+                            <span class="table-subtext">Grupo de permissões</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="member-count-pill">{{ group.user_set.count }}</span>
+                      </td>
+                      <td>
+                        <span class="text-muted">Função do sistema para gestão de acessos.</span>
+                      </td>
+                      <td class="text-center">
+                        <div class="dropdown">
+                          <button class="btn btn-sm btn-icon-only btn-action-menu" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="material-symbols-rounded">more_vert</i>
+                          </button>
+                          <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm">
+                            <li>
+                              <a class="dropdown-item btn-edit-group" href="#" data-id="{{ group.id }}">
+                                <i class="material-symbols-rounded me-2 align-middle">edit</i>
+                                Editar
+                              </a>
+                            </li>
+
+                            <li>
+                              <a class="dropdown-item text-danger btn-delete-group"
+                                 href="#"
+                                 data-id="{{ group.id }}"
+                                 data-name="{{ group.name }}">
+                                <i class="material-symbols-rounded me-2 align-middle">delete</i>
+                                Remover
+                              </a>
+                            </li>
+                          </ul>
+                        </div>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+          <!-- END CONTENT -->
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% include "includes/pro_footer.html" %}
+</div>
+
+<!-- MODAL FUNCIONARIO -->
+<div class="modal fade" id="employeeModal" tabindex="-1" aria-labelledby="employeeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg modal-modern">
+      <div class="modal-header border-0 pb-0">
+        <div>
+          <h5 class="modal-title fw-bold" id="employeeModalLabel">Criar Funcionário</h5>
+          <p class="text-muted mb-0 small">Registo e gestão do utilizador do sistema.</p>
+        </div>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <form id="employeeForm" method="post" action="{% url 'procurement:permissions_create_user' %}">
+        {% csrf_token %}
+        <input type="hidden" name="user_id" id="employee_user_id">
+
+        <div class="modal-body pt-3">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Nome de utilizador</label>
+              <input type="text" name="username" id="employee_username" class="form-control modern-input" required>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Email</label>
+              <input type="email" name="email" id="employee_email" class="form-control modern-input">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Primeiro nome</label>
+              <input type="text" name="first_name" id="employee_first_name" class="form-control modern-input">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Último nome</label>
+              <input type="text" name="last_name" id="employee_last_name" class="form-control modern-input">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Palavra-passe</label>
+              <input type="password" name="password" id="employee_password" class="form-control modern-input">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Confirmar palavra-passe</label>
+              <input type="password" name="password_confirm" id="employee_password_confirm" class="form-control modern-input">
+            </div>
+
+            <div class="col-md-8">
+              <label class="form-label">Funções</label>
+              <select name="groups" id="employee_groups" class="form-select modern-input select2-multiple" multiple>
+                {% for group in groups %}
+                  <option value="{{ group.id }}">{{ group.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Estado</label>
+              <select name="is_active" id="employee_is_active" class="form-select modern-input">
+                <option value="1">Activo</option>
+                <option value="0">Inactivo</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-outline-secondary btn-modern" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary btn-modern btn-garmutti">Guardar Funcionário</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FUNCAO -->
+<div class="modal fade" id="groupModal" tabindex="-1" aria-labelledby="groupModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-md modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg modal-modern">
+      <div class="modal-header border-0 pb-0">
+        <div>
+          <h5 class="modal-title fw-bold" id="groupModalLabel">Criar Função</h5>
+          <p class="text-muted mb-0 small">Criação e gestão de grupos do sistema.</p>
+        </div>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <form id="groupForm" method="post" action="{% url 'procurement:permissions_create_group' %}">
+        {% csrf_token %}
+        <input type="hidden" name="group_id" id="group_id">
+
+        <div class="modal-body pt-3">
+          <div class="mb-3">
+            <label class="form-label">Nome da Função</label>
+            <input type="text" name="group_name" id="group_name" class="form-control modern-input" required>
+          </div>
+
+          <div class="mb-0">
+            <label class="form-label">Membros da Função</label>
+            <select name="group_members" id="group_members" class="form-select modern-input select2-multiple" multiple>
+              {% for user in users %}
+                <option value="{{ user.id }}">
+                  {{ user.username }}{% if user.first_name or user.last_name %} - {{ user.first_name }} {{ user.last_name }}{% endif %}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-outline-secondary btn-modern" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary btn-modern btn-garmutti">Guardar Função</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+{% block extra_js %}
+
+<link href="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.8/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/datatables.net-responsive-bs5@2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+
+<style>
+  .permissions-hero-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+  }
+
+  .permissions-hero-accent {
+    position: absolute;
+    right: -60px;
+    top: -60px;
+    width: 220px;
+    height: 220px;
+    background: radial-gradient(circle, rgba(46, 62, 130, 0.16) 0%, rgba(46, 62, 130, 0) 70%);
+    pointer-events: none;
+  }
+
+  .permissions-hero-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #2E3E82 0%, #4256ad 100%);
+    color: #fff;
+    box-shadow: 0 12px 30px rgba(46, 62, 130, 0.20);
+  }
+
+  .permissions-hero-icon i {
+    font-size: 30px;
+  }
+
+  .permissions-soft-badge {
+    background: #eef2ff;
+    color: #2E3E82;
+    border: 1px solid #dae3ff;
+    font-weight: 600;
+    padding: 0.50rem 0.90rem;
+  }
+
+  .permissions-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .mini-stat-card {
+    background: #fff;
+    border: 1px solid #edf0f7;
+    border-radius: 18px;
+    padding: 18px 16px;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.04);
+  }
+
+  .mini-stat-label {
+    display: block;
+    font-size: 0.78rem;
+    color: #6c757d;
+    margin-bottom: 6px;
+  }
+
+  .permissions-main-card {
+    border-radius: 22px;
+    overflow: hidden;
+  }
+
+  .permissions-topbar {
+    border-bottom: 1px solid #edf0f7;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
+  }
+
+  .permissions-tabs {
+    gap: 10px;
+  }
+
+  .permissions-tabs .nav-link {
+    border: 1px solid #e7ebf3;
+    border-radius: 14px;
+    color: #495057;
+    background: #fff;
+    padding: 0.85rem 1.15rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    transition: all 0.25s ease;
+  }
+
+  .permissions-tabs .nav-link.active {
+    background: linear-gradient(135deg, #2E3E82 0%, #4256ad 100%);
+    color: #fff;
+    border-color: #2E3E82;
+    box-shadow: 0 10px 24px rgba(46, 62, 130, 0.22);
+  }
+
+  .btn-modern {
+    border-radius: 14px !important;
+    padding: 0.75rem 1.1rem !important;
+    font-weight: 600 !important;
+    box-shadow: none !important;
+    text-transform: none !important;
+  }
+
+  .btn-garmutti {
+    background: linear-gradient(135deg, #2E3E82 0%, #4256ad 100%) !important;
+    border: none !important;
+    color: #fff !important;
+    box-shadow: 0 10px 24px rgba(46, 62, 130, 0.22) !important;
+  }
+
+  .btn-garmutti:hover {
+    transform: translateY(-1px);
+  }
+
+  .permissions-section-header {
+    padding-top: 1.5rem;
+  }
+
+  .permissions-table thead th {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #6c757d;
+    font-weight: 700;
+    border-bottom: 1px solid #eef1f6 !important;
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+    background: #fbfcfe;
+  }
+
+  .permissions-table tbody td {
+    vertical-align: middle;
+    border-bottom: 1px solid #f3f5f9 !important;
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+
+  .table-subtext {
+    font-size: 0.77rem;
+    color: #8a93a2;
+  }
+
+  .avatar-circle,
+  .group-icon-circle {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eef2ff;
+    color: #2E3E82;
+    font-weight: 700;
+  }
+
+  .permission-badge {
+    background: #eef2ff;
+    color: #2E3E82;
+    border: 1px solid #dbe3ff;
+    border-radius: 999px;
+    padding: 0.42rem 0.70rem;
+    font-size: 0.74rem;
+    font-weight: 600;
+  }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.42rem 0.80rem;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 700;
+  }
+
+  .status-active {
+    background: #e9f9ef;
+    color: #198754;
+    border: 1px solid #c9efd7;
+  }
+
+  .status-inactive {
+    background: #fff1f1;
+    color: #dc3545;
+    border: 1px solid #ffd3d7;
+  }
+
+  .member-count-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 42px;
+    height: 32px;
+    border-radius: 999px;
+    background: #f4f6fb;
+    color: #2E3E82;
+    font-weight: 700;
+    padding: 0 12px;
+  }
+
+  .btn-action-menu {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px !important;
+    border: 1px solid #e9edf5 !important;
+    background: #fff !important;
+    color: #495057 !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-action-menu:hover {
+    background: #f8f9fc !important;
+  }
+
+  .modal-modern {
+    border-radius: 22px;
+  }
+
+  .modern-input {
+    border-radius: 14px !important;
+    border: 1px solid #dfe5ef !important;
+    min-height: 46px;
+    box-shadow: none !important;
+  }
+
+  .modern-input:focus {
+    border-color: #2E3E82 !important;
+    box-shadow: 0 0 0 0.2rem rgba(46, 62, 130, 0.10) !important;
+  }
+
+  .select2-container .select2-selection--single,
+  .select2-container .select2-selection--multiple {
+    min-height: 46px !important;
+    border-radius: 14px !important;
+    border: 1px solid #dfe5ef !important;
+    padding: 6px 10px !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  .select2-container--default.select2-container--focus .select2-selection--multiple,
+  .select2-container--default.select2-container--open .select2-selection--single,
+  .select2-container--default.select2-container--open .select2-selection--multiple {
+    border-color: #2E3E82 !important;
+    box-shadow: 0 0 0 0.2rem rgba(46, 62, 130, 0.10) !important;
+  }
+
+  .select2-dropdown {
+    border: 1px solid #dfe5ef !important;
+    border-radius: 14px !important;
+    overflow: hidden;
+  }
+
+  .select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background: #eef2ff !important;
+    color: #2E3E82 !important;
+    border: 1px solid #dbe3ff !important;
+    border-radius: 999px !important;
+    padding: 3px 8px !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+  }
+
+  .select2-container--default .select2-selection--multiple .select2-selection__rendered {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px;
+  }
+
+  div.dataTables_wrapper div.dataTables_filter input,
+  div.dataTables_wrapper div.dataTables_length select {
+    border-radius: 12px !important;
+    border: 1px solid #dfe5ef !important;
+    min-height: 38px;
+    box-shadow: none !important;
+  }
+
+  .dataTables_wrapper .dataTables_paginate .paginate_button {
+    border-radius: 10px !important;
+    margin: 0 2px;
+  }
+
+  .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: linear-gradient(135deg, #2E3E82 0%, #4256ad 100%) !important;
+    color: #fff !important;
+    border: none !important;
+  }
+
+  .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background: #eef2ff !important;
+    border-color: #dbe3ff !important;
+    color: #2E3E82 !important;
+  }
+
+  @media (max-width: 991.98px) {
+    .permissions-stats-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .permissions-tabs {
+      flex-wrap: wrap;
+    }
+
+    .permissions-tabs .nav-link {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net@1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-responsive@2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-responsive-bs5@2.5.0/js/responsive.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+  $(document).ready(function () {
+    const employeeModalEl = document.getElementById('employeeModal');
+    const groupModalEl = document.getElementById('groupModal');
+
+    const employeeModal = new bootstrap.Modal(employeeModalEl);
+    const groupModal = new bootstrap.Modal(groupModalEl);
+
+    $('#employee_groups').select2({
+      width: '100%',
+      placeholder: 'Seleccione as funções do funcionário',
+      allowClear: true,
+      dropdownParent: $('#employeeModal')
+    });
+
+    $('#group_members').select2({
+      width: '100%',
+      placeholder: 'Seleccione os membros da função',
+      allowClear: true,
+      dropdownParent: $('#groupModal')
+    });
+
+    $('#employeesTable').DataTable({
+      responsive: true,
+      autoWidth: false,
+      pageLength: 10,
+      lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
+      language: {
+        search: "Pesquisar:",
+        lengthMenu: "Mostrar _MENU_ registos",
+        info: "Mostrando _START_ a _END_ de _TOTAL_ registos",
+        infoEmpty: "Mostrando 0 a 0 de 0 registos",
+        infoFiltered: "(filtrado de _MAX_ registos no total)",
+        zeroRecords: "Nenhum registo encontrado",
+        emptyTable: "Sem dados disponíveis",
+        paginate: {
+          first: "Primeiro",
+          last: "Último",
+          next: "Seguinte",
+          previous: "Anterior"
+        }
+      },
+      columnDefs: [
+        { orderable: false, targets: [4, 7] }
+      ]
+    });
+
+    $('#groupsTable').DataTable({
+      responsive: true,
+      autoWidth: false,
+      pageLength: 10,
+      lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
+      language: {
+        search: "Pesquisar:",
+        lengthMenu: "Mostrar _MENU_ registos",
+        info: "Mostrando _START_ a _END_ de _TOTAL_ registos",
+        infoEmpty: "Mostrando 0 a 0 de 0 registos",
+        infoFiltered: "(filtrado de _MAX_ registos no total)",
+        zeroRecords: "Nenhum registo encontrado",
+        emptyTable: "Sem dados disponíveis",
+        paginate: {
+          first: "Primeiro",
+          last: "Último",
+          next: "Seguinte",
+          previous: "Anterior"
+        }
+      },
+      columnDefs: [
+        { orderable: false, targets: [3, 4] }
+      ]
+    });
+
+    function resetEmployeeForm() {
+      $('#employeeForm')[0].reset();
+      $('#employee_user_id').val('');
+      $('#employee_groups').val(null).trigger('change');
+      $('#employee_is_active').val('1');
+      $('#employeeModalLabel').text('Criar Funcionário');
+      $('#employeeForm').attr('action', "{% url 'procurement:permissions_create_user' %}");
+      $('#employee_password').prop('required', true).val('');
+      $('#employee_password_confirm').prop('required', true).val('');
+    }
+
+    function resetGroupForm() {
+      $('#groupForm')[0].reset();
+      $('#group_id').val('');
+      $('#group_members').val(null).trigger('change');
+      $('#groupModalLabel').text('Criar Função');
+      $('#groupForm').attr('action', "{% url 'procurement:permissions_create_group' %}");
+    }
+
+    $('#btnOpenCreateUser').on('click', function () {
+      resetEmployeeForm();
+      employeeModal.show();
+    });
+
+    $('#btnOpenCreateGroup').on('click', function () {
+      resetGroupForm();
+      groupModal.show();
+    });
+
+    $(document).on('click', '.btn-edit-user', function (e) {
+      e.preventDefault();
+
+      const userId = $(this).data('id');
+      resetEmployeeForm();
+
+      $.ajax({
+        url: `/permissions/users/${userId}/json/`,
+        type: 'GET',
+        success: function (response) {
+          $('#employeeModalLabel').text('Editar Funcionário');
+          $('#employee_user_id').val(response.id);
+          $('#employee_username').val(response.username);
+          $('#employee_email').val(response.email);
+          $('#employee_first_name').val(response.first_name);
+          $('#employee_last_name').val(response.last_name);
+          $('#employee_is_active').val(response.is_active ? '1' : '0');
+          $('#employee_groups').val(response.groups).trigger('change');
+
+          $('#employeeForm').attr('action', `/permissions/users/${response.id}/update/`);
+          $('#employee_password').prop('required', false).val('');
+          $('#employee_password_confirm').prop('required', false).val('');
+
+          employeeModal.show();
+        },
+        error: function () {
+          Swal.fire({
+            icon: 'error',
+            title: 'Erro',
+            text: 'Não foi possível carregar os dados do funcionário.',
+            confirmButtonColor: '#2E3E82'
+          });
+        }
+      });
+    });
+
+    $(document).on('click', '.btn-edit-group', function (e) {
+      e.preventDefault();
+
+      const groupId = $(this).data('id');
+      resetGroupForm();
+
+      $.ajax({
+        url: `/permissions/groups/${groupId}/json/`,
+        type: 'GET',
+        success: function (response) {
+          $('#groupModalLabel').text('Editar Função');
+          $('#group_id').val(response.id);
+          $('#group_name').val(response.name);
+          $('#group_members').val(response.members).trigger('change');
+          $('#groupForm').attr('action', `/permissions/groups/${response.id}/update/`);
+          groupModal.show();
+        },
+        error: function () {
+          Swal.fire({
+            icon: 'error',
+            title: 'Erro',
+            text: 'Não foi possível carregar os dados da função.',
+            confirmButtonColor: '#2E3E82'
+          });
+        }
+      });
+    });
+
+    $(document).on('click', '.btn-toggle-user-status', function (e) {
+      e.preventDefault();
+
+      const userId = $(this).data('id');
+      const userName = $(this).data('name');
+      const currentStatus = String($(this).data('status'));
+      const actionText = currentStatus === '1' ? 'desactivar' : 'activar';
+
+      Swal.fire({
+        title: `${actionText.charAt(0).toUpperCase() + actionText.slice(1)} funcionário?`,
+        html: `Tem a certeza que deseja ${actionText} o funcionário <strong>${userName}</strong>?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sim, confirmar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#2E3E82',
+        cancelButtonColor: '#6c757d'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const form = document.createElement('form');
+          form.method = 'POST';
+          form.action = `/permissions/users/${userId}/toggle-status/`;
+
+          const csrf = document.createElement('input');
+          csrf.type = 'hidden';
+          csrf.name = 'csrfmiddlewaretoken';
+          csrf.value = '{{ csrf_token }}';
+
+          form.appendChild(csrf);
+          document.body.appendChild(form);
+          form.submit();
+        }
+      });
+    });
+
+    $(document).on('click', '.btn-delete-group', function (e) {
+      e.preventDefault();
+
+      const groupId = $(this).data('id');
+      const groupName = $(this).data('name');
+
+      Swal.fire({
+        title: 'Remover função?',
+        html: `Tem a certeza que deseja remover a função <strong>${groupName}</strong>?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sim, remover',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const form = document.createElement('form');
+          form.method = 'POST';
+          form.action = `/permissions/groups/${groupId}/delete/`;
+
+          const csrf = document.createElement('input');
+          csrf.type = 'hidden';
+          csrf.name = 'csrfmiddlewaretoken';
+          csrf.value = '{{ csrf_token }}';
+
+          form.appendChild(csrf);
+          document.body.appendChild(form);
+          form.submit();
+        }
+      });
+    });
+  });
+</script>
+
+{% endblock extra_js %}
