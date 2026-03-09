@@ -1,0 +1,22 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8">
+  <title>{{ rfq.numero }}</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 12mm;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      background: #fff;
+    }
+  </style>
+</head>
+<body>
+  {% include "rfq/includes/rfq_document_inner.html" %}
+</body>
+</html>

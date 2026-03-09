@@ -25,14 +25,14 @@
                 </div>
                 <div>
                   <h3 class="mb-1 fw-bold text-dark">RFQ</h3>
-                  <p class="text-muted mb-0">Gestão centralizada de pedidos de cotação recebidos e registados no sistema.</p>
+                  <p class="text-muted mb-0">Gestão centralizada de pedidos de cotação registados no sistema.</p>
                 </div>
               </div>
               <div class="d-flex flex-wrap gap-2">
-                <span class="badge rounded-pill rfq-soft-badge">Número Automático</span>
+                <span class="badge rounded-pill rfq-soft-badge">Documento RFQ</span>
+                <span class="badge rounded-pill rfq-soft-badge">Preview</span>
+                <span class="badge rounded-pill rfq-soft-badge">PDF</span>
                 <span class="badge rounded-pill rfq-soft-badge">Itens Dinâmicos</span>
-                <span class="badge rounded-pill rfq-soft-badge">Anexos</span>
-                <span class="badge rounded-pill rfq-soft-badge">Cliente</span>
               </div>
             </div>
 
@@ -156,25 +156,38 @@
                     </td>
 
                     <td class="text-center">
-                      <div class="dropdown">
-                        <button class="btn btn-sm btn-icon-only btn-action-menu" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                          <i class="material-symbols-rounded">more_vert</i>
+                      <div class="d-flex align-items-center justify-content-center gap-2 flex-wrap">
+                        <button type="button"
+                                class="btn btn-sm btn-outline-primary btn-view-rfq"
+                                data-id="{{ rfq.id }}">
+                          <i class="material-symbols-rounded align-middle me-1">visibility</i>View
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm">
-                          <li>
-                            <a class="dropdown-item btn-edit-rfq" href="#" data-id="{{ rfq.id }}">
-                              <i class="material-symbols-rounded me-2 align-middle">edit</i>Editar
-                            </a>
-                          </li>
-                          <li><hr class="dropdown-divider"></li>
-                          <li>
-                            <a class="dropdown-item text-danger btn-delete-rfq" href="#"
-                               data-id="{{ rfq.id }}"
-                               data-name="{{ rfq.numero }}">
-                              <i class="material-symbols-rounded me-2 align-middle">delete</i>Remover
-                            </a>
-                          </li>
-                        </ul>
+
+                        <div class="dropdown">
+                          <button class="btn btn-sm btn-icon-only btn-action-menu" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="material-symbols-rounded">more_vert</i>
+                          </button>
+                          <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm">
+                            <li>
+                              <a class="dropdown-item btn-edit-rfq" href="#" data-id="{{ rfq.id }}">
+                                <i class="material-symbols-rounded me-2 align-middle">edit</i>Editar
+                              </a>
+                            </li>
+                            <li>
+                              <a class="dropdown-item" href="{% url 'procurement:rfqs_download_pdf' rfq.id %}" target="_blank">
+                                <i class="material-symbols-rounded me-2 align-middle">download</i>Download PDF
+                              </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                              <a class="dropdown-item text-danger btn-delete-rfq" href="#"
+                                 data-id="{{ rfq.id }}"
+                                 data-name="{{ rfq.numero }}">
+                                <i class="material-symbols-rounded me-2 align-middle">delete</i>Remover
+                              </a>
+                            </li>
+                          </ul>
+                        </div>
                       </div>
                     </td>
                   </tr>
@@ -195,7 +208,6 @@
 <div class="modal fade" id="rfqModal" tabindex="-1" aria-labelledby="rfqModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content border-0 shadow-lg modal-modern">
-
       <div class="modal-header border-0 pb-0">
         <div>
           <h5 class="modal-title fw-bold" id="rfqModalLabel">Novo RFQ</h5>
@@ -300,7 +312,6 @@
             <div class="col-md-12">
               <label class="form-label">Ficheiros</label>
               <input type="file" name="anexos" id="rfq_anexos" class="form-control modern-input" multiple>
-              <small class="text-muted">Pode seleccionar um ou vários anexos.</small>
             </div>
           </div>
 
@@ -324,7 +335,33 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+</div>
 
+<div class="modal fade" id="rfqPreviewModal" tabindex="-1" aria-labelledby="rfqPreviewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-fullscreen-lg-down modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-lg modal-modern">
+      <div class="modal-header border-0">
+        <div>
+          <h5 class="modal-title fw-bold" id="rfqPreviewModalLabel">Visualizar RFQ</h5>
+          <p class="text-muted mb-0 small">Preview do documento formal do RFQ.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <a href="#" id="btnDownloadRfqPdf" class="btn btn-rfq btn-modern" target="_blank">
+            <i class="material-symbols-rounded me-1">download</i>Download PDF
+          </a>
+          <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+      </div>
+
+      <div class="modal-body bg-light">
+        <div id="rfqPreviewLoading" class="text-center py-5">
+          <div class="spinner-border text-primary mb-3" role="status"></div>
+          <div class="fw-semibold text-muted">A carregar documento do RFQ...</div>
+        </div>
+        <div id="rfqPreviewContent" class="rfq-preview-wrap d-none"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -337,271 +374,43 @@
 <link href="https://cdn.jsdelivr.net/npm/datatables.net-responsive-bs5@2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
 
 <style>
-  .rfq-hero-card {
-    position: relative;
-    overflow: hidden;
-    border-radius: 22px;
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
-  }
-
-  .rfq-hero-accent {
-    position: absolute;
-    right: -60px;
-    top: -60px;
-    width: 220px;
-    height: 220px;
-    background: radial-gradient(circle, rgba(46,62,130,0.16) 0%, rgba(46,62,130,0) 70%);
-    pointer-events: none;
-  }
-
-  .rfq-hero-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #2E3E82 0%, #4256ad 100%);
-    color: #fff;
-    box-shadow: 0 12px 30px rgba(46,62,130,0.20);
-  }
-
-  .rfq-hero-icon i { font-size: 30px; }
-
-  .rfq-soft-badge {
-    background: #eef2ff;
-    color: #2E3E82;
-    border: 1px solid #dae3ff;
-    font-weight: 600;
-    padding: 0.50rem 0.90rem;
-  }
-
-  .rfq-stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-  }
-
-  .rfq-main-card {
-    border-radius: 22px;
-    overflow: hidden;
-  }
-
-  .rfq-topbar {
-    border-bottom: 1px solid #edf0f7;
-    background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
-  }
-
-  .btn-modern {
-    border-radius: 14px !important;
-    padding: 0.75rem 1.1rem !important;
-    font-weight: 600 !important;
-    box-shadow: none !important;
-    text-transform: none !important;
-  }
-
-  .btn-rfq {
-    background: linear-gradient(135deg, #2E3E82 0%, #4256ad 100%) !important;
-    border: none !important;
-    color: #fff !important;
-    box-shadow: 0 10px 24px rgba(46,62,130,0.22) !important;
-  }
-
-  .rfq-table thead th {
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: #6c757d;
-    font-weight: 700;
-    border-bottom: 1px solid #eef1f6 !important;
-    padding-top: 1rem !important;
-    padding-bottom: 1rem !important;
-    background: #fbfcfe;
-  }
-
-  .rfq-table tbody td {
-    vertical-align: middle;
-    border-bottom: 1px solid #f3f5f9 !important;
-    padding-top: 0.85rem !important;
-    padding-bottom: 0.85rem !important;
-  }
-
-  .table-subtext {
-    font-size: 0.77rem;
-    color: #8a93a2;
-  }
-
-  .avatar-circle-rfq {
-    width: 42px;
-    height: 42px;
-    min-width: 42px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #eef2ff;
-    color: #2E3E82;
-    font-weight: 700;
-    font-size: 0.85rem;
-  }
-
-  .nuit-pill {
-    display: inline-flex;
-    align-items: center;
-    background: #eef2ff;
-    color: #2E3E82;
-    border: 1px solid #dae3ff;
-    border-radius: 8px;
-    padding: 3px 10px;
-    font-size: 0.78rem;
-    font-weight: 700;
-  }
-
-  .origem-pill {
-    display: inline-flex;
-    align-items: center;
-    border-radius: 999px;
-    padding: 0.35rem 0.75rem;
-    font-size: 0.74rem;
-    font-weight: 700;
-  }
-
-  .origem-manual {
-    background: #eef2ff;
-    color: #2E3E82;
-    border: 1px solid #dae3ff;
-  }
-
-  .status-pill {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.42rem 0.80rem;
-    border-radius: 999px;
-    font-size: 0.74rem;
-    font-weight: 700;
-  }
-
-  .btn-action-menu {
-    width: 38px;
-    height: 38px;
-    border-radius: 12px !important;
-    border: 1px solid #e9edf5 !important;
-    background: #fff !important;
-    color: #495057 !important;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .modal-modern {
-    border-radius: 22px;
-  }
-
-  .modal-section-title {
-    display: flex;
-    align-items: center;
-    font-size: 0.78rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    color: #2E3E82;
-    border-bottom: 1px solid #dae3ff;
-    padding-bottom: 8px;
-  }
-
-  .modern-input {
-    border-radius: 14px !important;
-    border: 1px solid #dfe5ef !important;
-    min-height: 46px;
-    box-shadow: none !important;
-  }
-
-  .modern-input:focus {
-    border-color: #2E3E82 !important;
-    box-shadow: 0 0 0 0.2rem rgba(46,62,130,0.10) !important;
-  }
-
-  .rfq-items-table thead th {
-    background: #f8faff;
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: .05em;
-    color: #6c757d;
-    border-bottom: 1px solid #e8edf7 !important;
-  }
-
-  .rfq-items-table tbody td {
-    border-bottom: 1px solid #f1f4fa !important;
-    vertical-align: middle;
-  }
-
-  .btn-remove-item {
-    width: 38px;
-    height: 38px;
-    border-radius: 12px !important;
-    border: none !important;
-    background: #fff1f1 !important;
-    color: #dc3545 !important;
-  }
-
-  .mini-stat-card {
-    background: #fff;
-    border: 1px solid #edf0f7;
-    border-radius: 18px;
-    padding: 18px 16px;
-    box-shadow: 0 8px 22px rgba(15,23,42,0.04);
-  }
-
-  .mini-stat-label {
-    display: block;
-    font-size: 0.78rem;
-    color: #6c757d;
-    margin-bottom: 6px;
-  }
-
-  .dataTables_wrapper .dataTables_paginate .pagination {
-    display: flex !important;
-    gap: 4px !important;
-    flex-wrap: wrap !important;
-  }
-
-  .dataTables_wrapper .dataTables_paginate .pagination .page-item .page-link {
-    all: unset !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    min-width: 36px !important;
-    height: 36px !important;
-    padding: 0 10px !important;
-    border-radius: 10px !important;
-    border: 1px solid #e7ebf3 !important;
-    background: #fff !important;
-    color: #495057 !important;
-    font-size: 0.85rem !important;
-    font-weight: 600 !important;
-    cursor: pointer !important;
-    transition: all 0.2s ease !important;
-  }
-
-  .dataTables_wrapper .dataTables_paginate .pagination .page-item.active .page-link {
-    background: linear-gradient(135deg, #2E3E82 0%, #4256ad 100%) !important;
-    border-color: #2E3E82 !important;
-    color: #fff !important;
-  }
-
+  .rfq-hero-card{position:relative;overflow:hidden;border-radius:22px;background:linear-gradient(135deg,#ffffff 0%,#f8f9ff 100%)}
+  .rfq-hero-accent{position:absolute;right:-60px;top:-60px;width:220px;height:220px;background:radial-gradient(circle,rgba(46,62,130,0.16) 0%,rgba(46,62,130,0) 70%);pointer-events:none}
+  .rfq-hero-icon{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#2E3E82 0%,#4256ad 100%);color:#fff;box-shadow:0 12px 30px rgba(46,62,130,0.20)}
+  .rfq-hero-icon i{font-size:30px}
+  .rfq-soft-badge{background:#eef2ff;color:#2E3E82;border:1px solid #dae3ff;font-weight:600;padding:.50rem .90rem}
+  .rfq-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .rfq-main-card{border-radius:22px;overflow:hidden}
+  .rfq-topbar{border-bottom:1px solid #edf0f7;background:linear-gradient(180deg,#ffffff 0%,#fbfcff 100%)}
+  .btn-modern{border-radius:14px !important;padding:.75rem 1.1rem !important;font-weight:600 !important;box-shadow:none !important;text-transform:none !important}
+  .btn-rfq{background:linear-gradient(135deg,#2E3E82 0%,#4256ad 100%) !important;border:none !important;color:#fff !important;box-shadow:0 10px 24px rgba(46,62,130,0.22) !important}
+  .rfq-table thead th{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#6c757d;font-weight:700;border-bottom:1px solid #eef1f6 !important;padding-top:1rem !important;padding-bottom:1rem !important;background:#fbfcfe}
+  .rfq-table tbody td{vertical-align:middle;border-bottom:1px solid #f3f5f9 !important;padding-top:.85rem !important;padding-bottom:.85rem !important}
+  .table-subtext{font-size:.77rem;color:#8a93a2}
+  .avatar-circle-rfq{width:42px;height:42px;min-width:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#eef2ff;color:#2E3E82;font-weight:700;font-size:.85rem}
+  .nuit-pill{display:inline-flex;align-items:center;background:#eef2ff;color:#2E3E82;border:1px solid #dae3ff;border-radius:8px;padding:3px 10px;font-size:.78rem;font-weight:700}
+  .origem-pill{display:inline-flex;align-items:center;border-radius:999px;padding:.35rem .75rem;font-size:.74rem;font-weight:700}
+  .origem-manual{background:#eef2ff;color:#2E3E82;border:1px solid #dae3ff}
+  .status-pill{display:inline-flex;align-items:center;padding:.42rem .80rem;border-radius:999px;font-size:.74rem;font-weight:700}
+  .btn-action-menu{width:38px;height:38px;border-radius:12px !important;border:1px solid #e9edf5 !important;background:#fff !important;color:#495057 !important;display:inline-flex;align-items:center;justify-content:center}
+  .modal-modern{border-radius:22px}
+  .modal-section-title{display:flex;align-items:center;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#2E3E82;border-bottom:1px solid #dae3ff;padding-bottom:8px}
+  .modern-input{border-radius:14px !important;border:1px solid #dfe5ef !important;min-height:46px;box-shadow:none !important}
+  .modern-input:focus{border-color:#2E3E82 !important;box-shadow:0 0 0 .2rem rgba(46,62,130,0.10) !important}
+  .rfq-items-table thead th{background:#f8faff;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:#6c757d;border-bottom:1px solid #e8edf7 !important}
+  .rfq-items-table tbody td{border-bottom:1px solid #f1f4fa !important;vertical-align:middle}
+  .btn-remove-item{width:38px;height:38px;border-radius:12px !important;border:none !important;background:#fff1f1 !important;color:#dc3545 !important}
+  .mini-stat-card{background:#fff;border:1px solid #edf0f7;border-radius:18px;padding:18px 16px;box-shadow:0 8px 22px rgba(15,23,42,0.04)}
+  .mini-stat-label{display:block;font-size:.78rem;color:#6c757d;margin-bottom:6px}
+  .btn-view-rfq{border-radius:12px !important}
+  .rfq-preview-wrap{background:#e9ecef;padding:18px;border-radius:18px}
+  .rfq-preview-sheet{max-width:980px;margin:0 auto;background:#fff;border-radius:8px;box-shadow:0 10px 30px rgba(15,23,42,.10);overflow:hidden}
+  .dataTables_wrapper .dataTables_paginate .pagination{display:flex !important;gap:4px !important;flex-wrap:wrap !important}
+  .dataTables_wrapper .dataTables_paginate .pagination .page-item .page-link{all:unset !important;display:inline-flex !important;align-items:center !important;justify-content:center !important;min-width:36px !important;height:36px !important;padding:0 10px !important;border-radius:10px !important;border:1px solid #e7ebf3 !important;background:#fff !important;color:#495057 !important;font-size:.85rem !important;font-weight:600 !important;cursor:pointer !important;transition:all .2s ease !important}
+  .dataTables_wrapper .dataTables_paginate .pagination .page-item.active .page-link{background:linear-gradient(135deg,#2E3E82 0%,#4256ad 100%) !important;border-color:#2E3E82 !important;color:#fff !important}
   div.dataTables_wrapper div.dataTables_filter input,
-  div.dataTables_wrapper div.dataTables_length select {
-    border-radius: 12px !important;
-    border: 1px solid #dfe5ef !important;
-    min-height: 38px;
-    box-shadow: none !important;
-  }
-
-  @media (max-width: 991.98px) {
-    .rfq-stats-grid {
-      grid-template-columns: 1fr;
-    }
-  }
+  div.dataTables_wrapper div.dataTables_length select{border-radius:12px !important;border:1px solid #dfe5ef !important;min-height:38px;box-shadow:none !important}
+  @media (max-width:991.98px){.rfq-stats-grid{grid-template-columns:1fr}}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
@@ -613,8 +422,8 @@
 
 <script>
 $(document).ready(function () {
-  const rfqModalEl = document.getElementById('rfqModal');
-  const rfqModal = new bootstrap.Modal(rfqModalEl);
+  const rfqModal = new bootstrap.Modal(document.getElementById('rfqModal'));
+  const rfqPreviewModal = new bootstrap.Modal(document.getElementById('rfqPreviewModal'));
 
   const msgContainer = document.getElementById('django-messages');
   if (msgContainer) {
@@ -654,12 +463,8 @@ $(document).ready(function () {
     return `
       <tr class="rfq-item-row">
         <td class="item-index fw-bold text-muted">${index}</td>
-        <td>
-          <input type="text" name="item_descricao[]" class="form-control modern-input" value="${data.descricao || ''}" required>
-        </td>
-        <td>
-          <input type="number" name="item_quantidade[]" class="form-control modern-input" value="${data.quantidade || '1'}" min="0.01" step="0.01" required>
-        </td>
+        <td><input type="text" name="item_descricao[]" class="form-control modern-input" value="${data.descricao || ''}" required></td>
+        <td><input type="number" name="item_quantidade[]" class="form-control modern-input" value="${data.quantidade || '1'}" min="0.01" step="0.01" required></td>
         <td>
           <select name="item_unidade_id[]" class="form-select modern-input">
             <option value="">— Unidade —</option>
@@ -668,12 +473,8 @@ $(document).ready(function () {
             {% endfor %}
           </select>
         </td>
-        <td>
-          <input type="text" name="item_comentarios[]" class="form-control modern-input" value="${data.comentarios || ''}">
-        </td>
-        <td>
-          <input type="text" name="item_especificacoes[]" class="form-control modern-input" value="${data.especificacoes || ''}">
-        </td>
+        <td><input type="text" name="item_comentarios[]" class="form-control modern-input" value="${data.comentarios || ''}"></td>
+        <td><input type="text" name="item_especificacoes[]" class="form-control modern-input" value="${data.especificacoes || ''}"></td>
         <td class="text-center">
           <button type="button" class="btn btn-remove-item">
             <i class="material-symbols-rounded">delete</i>
@@ -692,7 +493,6 @@ $(document).ready(function () {
   function addItemRow(data = {}) {
     const nextIndex = $('#rfqItemsBody .rfq-item-row').length + 1;
     $('#rfqItemsBody').append(buildItemRow(nextIndex, data));
-
     const lastRow = $('#rfqItemsBody .rfq-item-row').last();
     if (data.unidade_id) {
       lastRow.find('select[name="item_unidade_id[]"]').val(String(data.unidade_id));
@@ -730,7 +530,6 @@ $(document).ready(function () {
       });
       return;
     }
-
     $(this).closest('tr').remove();
     refreshItemIndexes();
   });
@@ -780,6 +579,34 @@ $(document).ready(function () {
           icon: 'error',
           title: 'Erro',
           text: 'Não foi possível carregar os dados do RFQ.',
+          confirmButtonColor: '#2E3E82'
+        });
+      }
+    });
+  });
+
+  $(document).on('click', '.btn-view-rfq', function () {
+    const id = $(this).data('id');
+
+    $('#rfqPreviewContent').addClass('d-none').html('');
+    $('#rfqPreviewLoading').removeClass('d-none');
+    $('#btnDownloadRfqPdf').attr('href', `/rfqs/${id}/download-pdf/`);
+
+    rfqPreviewModal.show();
+
+    $.ajax({
+      url: `/rfqs/${id}/preview/`,
+      type: 'GET',
+      success: function (html) {
+        $('#rfqPreviewContent').html(`<div class="rfq-preview-sheet">${html}</div>`).removeClass('d-none');
+        $('#rfqPreviewLoading').addClass('d-none');
+      },
+      error: function () {
+        $('#rfqPreviewLoading').addClass('d-none');
+        Swal.fire({
+          icon: 'error',
+          title: 'Erro',
+          text: 'Não foi possível carregar a visualização do RFQ.',
           confirmButtonColor: '#2E3E82'
         });
       }

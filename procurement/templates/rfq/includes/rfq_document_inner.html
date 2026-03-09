@@ -1,0 +1,341 @@
+{% load static %}
+<style>
+  .doc-wrap{
+    padding: 32px 38px;
+    background: #fff;
+    color: #111;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  .doc-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 30px;
+    margin-bottom: 26px;
+  }
+
+  .doc-brand{
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+  }
+
+  .doc-logo{
+    width: 88px;
+    height: 88px;
+    object-fit: contain;
+    border-radius: 8px;
+    background: #fff;
+  }
+
+  .doc-brand-title{
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1;
+    color: #2E3E82;
+    margin: 0;
+  }
+
+  .doc-brand-subtitle{
+    font-size: 14px;
+    color: #3b82c4;
+    margin-top: 6px;
+  }
+
+  .doc-org-lines{
+    margin-top: 12px;
+    font-size: 13px;
+    line-height: 1.75;
+  }
+
+  .doc-side-card{
+    min-width: 290px;
+    max-width: 320px;
+    border: 2px solid #111;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  .doc-side-card-head{
+    background: #f2f4f8;
+    border-bottom: 2px solid #111;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+
+  .doc-side-card-body{
+    padding: 10px 12px;
+  }
+
+  .doc-side-grid{
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+
+  .doc-side-grid td{
+    padding: 7px 0;
+    vertical-align: top;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .doc-side-grid tr:last-child td{
+    border-bottom: none;
+  }
+
+  .doc-side-label{
+    width: 42%;
+    color: #6b7280;
+    font-weight: 700;
+    padding-right: 10px;
+  }
+
+  .doc-side-value{
+    font-weight: 600;
+    color: #111;
+  }
+
+  .doc-title{
+    margin: 18px 0 10px;
+    font-size: 24px;
+    font-weight: 800;
+    color: #111;
+    border-bottom: 4px solid #111;
+    padding-bottom: 6px;
+  }
+
+  .doc-subtitle{
+    font-size: 12.5px;
+    color: #6b7280;
+    margin-bottom: 18px;
+  }
+
+  .doc-meta-table,
+  .doc-items-table{
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .doc-meta-table th{
+    text-align: left;
+    background: #f2f4f8;
+    padding: 8px;
+    border-bottom: 2px solid #888;
+  }
+
+  .doc-meta-table td{
+    padding: 8px;
+    border-bottom: 1px solid #d9dee7;
+  }
+
+  .doc-section-title{
+    font-weight: 800;
+    font-size: 14px;
+    margin: 22px 0 8px;
+    color: #111;
+  }
+
+  .doc-items-table thead th{
+    text-align: left;
+    padding: 9px 8px;
+    background: #f2f4f8;
+    border-top: 3px solid #111;
+    border-bottom: 2px solid #888;
+  }
+
+  .doc-items-table tbody td{
+    padding: 10px 8px;
+    border-bottom: 1px solid #e3e7ef;
+    vertical-align: top;
+  }
+
+  .doc-footer-note{
+    margin-top: 28px;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  .text-center{ text-align: center; }
+  .text-right{ text-align: right; }
+  .muted{ color: #6b7280; }
+
+  .doc-tag{
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    background: #eef2ff;
+    color: #2E3E82;
+    border: 1px solid #dbe3ff;
+  }
+</style>
+
+<div class="doc-wrap">
+  <div class="doc-header">
+    <div style="flex:1;">
+      <div class="doc-brand">
+        {% if organizacao and organizacao.logo %}
+          <img src="{% static organizacao.logo %}" alt="Logo" class="doc-logo">
+        {% else %}
+          <div class="doc-logo" style="border:1px solid #ddd; display:flex; align-items:center; justify-content:center;">LOGO</div>
+        {% endif %}
+
+        <div>
+          <h1 class="doc-brand-title">
+            {% if organizacao %}{{ organizacao.nome|upper }}{% else %}GARMUTTI{% endif %}
+          </h1>
+          <div class="doc-brand-subtitle">
+            {% if organizacao and organizacao.slogan %}{{ organizacao.slogan }}{% else %}You Order. We Deliver.{% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="doc-org-lines">
+        <div><strong>FORNECIMENTO DE BENS E SERVIÇOS</strong></div>
+        <div>
+          Endereço:
+          {% if organizacao and organizacao.endereco %}{{ organizacao.endereco }}{% endif %}
+          {% if organizacao and organizacao.cidade %}, {{ organizacao.cidade }}{% endif %}
+          {% if organizacao and organizacao.pais %}, {{ organizacao.pais }}{% endif %}
+        </div>
+        <div>
+          Tel:
+          {% if organizacao and organizacao.telefone_1 %}{{ organizacao.telefone_1 }}{% endif %}
+          {% if organizacao and organizacao.telefone_2 %} / {{ organizacao.telefone_2 }}{% endif %}
+        </div>
+        <div>
+          Email:
+          {% if organizacao and organizacao.email %}{{ organizacao.email }}{% endif %}
+        </div>
+        <div>
+          NUIT:
+          {% if organizacao and organizacao.nuit %}{{ organizacao.nuit }}{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="doc-side-card">
+      <div class="doc-side-card-head">Documento Interno</div>
+      <div class="doc-side-card-body">
+        <table class="doc-side-grid">
+          <tr>
+            <td class="doc-side-label">Nº RFQ</td>
+            <td class="doc-side-value">{{ rfq.numero }}</td>
+          </tr>
+          <tr>
+            <td class="doc-side-label">Estado</td>
+            <td class="doc-side-value">{{ rfq.estado.nome }}</td>
+          </tr>
+          <tr>
+            <td class="doc-side-label">Origem</td>
+            <td class="doc-side-value">Manual</td>
+          </tr>
+          <tr>
+            <td class="doc-side-label">Data</td>
+            <td class="doc-side-value">{{ rfq.data_rfq|date:"d/m/Y" }}</td>
+          </tr>
+          <tr>
+            <td class="doc-side-label">Criado por</td>
+            <td class="doc-side-value">
+              {% if rfq.criado_por %}
+                {{ rfq.criado_por.get_full_name|default:rfq.criado_por.username }}
+              {% else %}
+                —
+              {% endif %}
+            </td>
+          </tr>
+          <tr>
+            <td class="doc-side-label">Cliente</td>
+            <td class="doc-side-value">{{ rfq.cliente.nome }}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="doc-title">REQUEST FOR QUOTATION Nº {{ rfq.numero }}</div>
+  <div class="doc-subtitle">
+    Documento interno de registo e controlo de pedido de cotação.
+  </div>
+
+  <table class="doc-meta-table">
+    <tr>
+      <th style="width:22%;">Cliente</th>
+      <th style="width:18%;">Data</th>
+      <th style="width:25%;">Prazo de Entrega</th>
+      <th>Local de Entrega</th>
+    </tr>
+    <tr>
+      <td>{{ rfq.cliente.nome }}</td>
+      <td>{{ rfq.data_rfq|date:"d/m/Y" }}</td>
+      <td>{% if rfq.prazo_entrega %}{{ rfq.prazo_entrega|date:"d/m/Y" }}{% else %}—{% endif %}</td>
+      <td>{{ rfq.local_entrega|default:"—" }}</td>
+    </tr>
+    <tr>
+      <th>Pessoa de Contacto</th>
+      <th>Telefone</th>
+      <th>Email</th>
+      <th>Status</th>
+    </tr>
+    <tr>
+      <td>{{ rfq.pessoa_contacto|default:"—" }}</td>
+      <td>{{ rfq.telefone_cliente|default:"—" }}</td>
+      <td>{{ rfq.email_cliente|default:"—" }}</td>
+      <td><span class="doc-tag">{{ rfq.estado.nome }}</span></td>
+    </tr>
+  </table>
+
+  <div class="doc-section-title">Itens Solicitados</div>
+
+  <table class="doc-items-table">
+    <thead>
+      <tr>
+        <th style="width:60px;">Item</th>
+        <th>Descrição</th>
+        <th style="width:110px;">Qtd.</th>
+        <th style="width:130px;">Unidade</th>
+        <th style="width:180px;">Comentários</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in rfq.itens.all %}
+      <tr>
+        <td class="text-center">{{ forloop.counter }}</td>
+        <td>
+          <div>{{ item.descricao }}</div>
+          {% if item.especificacoes %}
+            <div class="muted" style="margin-top:6px;">{{ item.especificacoes }}</div>
+          {% endif %}
+        </td>
+        <td class="text-center">{{ item.quantidade }}</td>
+        <td>
+          {% if item.unidade %}
+            {% if item.unidade.sigla %}
+              {{ item.unidade.sigla }}
+            {% elif item.unidade.nome %}
+              {{ item.unidade.nome }}
+            {% else %}
+              —
+            {% endif %}
+          {% else %}
+            —
+          {% endif %}
+        </td>
+        <td>{{ item.comentarios|default:"—" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="doc-footer-note">
+    <div><strong>Observações:</strong></div>
+    <div>{{ rfq.observacoes|default:"Sem observações adicionais." }}</div>
+  </div>
+</div>

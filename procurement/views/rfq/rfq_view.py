@@ -6,12 +6,23 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 
-from procurement.models import Cliente, RFQ, RFQAnexo, RFQEstado, RFQItem, Unidade
+from weasyprint import HTML
+
+from procurement.models import (
+    Cliente,
+    Organizacao,
+    RFQ,
+    RFQAnexo,
+    RFQEstado,
+    RFQItem,
+    Unidade,
+)
 
 
 def _get_upload_path(filename):
@@ -73,6 +84,10 @@ def _get_estado_novo():
     if not estado_novo:
         raise ValueError('Estado "Novo" não encontrado na tabela rfq_estados.')
     return estado_novo
+
+
+def _get_organizacao():
+    return Organizacao.objects.filter(activo=True).order_by('id').first()
 
 
 @login_required
@@ -154,6 +169,56 @@ def rfq_detail_json_view(request, rfq_id):
         'anexos': anexos,
     }
     return JsonResponse(data)
+
+
+@login_required
+@require_GET
+def rfq_preview_html_view(request, rfq_id):
+    rfq = get_object_or_404(
+        RFQ.objects.select_related('cliente', 'estado', 'criado_por').prefetch_related('itens__unidade'),
+        id=rfq_id
+    )
+    organizacao = _get_organizacao()
+
+    html = render_to_string(
+        'rfq/includes/rfq_document_inner.html',
+        {
+            'rfq': rfq,
+            'organizacao': organizacao,
+            'preview_mode': True,
+        },
+        request=request
+    )
+    return HttpResponse(html)
+
+
+@login_required
+@require_GET
+def rfq_download_pdf_view(request, rfq_id):
+    rfq = get_object_or_404(
+        RFQ.objects.select_related('cliente', 'estado', 'criado_por').prefetch_related('itens__unidade'),
+        id=rfq_id
+    )
+    organizacao = _get_organizacao()
+
+    html_string = render_to_string(
+        'rfq/rfq_pdf.html',
+        {
+            'rfq': rfq,
+            'organizacao': organizacao,
+            'preview_mode': False,
+        },
+        request=request
+    )
+
+    pdf_file = HTML(
+        string=html_string,
+        base_url=request.build_absolute_uri('/')
+    ).write_pdf()
+
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{rfq.numero}.pdf"'
+    return response
 
 
 @login_required
