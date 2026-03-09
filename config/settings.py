@@ -41,21 +41,21 @@ CSRF_TRUSTED_ORIGINS = [o.strip() for o in csrf_origins.split(",") if o.strip()]
 # APPLICATIONS
 # =========================================================
 
-# INSTALLED_APPS = [
-#     "django.contrib.admin",
-#     "admin_material.apps.AdminMaterialDashboardConfig",
-#     "django.contrib.auth",
-#     "django.contrib.contenttypes",
-#     "django.contrib.sessions",
-#     "django.contrib.messages",
-#     "django.contrib.staticfiles",
-#     "procurement",
-# ]
-
 INSTALLED_APPS = [
+    "django.contrib.admin",
+    "admin_material.apps.AdminMaterialDashboardConfig",
+    "django.contrib.auth",
     "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
     "django.contrib.staticfiles",
+    "procurement",
 ]
+
+# INSTALLED_APPS = [
+#     "django.contrib.contenttypes",
+#     "django.contrib.staticfiles",
+# ]
 
 # =========================================================
 # AUTH
@@ -69,21 +69,21 @@ LOGOUT_REDIRECT_URL = "https://garmutti.co.mz/"
 # MIDDLEWARE
 # =========================================================
 
-# MIDDLEWARE = [
-#     "procurement.middleware.RequestTraceMiddleware",
-#     "django.middleware.security.SecurityMiddleware",
-#     "whitenoise.middleware.WhiteNoiseMiddleware",
-#     "django.contrib.sessions.middleware.SessionMiddleware",
-#     "django.middleware.common.CommonMiddleware",
-#     "django.middleware.csrf.CsrfViewMiddleware",
-#     "django.contrib.auth.middleware.AuthenticationMiddleware",
-#     "django.contrib.messages.middleware.MessageMiddleware",
-#     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-# ]
-
 MIDDLEWARE = [
+    "procurement.middleware.RequestTraceMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+# MIDDLEWARE = [
+#     "django.middleware.security.SecurityMiddleware",
+# ]
 
 # =========================================================
 # URLS / WSGI
