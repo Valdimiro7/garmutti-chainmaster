@@ -1,6 +1,5 @@
 {% load static %}
 
-
 <nav class="navbar navbar-main navbar-expand-lg px-0 mx-3 shadow-none border-radius-xl" id="navbarBlur" data-scroll="true">
     <div class="container-fluid py-1 px-3">
       <nav aria-label="breadcrumb">
@@ -16,7 +15,7 @@
             <input type="text" class="form-control">
           </div>
         </div>
-        <ul class="navbar-nav d-flex align-items-center  justify-content-end">
+        <ul class="navbar-nav d-flex align-items-center justify-content-end">
           <li class="nav-item d-flex align-items-center">
             <a class="btn btn-outline-primary btn-sm mb-0 me-3" target="_blank" href="https://www.creative-tim.com/builder?ref=navbar-material-dashboard">Online Builder</a>
           </li>
@@ -41,12 +40,12 @@
             <a href="javascript:;" class="nav-link text-body p-0" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
               <i class="material-symbols-rounded">notifications</i>
             </a>
-            <ul class="dropdown-menu  dropdown-menu-end  px-2 py-3 me-sm-n4" aria-labelledby="dropdownMenuButton">
+            <ul class="dropdown-menu dropdown-menu-end px-2 py-3 me-sm-n4" aria-labelledby="dropdownMenuButton">
               <li class="mb-2">
                 <a class="dropdown-item border-radius-md" href="javascript:;">
                   <div class="d-flex py-1">
                     <div class="my-auto">
-                      <img src="{% static "assets/img/team-2.jpg" %}" class="avatar avatar-sm  me-3 ">
+                      <img src="{% static "assets/img/team-2.jpg" %}" class="avatar avatar-sm me-3">
                     </div>
                     <div class="d-flex flex-column justify-content-center">
                       <h6 class="text-sm font-weight-normal mb-1">
@@ -64,7 +63,7 @@
                 <a class="dropdown-item border-radius-md" href="javascript:;">
                   <div class="d-flex py-1">
                     <div class="my-auto">
-                      <img src="{% static "assets/img/small-logos/logo-spotify.svg" %}" class="avatar avatar-sm bg-gradient-dark  me-3 ">
+                      <img src="{% static "assets/img/small-logos/logo-spotify.svg" %}" class="avatar avatar-sm bg-gradient-dark me-3">
                     </div>
                     <div class="d-flex flex-column justify-content-center">
                       <h6 class="text-sm font-weight-normal mb-1">
@@ -81,7 +80,7 @@
               <li>
                 <a class="dropdown-item border-radius-md" href="javascript:;">
                   <div class="d-flex py-1">
-                    <div class="avatar avatar-sm bg-gradient-secondary  me-3  my-auto">
+                    <div class="avatar avatar-sm bg-gradient-secondary me-3 my-auto">
                       <svg width="12px" height="12px" viewBox="0 0 43 36" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                         <title>credit-card</title>
                         <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
@@ -110,18 +109,43 @@
               </li>
             </ul>
           </li>
+
+          <!-- User / Auth -->
           <li class="nav-item d-flex align-items-center">
             {% if request.user.is_authenticated %}
-            <a href="{% url "logout" %}" class="nav-link text-body font-weight-bold px-0">
-              <i class="material-symbols-rounded">login</i>
-            </a>
+            <div class="dropdown">
+              <a href="#" class="nav-link text-body font-weight-bold px-0 d-flex align-items-center gap-1"
+                 id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="material-symbols-rounded">account_circle</i>
+                <span class="d-none d-sm-inline text-sm">{{ request.user.username }}</span>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end px-2 py-2" aria-labelledby="userDropdown">
+                <li>
+                  <span class="dropdown-item-text text-xs text-secondary px-2">
+                    Signed in as <strong>{{ request.user.username }}</strong>
+                  </span>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <form method="post" action="{% url 'procurement:logout' %}">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="dropdown-item border-radius-md text-danger d-flex align-items-center gap-2">
+                      <i class="material-symbols-rounded" style="font-size:18px;">logout</i>
+                      Logout
+                    </button>
+                  </form>
+                </li>
+              </ul>
+            </div>
             {% else %}
-            <a href="{% url "login" %}" class="nav-link text-body font-weight-bold px-0">
-              <i class="material-symbols-rounded">account_circle</i>
+            <a href="{% url 'login' %}" class="nav-link text-body font-weight-bold px-0 d-flex align-items-center gap-1">
+              <i class="material-symbols-rounded">login</i>
+              <span class="d-none d-sm-inline text-sm">Sign In</span>
             </a>
             {% endif %}
-            
           </li>
+
         </ul>
       </div>
     </div>

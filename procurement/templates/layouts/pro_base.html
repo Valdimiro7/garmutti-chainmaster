@@ -7,7 +7,7 @@
 <html lang="en">
 
 <head>
-    {% include "includes/head.html" %}
+    {% include "includes/pro_head.html" %}
     {% block extrastyle %}{% endblock extrastyle %}
     {% block extrahead %}{% endblock extrahead %}
 </head>
@@ -15,18 +15,18 @@
 <body class="g-sidenav-show  bg-gray-100">
 
   {% block sidebar %}
-    {% include "includes/sidebar.html" %}
+    {% include "includes/pro_sidebar.html" %}
   {% endblock sidebar %}
 
   <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
     {% block navigation %}
-      {% include "includes/navigation.html" %}
+      {% include "includes/pro_navigation.html" %}
     {% endblock navigation %}
 
     {% block content %}{% endblock content %}
   </main>
 
-  {% include "includes/scripts.html" %}
+  {% include "includes/pro_scripts.html" %}
 
   {% block extra_js %}{% endblock extra_js %}
 
