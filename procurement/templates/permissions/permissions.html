@@ -5,19 +5,6 @@
 
 <div class="container-fluid py-3">
 
-  {% if messages %}
-    <div class="row mb-3">
-      <div class="col-12">
-        {% for message in messages %}
-          <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show shadow-sm border-0" role="alert" style="border-radius: 14px;">
-            {{ message }}
-            <button type="button" class="btn-close shadow-none" data-bs-dismiss="alert" aria-label="Close"></button>
-          </div>
-        {% endfor %}
-      </div>
-    </div>
-  {% endif %}
-
   <!-- HERO -->
   <div class="row mb-4">
     <div class="col-12">
@@ -459,6 +446,15 @@
   </div>
 </div>
 
+<!-- Django messages data passada ao JS via data attributes -->
+{% if messages %}
+<div id="django-messages" style="display:none;">
+  {% for message in messages %}
+    <span data-tags="{{ message.tags }}">{{ message }}</span>
+  {% endfor %}
+</div>
+{% endif %}
+
 {% endblock content %}
 
 {% block extra_js %}
@@ -747,21 +743,50 @@
     box-shadow: none !important;
   }
 
-  .dataTables_wrapper .dataTables_paginate .paginate_button {
+  /* Reset completo do paginador para anular estilos do tema Bootstrap */
+  .dataTables_wrapper .dataTables_paginate .pagination {
+    display: flex !important;
+    gap: 4px !important;
+    flex-wrap: wrap !important;
+  }
+
+  .dataTables_wrapper .dataTables_paginate .pagination .page-item .page-link {
+    all: unset !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 36px !important;
+    height: 36px !important;
+    padding: 0 10px !important;
     border-radius: 10px !important;
-    margin: 0 2px;
+    border: 1px solid #e7ebf3 !important;
+    background: #fff !important;
+    color: #495057 !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    box-shadow: none !important;
+    line-height: 1 !important;
   }
 
-  .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-    background: linear-gradient(135deg, #2E3E82 0%, #4256ad 100%) !important;
-    color: #fff !important;
-    border: none !important;
-  }
-
-  .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+  .dataTables_wrapper .dataTables_paginate .pagination .page-item .page-link:hover {
     background: #eef2ff !important;
     border-color: #dbe3ff !important;
     color: #2E3E82 !important;
+  }
+
+  .dataTables_wrapper .dataTables_paginate .pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #2E3E82 0%, #4256ad 100%) !important;
+    border-color: #2E3E82 !important;
+    color: #fff !important;
+  }
+
+  .dataTables_wrapper .dataTables_paginate .pagination .page-item.disabled .page-link {
+    opacity: 0.45 !important;
+    pointer-events: none !important;
+    background: #f8f9fc !important;
+    color: #adb5bd !important;
   }
 
   @media (max-width: 991.98px) {
@@ -790,12 +815,36 @@
 
 <script>
   $(document).ready(function () {
+
+    // ─── SweetAlert para Django messages ───────────────────────────────────────
+    const messagesContainer = document.getElementById('django-messages');
+    if (messagesContainer) {
+      const spans = messagesContainer.querySelectorAll('span[data-tags]');
+      spans.forEach(function (span) {
+        const tags = span.getAttribute('data-tags') || '';
+        const text = span.textContent.trim();
+        const isError = tags.includes('error');
+
+        Swal.fire({
+          icon: isError ? 'error' : 'success',
+          title: isError ? 'Erro' : 'Sucesso',
+          text: text,
+          confirmButtonColor: '#2E3E82',
+          timer: isError ? undefined : 3000,
+          timerProgressBar: !isError,
+          showConfirmButton: isError,
+        });
+      });
+    }
+
+    // ─── Modais ────────────────────────────────────────────────────────────────
     const employeeModalEl = document.getElementById('employeeModal');
     const groupModalEl = document.getElementById('groupModal');
 
     const employeeModal = new bootstrap.Modal(employeeModalEl);
     const groupModal = new bootstrap.Modal(groupModalEl);
 
+    // ─── Select2 ───────────────────────────────────────────────────────────────
     $('#employee_groups').select2({
       width: '100%',
       placeholder: 'Seleccione as funções do funcionário',
@@ -810,29 +859,30 @@
       dropdownParent: $('#groupModal')
     });
 
+    // ─── DataTables ────────────────────────────────────────────────────────────
+    const dtLang = {
+      search: "Pesquisar:",
+      lengthMenu: "Mostrar _MENU_ registos",
+      info: "Mostrando _START_ a _END_ de _TOTAL_ registos",
+      infoEmpty: "Mostrando 0 a 0 de 0 registos",
+      infoFiltered: "(filtrado de _MAX_ registos no total)",
+      zeroRecords: "Nenhum registo encontrado",
+      emptyTable: "Sem dados disponíveis",
+      paginate: {
+        first: "Primeiro",
+        last: "Último",
+        next: "Seguinte",
+        previous: "Anterior"
+      }
+    };
+
     $('#employeesTable').DataTable({
       responsive: true,
       autoWidth: false,
       pageLength: 10,
       lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
-      language: {
-        search: "Pesquisar:",
-        lengthMenu: "Mostrar _MENU_ registos",
-        info: "Mostrando _START_ a _END_ de _TOTAL_ registos",
-        infoEmpty: "Mostrando 0 a 0 de 0 registos",
-        infoFiltered: "(filtrado de _MAX_ registos no total)",
-        zeroRecords: "Nenhum registo encontrado",
-        emptyTable: "Sem dados disponíveis",
-        paginate: {
-          first: "Primeiro",
-          last: "Último",
-          next: "Seguinte",
-          previous: "Anterior"
-        }
-      },
-      columnDefs: [
-        { orderable: false, targets: [4, 7] }
-      ]
+      language: dtLang,
+      columnDefs: [{ orderable: false, targets: [4, 7] }]
     });
 
     $('#groupsTable').DataTable({
@@ -840,26 +890,11 @@
       autoWidth: false,
       pageLength: 10,
       lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
-      language: {
-        search: "Pesquisar:",
-        lengthMenu: "Mostrar _MENU_ registos",
-        info: "Mostrando _START_ a _END_ de _TOTAL_ registos",
-        infoEmpty: "Mostrando 0 a 0 de 0 registos",
-        infoFiltered: "(filtrado de _MAX_ registos no total)",
-        zeroRecords: "Nenhum registo encontrado",
-        emptyTable: "Sem dados disponíveis",
-        paginate: {
-          first: "Primeiro",
-          last: "Último",
-          next: "Seguinte",
-          previous: "Anterior"
-        }
-      },
-      columnDefs: [
-        { orderable: false, targets: [3, 4] }
-      ]
+      language: dtLang,
+      columnDefs: [{ orderable: false, targets: [3, 4] }]
     });
 
+    // ─── Reset forms ───────────────────────────────────────────────────────────
     function resetEmployeeForm() {
       $('#employeeForm')[0].reset();
       $('#employee_user_id').val('');
@@ -879,6 +914,7 @@
       $('#groupForm').attr('action', "{% url 'procurement:permissions_create_group' %}");
     }
 
+    // ─── Abrir modais (criar) ──────────────────────────────────────────────────
     $('#btnOpenCreateUser').on('click', function () {
       resetEmployeeForm();
       employeeModal.show();
@@ -889,6 +925,7 @@
       groupModal.show();
     });
 
+    // ─── Editar funcionário ────────────────────────────────────────────────────
     $(document).on('click', '.btn-edit-user', function (e) {
       e.preventDefault();
 
@@ -925,6 +962,7 @@
       });
     });
 
+    // ─── Editar função ─────────────────────────────────────────────────────────
     $(document).on('click', '.btn-edit-group', function (e) {
       e.preventDefault();
 
@@ -953,6 +991,7 @@
       });
     });
 
+    // ─── Toggle estado do funcionário ──────────────────────────────────────────
     $(document).on('click', '.btn-toggle-user-status', function (e) {
       e.preventDefault();
 
@@ -988,6 +1027,7 @@
       });
     });
 
+    // ─── Remover função ────────────────────────────────────────────────────────
     $(document).on('click', '.btn-delete-group', function (e) {
       e.preventDefault();
 
@@ -1020,6 +1060,7 @@
         }
       });
     });
+
   });
 </script>
 
