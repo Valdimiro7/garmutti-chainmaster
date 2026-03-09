@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     "procurement",
 ]
 
-
 # =========================================================
 # AUTH / LOGIN / LOGOUT
 # =========================================================
@@ -202,6 +201,8 @@ LOG_DIR.mkdir(exist_ok=True)
 
 ERROR_LOG_FILE = LOG_DIR / "django_error.log"
 SECURITY_LOG_FILE = LOG_DIR / "django_security.log"
+DB_LOG_FILE = LOG_DIR / "django_db.log"
+TEMPLATE_LOG_FILE = LOG_DIR / "django_template.log"
 
 LOGGING = {
     "version": 1,
@@ -225,6 +226,18 @@ LOGGING = {
             "formatter": "verbose",
             "level": "WARNING",
         },
+        "file_db": {
+            "class": "logging.FileHandler",
+            "filename": str(DB_LOG_FILE),
+            "formatter": "verbose",
+            "level": "ERROR",
+        },
+        "file_template": {
+            "class": "logging.FileHandler",
+            "filename": str(TEMPLATE_LOG_FILE),
+            "formatter": "verbose",
+            "level": "ERROR",
+        },
     },
     "loggers": {
         "django": {
@@ -245,6 +258,16 @@ LOGGING = {
         "django.security": {
             "handlers": ["file_security"],
             "level": "WARNING",
+            "propagate": False,
+        },
+        "django.db.backends": {
+            "handlers": ["file_db"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+        "django.template": {
+            "handlers": ["file_template"],
+            "level": "ERROR",
             "propagate": False,
         },
     },
