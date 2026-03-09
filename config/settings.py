@@ -201,7 +201,7 @@ STATIC_ROOT.mkdir(exist_ok=True)
 # WhiteNoise
 STORAGES = {
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"
     },
 }
 
