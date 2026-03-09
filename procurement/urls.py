@@ -16,12 +16,35 @@ from procurement.views.permissions.permissions_view import (
     remove_user_from_group_view,
 )
 
+from procurement.views.clientes.clientes_views import (
+    clientes_view,
+    cliente_detail_json_view,
+    create_cliente_view,
+    update_cliente_view,
+    toggle_cliente_status_view,
+    delete_cliente_view,
+)
+
+
 app_name = "procurement"
 
 urlpatterns = [
     path("", dashboard, name="dashboard"),
     path("login/", ProcurementLoginView.as_view(), name="login"),
     path("logout/", LogoutView.as_view(), name="logout"),
+    
+    
+    
+    
+    
+
+    # ── Clientes ──────────────────────────────────────────────────────────────────
+    path('clientes/',                                  clientes_view,               name='clientes'),
+    path('clientes/create/',                           create_cliente_view,         name='clientes_create'),
+    path('clientes/<int:cliente_id>/update/',          update_cliente_view,         name='clientes_update'),
+    path('clientes/<int:cliente_id>/toggle-status/',   toggle_cliente_status_view,  name='clientes_toggle_status'),
+    path('clientes/<int:cliente_id>/delete/',          delete_cliente_view,         name='clientes_delete'),
+    path('clientes/<int:cliente_id>/json/',            cliente_detail_json_view,    name='clientes_detail_json'),
     
     
     #===============Administração de Permissões==========================================

@@ -1,0 +1,802 @@
+{% extends "layouts/pro_base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="container-fluid py-3">
+
+  <!-- ── DJANGO MESSAGES → SweetAlert ──────────────────────────────────────── -->
+  {% if messages %}
+  <div id="django-messages" style="display:none;">
+    {% for message in messages %}
+      <span data-tags="{{ message.tags }}">{{ message }}</span>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- ── HERO ──────────────────────────────────────────────────────────────── -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm clientes-hero-card">
+        <div class="card-body p-4 p-md-5">
+          <div class="row align-items-center g-4">
+
+            <div class="col-lg-8">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="clientes-hero-icon">
+                  <i class="material-symbols-rounded">groups</i>
+                </div>
+                <div>
+                  <h3 class="mb-1 fw-bold text-dark">Clientes</h3>
+                  <p class="text-muted mb-0">Gestão centralizada de clientes, contactos e dados fiscais.</p>
+                </div>
+              </div>
+              <div class="d-flex flex-wrap gap-2">
+                <span class="badge rounded-pill clientes-soft-badge">NUIT</span>
+                <span class="badge rounded-pill clientes-soft-badge">Dados Fiscais</span>
+                <span class="badge rounded-pill clientes-soft-badge">Contactos</span>
+                <span class="badge rounded-pill clientes-soft-badge">Financeiro</span>
+              </div>
+            </div>
+
+            <div class="col-lg-4">
+              <div class="clientes-stats-grid">
+                <div class="mini-stat-card">
+                  <span class="mini-stat-label">Total de Clientes</span>
+                  <h4 class="mb-0">{{ total }}</h4>
+                </div>
+                <div class="mini-stat-card">
+                  <span class="mini-stat-label">Activos</span>
+                  <h4 class="mb-0 text-success">{{ total_activos }}</h4>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        <div class="clientes-hero-accent"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MAIN CARD ──────────────────────────────────────────────────────────── -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm clientes-main-card">
+        <div class="card-body p-0">
+
+          <!-- TOPBAR -->
+          <div class="clientes-topbar px-4 pt-4 pb-3">
+            <div class="row align-items-center g-3">
+              <div class="col-lg-8">
+                <h5 class="mb-1 fw-bold text-dark">Lista de Clientes</h5>
+                <p class="text-muted mb-0">Todos os clientes registados no sistema.</p>
+              </div>
+              <div class="col-lg-4 d-flex justify-content-lg-end">
+                <button type="button" class="btn btn-primary btn-modern btn-clientes" id="btnOpenCreateCliente">
+                  <i class="material-symbols-rounded me-1">person_add</i>
+                  Novo Cliente
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- TABLE -->
+          <div class="px-4 pb-4">
+            <div class="table-responsive mt-3">
+              <table id="clientesTable" class="table align-items-center mb-0 clientes-table w-100">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Cliente</th>
+                    <th>NUIT</th>
+                    <th>Tipo</th>
+                    <th>Contacto</th>
+                    <th>Província</th>
+                    <th>Categoria</th>
+                    <th>Estado</th>
+                    <th class="text-center">Acções</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for cliente in clientes %}
+                  <tr>
+                    <td>{{ forloop.counter }}</td>
+
+                    <td>
+                      <div class="d-flex align-items-center gap-2">
+                        <div class="avatar-circle-cl">{{ cliente.iniciais }}</div>
+                        <div>
+                          <span class="fw-semibold text-dark d-block">{{ cliente.nome }}</span>
+                          <span class="table-subtext">
+                            {% if cliente.sector_actividade %}{{ cliente.sector_actividade }}{% else %}—{% endif %}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td>
+                      {% if cliente.nuit %}
+                        <span class="nuit-pill">{{ cliente.nuit }}</span>
+                      {% else %}
+                        <span class="text-muted">—</span>
+                      {% endif %}
+                    </td>
+
+                    <td>
+                      <span class="tipo-pill tipo-{{ cliente.tipo|lower }}">{{ cliente.tipo }}</span>
+                    </td>
+
+                    <td>
+                      <div>
+                        {% if cliente.telefone %}
+                          <span class="d-block small"><i class="material-symbols-rounded icon-xs me-1">call</i>{{ cliente.telefone }}</span>
+                        {% endif %}
+                        {% if cliente.email %}
+                          <span class="d-block small text-muted">{{ cliente.email }}</span>
+                        {% endif %}
+                        {% if not cliente.telefone and not cliente.email %}
+                          <span class="text-muted">—</span>
+                        {% endif %}
+                      </div>
+                    </td>
+
+                    <td>
+                      {% if cliente.provincia %}{{ cliente.provincia }}{% else %}<span class="text-muted">—</span>{% endif %}
+                    </td>
+
+                    <td>
+                      <span class="categoria-badge cat-{{ cliente.categoria|lower }}">{{ cliente.get_categoria_display }}</span>
+                    </td>
+
+                    <td>
+                      {% if cliente.estado %}
+                        <span class="status-pill status-active">Activo</span>
+                      {% else %}
+                        <span class="status-pill status-inactive">Inactivo</span>
+                      {% endif %}
+                    </td>
+
+                    <td class="text-center">
+                      <div class="dropdown">
+                        <button class="btn btn-sm btn-icon-only btn-action-menu" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                          <i class="material-symbols-rounded">more_vert</i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm">
+                          <li>
+                            <a class="dropdown-item btn-edit-cliente" href="#" data-id="{{ cliente.id }}">
+                              <i class="material-symbols-rounded me-2 align-middle">edit</i>Editar
+                            </a>
+                          </li>
+                          <li>
+                            <a class="dropdown-item btn-toggle-cliente-status" href="#"
+                               data-id="{{ cliente.id }}"
+                               data-name="{{ cliente.nome }}"
+                               data-status="{% if cliente.estado %}1{% else %}0{% endif %}">
+                              <i class="material-symbols-rounded me-2 align-middle">{% if cliente.estado %}block{% else %}check_circle{% endif %}</i>
+                              {% if cliente.estado %}Desactivar{% else %}Activar{% endif %}
+                            </a>
+                          </li>
+                          <li><hr class="dropdown-divider"></li>
+                          <li>
+                            <a class="dropdown-item text-danger btn-delete-cliente" href="#"
+                               data-id="{{ cliente.id }}"
+                               data-name="{{ cliente.nome }}">
+                              <i class="material-symbols-rounded me-2 align-middle">delete</i>Remover
+                            </a>
+                          </li>
+                        </ul>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% include "includes/pro_footer.html" %}
+</div>
+
+<!-- ── MODAL CLIENTE ──────────────────────────────────────────────────────── -->
+<div class="modal fade" id="clienteModal" tabindex="-1" aria-labelledby="clienteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-lg modal-modern">
+
+      <div class="modal-header border-0 pb-0">
+        <div>
+          <h5 class="modal-title fw-bold" id="clienteModalLabel">Novo Cliente</h5>
+          <p class="text-muted mb-0 small">Preencha os dados do cliente.</p>
+        </div>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <form id="clienteForm" method="post" action="{% url 'procurement:clientes_create' %}">
+        {% csrf_token %}
+        <input type="hidden" name="cliente_id" id="cliente_id">
+
+        <div class="modal-body pt-3">
+
+          <!-- Secção: Identificação -->
+          <div class="modal-section-title mb-3">
+            <i class="material-symbols-rounded me-2">badge</i>Identificação
+          </div>
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label">Nome / Razão Social <span class="text-danger">*</span></label>
+              <input type="text" name="nome" id="cl_nome" class="form-control modern-input" required>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Tipo</label>
+              <select name="tipo" id="cl_tipo" class="form-select modern-input">
+                <option value="Colectivo">Pessoa Colectiva</option>
+                <option value="Singular">Pessoa Singular</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Categoria</label>
+              <select name="categoria" id="cl_categoria" class="form-select modern-input">
+                <option value="A">A – Premium</option>
+                <option value="B" selected>B – Normal</option>
+                <option value="C">C – Ocasional</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">NUIT</label>
+              <input type="text" name="nuit" id="cl_nuit" class="form-control modern-input" placeholder="000000000" maxlength="20">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">BI / NID</label>
+              <input type="text" name="bi_nid" id="cl_bi_nid" class="form-control modern-input">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Álvara Comercial</label>
+              <input type="text" name="alvara" id="cl_alvara" class="form-control modern-input">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Sector de Actividade</label>
+              <input type="text" name="sector_actividade" id="cl_sector_actividade" class="form-control modern-input">
+            </div>
+          </div>
+
+          <!-- Secção: Contactos -->
+          <div class="modal-section-title mb-3">
+            <i class="material-symbols-rounded me-2">contact_phone</i>Contactos
+          </div>
+          <div class="row g-3 mb-4">
+            <div class="col-md-4">
+              <label class="form-label">Email</label>
+              <input type="email" name="email" id="cl_email" class="form-control modern-input">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Telefone</label>
+              <input type="text" name="telefone" id="cl_telefone" class="form-control modern-input" placeholder="+258 2X XXX XXX">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Telemóvel</label>
+              <input type="text" name="telemovel" id="cl_telemovel" class="form-control modern-input" placeholder="+258 8X XXX XXXX">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Website</label>
+              <input type="url" name="website" id="cl_website" class="form-control modern-input" placeholder="https://...">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Pessoa de Contacto</label>
+              <input type="text" name="pessoa_contacto" id="cl_pessoa_contacto" class="form-control modern-input">
+            </div>
+          </div>
+
+          <!-- Secção: Morada -->
+          <div class="modal-section-title mb-3">
+            <i class="material-symbols-rounded me-2">location_on</i>Morada
+          </div>
+          <div class="row g-3 mb-4">
+            <div class="col-md-4">
+              <label class="form-label">Província</label>
+              <select name="provincia" id="cl_provincia" class="form-select modern-input">
+                <option value="">— Seleccione —</option>
+                <option>Maputo Cidade</option>
+                <option>Maputo Província</option>
+                <option>Gaza</option>
+                <option>Inhambane</option>
+                <option>Sofala</option>
+                <option>Manica</option>
+                <option>Tete</option>
+                <option>Zambézia</option>
+                <option>Nampula</option>
+                <option>Cabo Delgado</option>
+                <option>Niassa</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Cidade / Distrito</label>
+              <input type="text" name="cidade_distrito" id="cl_cidade_distrito" class="form-control modern-input">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Bairro</label>
+              <input type="text" name="bairro" id="cl_bairro" class="form-control modern-input">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Endereço</label>
+              <input type="text" name="endereco" id="cl_endereco" class="form-control modern-input" placeholder="Rua, Avenida, nº...">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Código Postal</label>
+              <input type="text" name="codigo_postal" id="cl_codigo_postal" class="form-control modern-input">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">País</label>
+              <input type="text" name="pais" id="cl_pais" class="form-control modern-input" value="Moçambique">
+            </div>
+          </div>
+
+          <!-- Secção: Financeiro -->
+          <div class="modal-section-title mb-3">
+            <i class="material-symbols-rounded me-2">account_balance</i>Dados Financeiros
+          </div>
+          <div class="row g-3 mb-4">
+            <div class="col-md-3">
+              <label class="form-label">Moeda</label>
+              <select name="moeda_id" id="cl_moeda" class="form-select modern-input">
+                <option value="">— Seleccione —</option>
+                {% for moeda in moedas %}
+                  <option value="{{ moeda.id }}"
+                    {% if moeda.predefinida %}selected{% endif %}>
+                    {{ moeda.codigo }} – {{ moeda.nome }} ({{ moeda.simbolo }})
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Limite de Crédito</label>
+              <input type="number" name="limite_credito" id="cl_limite_credito" class="form-control modern-input" value="0" min="0" step="0.01">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Prazo de Pagamento (dias)</label>
+              <input type="number" name="prazo_pagamento_dias" id="cl_prazo_pagamento_dias" class="form-control modern-input" value="30" min="0">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Desconto Geral (%)</label>
+              <input type="number" name="desconto_geral" id="cl_desconto_geral" class="form-control modern-input" value="0" min="0" max="100" step="0.01">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Conta Bancária / IBAN</label>
+              <input type="text" name="conta_bancaria" id="cl_conta_bancaria" class="form-control modern-input">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Banco</label>
+              <select name="banco" id="cl_banco" class="form-select modern-input">
+                <option value="">— Seleccione —</option>
+                <option>BCI – Banco Comercial e de Investimentos</option>
+                <option>BIM – Millennium Bim</option>
+                <option>Standard Bank Moçambique</option>
+                <option>Absa Bank Moçambique</option>
+                <option>Moza Banco</option>
+                <option>FNB Moçambique</option>
+                <option>Letshego Bank</option>
+                <option>Banco Nacional de Investimento (BNI)</option>
+                <option>Outro</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Secção: Estado e Observações -->
+          <div class="row g-3">
+            <div class="col-md-3">
+              <label class="form-label">Estado</label>
+              <select name="estado" id="cl_estado" class="form-select modern-input">
+                <option value="1">Activo</option>
+                <option value="0">Inactivo</option>
+              </select>
+            </div>
+            <div class="col-md-9">
+              <label class="form-label">Observações</label>
+              <textarea name="observacoes" id="cl_observacoes" class="form-control modern-input" rows="2"></textarea>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-outline-secondary btn-modern" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary btn-modern btn-clientes">
+            <i class="material-symbols-rounded me-1">save</i>Guardar Cliente
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+{% block extra_js %}
+
+<link href="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.8/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/datatables.net-responsive-bs5@2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
+
+<style>
+  /* ── Hero ─────────────────────────────────────────────────────────────────── */
+  .clientes-hero-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+  }
+  .clientes-hero-accent {
+    position: absolute;
+    right: -60px; top: -60px;
+    width: 220px; height: 220px;
+    background: radial-gradient(circle, rgba(46,62,130,0.16) 0%, rgba(46,62,130,0) 70%);
+    pointer-events: none;
+  }
+  .clientes-hero-icon {
+    width: 64px; height: 64px;
+    border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #2E3E82 0%, #4256ad 100%);
+    color: #fff;
+    box-shadow: 0 12px 30px rgba(46,62,130,0.20);
+  }
+  .clientes-hero-icon i { font-size: 30px; }
+
+  .clientes-soft-badge {
+    background: #eef2ff; color: #2E3E82;
+    border: 1px solid #dae3ff;
+    font-weight: 600; padding: 0.50rem 0.90rem;
+  }
+
+  .clientes-stats-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  }
+
+  /* ── Main card ───────────────────────────────────────────────────────────── */
+  .clientes-main-card { border-radius: 22px; overflow: hidden; }
+  .clientes-topbar {
+    border-bottom: 1px solid #edf0f7;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
+  }
+
+  /* ── Buttons ─────────────────────────────────────────────────────────────── */
+  .btn-modern {
+    border-radius: 14px !important; padding: 0.75rem 1.1rem !important;
+    font-weight: 600 !important; box-shadow: none !important; text-transform: none !important;
+  }
+  .btn-clientes {
+    background: linear-gradient(135deg, #2E3E82 0%, #4256ad 100%) !important;
+    border: none !important; color: #fff !important;
+    box-shadow: 0 10px 24px rgba(46,62,130,0.22) !important;
+  }
+  .btn-clientes:hover { transform: translateY(-1px); }
+
+  /* ── Table ───────────────────────────────────────────────────────────────── */
+  .clientes-table thead th {
+    font-size: 0.72rem; text-transform: uppercase;
+    letter-spacing: 0.06em; color: #6c757d; font-weight: 700;
+    border-bottom: 1px solid #eef1f6 !important;
+    padding-top: 1rem !important; padding-bottom: 1rem !important;
+    background: #fbfcfe;
+  }
+  .clientes-table tbody td {
+    vertical-align: middle;
+    border-bottom: 1px solid #f3f5f9 !important;
+    padding-top: 0.85rem !important; padding-bottom: 0.85rem !important;
+  }
+  .table-subtext { font-size: 0.77rem; color: #8a93a2; }
+
+  /* Avatar */
+  .avatar-circle-cl {
+    width: 42px; height: 42px; min-width: 42px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: #eef2ff;
+    color: #2E3E82; font-weight: 700; font-size: 0.85rem;
+  }
+
+  /* NUIT pill */
+  .nuit-pill {
+    display: inline-flex; align-items: center;
+    background: #eef2ff; color: #2E3E82;
+    border: 1px solid #dae3ff;
+    border-radius: 8px; padding: 3px 10px;
+    font-size: 0.78rem; font-weight: 700;
+    letter-spacing: 0.04em; font-family: monospace;
+  }
+
+  /* Tipo pill */
+  .tipo-pill {
+    display: inline-flex; align-items: center;
+    border-radius: 999px; padding: 0.35rem 0.75rem;
+    font-size: 0.74rem; font-weight: 700;
+  }
+  .tipo-colectivo { background: #eef2ff; color: #2E3E82; border: 1px solid #dae3ff; }
+  .tipo-singular  { background: #f4f6fb; color: #3d4f9e; border: 1px solid #c8d0ef; }
+
+  /* Categoria */
+  .categoria-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 72px; border-radius: 999px; padding: 0.35rem 0.6rem;
+    font-size: 0.74rem; font-weight: 700;
+  }
+  .cat-a { background: #2E3E82; color: #fff; border: 1px solid #2E3E82; }
+  .cat-b { background: #eef2ff; color: #2E3E82; border: 1px solid #dae3ff; }
+  .cat-c { background: #f4f6fb; color: #6c757d; border: 1px solid #dde2ee; }
+
+  /* Status */
+  .status-pill {
+    display: inline-flex; align-items: center;
+    padding: 0.42rem 0.80rem; border-radius: 999px;
+    font-size: 0.74rem; font-weight: 700;
+  }
+  .status-active   { background: #e9f9ef; color: #198754; border: 1px solid #c9efd7; }
+  .status-inactive { background: #fff1f1; color: #dc3545; border: 1px solid #ffd3d7; }
+
+  /* Action menu */
+  .btn-action-menu {
+    width: 38px; height: 38px;
+    border-radius: 12px !important;
+    border: 1px solid #e9edf5 !important;
+    background: #fff !important; color: #495057 !important;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .btn-action-menu:hover { background: #f8f9fc !important; }
+
+  .icon-xs { font-size: 14px; vertical-align: middle; }
+
+  /* ── Modal ───────────────────────────────────────────────────────────────── */
+  .modal-modern { border-radius: 22px; }
+  .modal-section-title {
+    display: flex; align-items: center;
+    font-size: 0.78rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.07em;
+    color: #2E3E82;
+    border-bottom: 1px solid #dae3ff;
+    padding-bottom: 8px;
+  }
+  .modal-section-title i { font-size: 18px; }
+
+  .modern-input {
+    border-radius: 14px !important;
+    border: 1px solid #dfe5ef !important;
+    min-height: 46px; box-shadow: none !important;
+  }
+  .modern-input:focus {
+    border-color: #2E3E82 !important;
+    box-shadow: 0 0 0 0.2rem rgba(46,62,130,0.10) !important;
+  }
+
+  /* ── DataTable pagination override ──────────────────────────────────────── */
+  .dataTables_wrapper .dataTables_paginate .pagination {
+    display: flex !important; gap: 4px !important; flex-wrap: wrap !important;
+  }
+  .dataTables_wrapper .dataTables_paginate .pagination .page-item .page-link {
+    all: unset !important;
+    display: inline-flex !important; align-items: center !important; justify-content: center !important;
+    min-width: 36px !important; height: 36px !important; padding: 0 10px !important;
+    border-radius: 10px !important; border: 1px solid #e7ebf3 !important;
+    background: #fff !important; color: #495057 !important;
+    font-size: 0.85rem !important; font-weight: 600 !important;
+    cursor: pointer !important; transition: all 0.2s ease !important;
+    box-shadow: none !important; line-height: 1 !important;
+  }
+  .dataTables_wrapper .dataTables_paginate .pagination .page-item .page-link:hover {
+    background: #eef2ff !important; border-color: #dae3ff !important; color: #2E3E82 !important;
+  }
+  .dataTables_wrapper .dataTables_paginate .pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #2E3E82 0%, #4256ad 100%) !important;
+    border-color: #2E3E82 !important; color: #fff !important;
+  }
+  .dataTables_wrapper .dataTables_paginate .pagination .page-item.disabled .page-link {
+    opacity: 0.45 !important; pointer-events: none !important;
+    background: #f8f9fc !important; color: #adb5bd !important;
+  }
+  div.dataTables_wrapper div.dataTables_filter input,
+  div.dataTables_wrapper div.dataTables_length select {
+    border-radius: 12px !important; border: 1px solid #dfe5ef !important;
+    min-height: 38px; box-shadow: none !important;
+  }
+
+  /* ── Mini stat card ──────────────────────────────────────────────────────── */
+  .mini-stat-card {
+    background: #fff; border: 1px solid #edf0f7;
+    border-radius: 18px; padding: 18px 16px;
+    box-shadow: 0 8px 22px rgba(15,23,42,0.04);
+  }
+  .mini-stat-label { display: block; font-size: 0.78rem; color: #6c757d; margin-bottom: 6px; }
+
+  @media (max-width: 991.98px) {
+    .clientes-stats-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net@1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-responsive@2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-responsive-bs5@2.5.0/js/responsive.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+$(document).ready(function () {
+
+  // ── Django messages → SweetAlert ───────────────────────────────────────────
+  const msgContainer = document.getElementById('django-messages');
+  if (msgContainer) {
+    msgContainer.querySelectorAll('span[data-tags]').forEach(function (span) {
+      const isError = span.getAttribute('data-tags').includes('error');
+      Swal.fire({
+        icon: isError ? 'error' : 'success',
+        title: isError ? 'Erro' : 'Sucesso',
+        text: span.textContent.trim(),
+        confirmButtonColor: '#2E3E82',
+        timer: isError ? undefined : 3000,
+        timerProgressBar: !isError,
+        showConfirmButton: isError,
+      });
+    });
+  }
+
+  // ── Modal ───────────────────────────────────────────────────────────────────
+  const clienteModalEl = document.getElementById('clienteModal');
+  const clienteModal   = new bootstrap.Modal(clienteModalEl);
+
+  // ── DataTable ───────────────────────────────────────────────────────────────
+  $('#clientesTable').DataTable({
+    responsive: true,
+    autoWidth: false,
+    pageLength: 10,
+    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'Todos']],
+    language: {
+      search:       'Pesquisar:',
+      lengthMenu:   'Mostrar _MENU_ registos',
+      info:         'Mostrando _START_ a _END_ de _TOTAL_ registos',
+      infoEmpty:    'Mostrando 0 a 0 de 0 registos',
+      infoFiltered: '(filtrado de _MAX_ registos no total)',
+      zeroRecords:  'Nenhum registo encontrado',
+      emptyTable:   'Sem dados disponíveis',
+      paginate: { first: 'Primeiro', last: 'Último', next: 'Seguinte', previous: 'Anterior' }
+    },
+    columnDefs: [{ orderable: false, targets: [4, 8] }]
+  });
+
+  // ── Reset form ──────────────────────────────────────────────────────────────
+  function resetForm() {
+    $('#clienteForm')[0].reset();
+    $('#cliente_id').val('');
+    $('#cl_pais').val('Moçambique');
+    $('#cl_estado').val('1');
+    $('#cl_categoria').val('B');
+    // Selecciona a moeda predefinida (primeiro option com selected no HTML)
+    $('#cl_moeda option[selected]').prop('selected', true);
+    $('#clienteModalLabel').text('Novo Cliente');
+    $('#clienteForm').attr('action', "{% url 'procurement:clientes_create' %}");
+  }
+
+  // ── Abrir modal (criar) ─────────────────────────────────────────────────────
+  $('#btnOpenCreateCliente').on('click', function () {
+    resetForm();
+    clienteModal.show();
+  });
+
+  // ── Editar cliente ──────────────────────────────────────────────────────────
+  $(document).on('click', '.btn-edit-cliente', function (e) {
+    e.preventDefault();
+    const id = $(this).data('id');
+    resetForm();
+
+    $.ajax({
+      url: `/clientes/${id}/json/`,
+      type: 'GET',
+      success: function (r) {
+        $('#clienteModalLabel').text('Editar Cliente');
+        $('#cliente_id').val(r.id);
+        $('#cl_nome').val(r.nome);
+        $('#cl_tipo').val(r.tipo);
+        $('#cl_categoria').val(r.categoria);
+        $('#cl_nuit').val(r.nuit);
+        $('#cl_bi_nid').val(r.bi_nid);
+        $('#cl_alvara').val(r.alvara);
+        $('#cl_sector_actividade').val(r.sector_actividade);
+        $('#cl_email').val(r.email);
+        $('#cl_telefone').val(r.telefone);
+        $('#cl_telemovel').val(r.telemovel);
+        $('#cl_website').val(r.website);
+        $('#cl_pessoa_contacto').val(r.pessoa_contacto);
+        $('#cl_provincia').val(r.provincia);
+        $('#cl_cidade_distrito').val(r.cidade_distrito);
+        $('#cl_bairro').val(r.bairro);
+        $('#cl_endereco').val(r.endereco);
+        $('#cl_codigo_postal').val(r.codigo_postal);
+        $('#cl_pais').val(r.pais);
+        $('#cl_moeda').val(r.moeda_id);
+        $('#cl_limite_credito').val(r.limite_credito);
+        $('#cl_prazo_pagamento_dias').val(r.prazo_pagamento_dias);
+        $('#cl_desconto_geral').val(r.desconto_geral);
+        $('#cl_conta_bancaria').val(r.conta_bancaria);
+        $('#cl_banco').val(r.banco);
+        $('#cl_estado').val(r.estado ? '1' : '0');
+        $('#cl_observacoes').val(r.observacoes);
+
+        $('#clienteForm').attr('action', `/clientes/${r.id}/update/`);
+        clienteModal.show();
+      },
+      error: function () {
+        Swal.fire({ icon: 'error', title: 'Erro', text: 'Não foi possível carregar os dados do cliente.', confirmButtonColor: '#2E3E82' });
+      }
+    });
+  });
+
+  // ── Toggle status ───────────────────────────────────────────────────────────
+  $(document).on('click', '.btn-toggle-cliente-status', function (e) {
+    e.preventDefault();
+    const id     = $(this).data('id');
+    const nome   = $(this).data('name');
+    const status = String($(this).data('status'));
+    const action = status === '1' ? 'desactivar' : 'activar';
+
+    Swal.fire({
+      title: `${action.charAt(0).toUpperCase() + action.slice(1)} cliente?`,
+      html: `Tem a certeza que deseja ${action} o cliente <strong>${nome}</strong>?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sim, confirmar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#2E3E82',
+      cancelButtonColor: '#6c757d'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const form  = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/clientes/${id}/toggle-status/`;
+        const csrf  = document.createElement('input');
+        csrf.type   = 'hidden';
+        csrf.name   = 'csrfmiddlewaretoken';
+        csrf.value  = '{{ csrf_token }}';
+        form.appendChild(csrf);
+        document.body.appendChild(form);
+        form.submit();
+      }
+    });
+  });
+
+  // ── Eliminar cliente ────────────────────────────────────────────────────────
+  $(document).on('click', '.btn-delete-cliente', function (e) {
+    e.preventDefault();
+    const id   = $(this).data('id');
+    const nome = $(this).data('name');
+
+    Swal.fire({
+      title: 'Remover cliente?',
+      html: `Tem a certeza que deseja remover <strong>${nome}</strong>? Esta acção é irreversível.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sim, remover',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#dc3545',
+      cancelButtonColor: '#6c757d'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const form  = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/clientes/${id}/delete/`;
+        const csrf  = document.createElement('input');
+        csrf.type   = 'hidden';
+        csrf.name   = 'csrfmiddlewaretoken';
+        csrf.value  = '{{ csrf_token }}';
+        form.appendChild(csrf);
+        document.body.appendChild(form);
+        form.submit();
+      }
+    });
+  });
+
+});
+</script>
+
+{% endblock extra_js %}
