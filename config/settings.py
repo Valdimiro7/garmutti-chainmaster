@@ -39,9 +39,8 @@ CSRF_TRUSTED_ORIGINS = [o.strip() for o in csrf_origins.split(",") if o.strip()]
 # =========================================================
 
 INSTALLED_APPS = [
-    "admin_material.apps.AdminMaterialDashboardConfig",
-
     "django.contrib.admin",
+    "admin_material.apps.AdminMaterialDashboardConfig",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
