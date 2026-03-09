@@ -115,50 +115,35 @@ TEMPLATES = [
 # DATABASE
 # =========================================================
 
+# =========================================================
+# DATABASE
+# =========================================================
+
 DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
 
-if DATABASE_URL:
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL is required.")
 
-    parsed = urlparse(DATABASE_URL)
+parsed = urlparse(DATABASE_URL)
 
-    if parsed.scheme == "mysql":
+if parsed.scheme != "mysql":
+    raise RuntimeError("Only mysql DATABASE_URL is supported.")
 
-        DATABASES = {
-            "default": {
-                "ENGINE": "django.db.backends.mysql",
-                "NAME": parsed.path.lstrip("/"),
-                "USER": parsed.username,
-                "PASSWORD": parsed.password,
-                "HOST": parsed.hostname or "localhost",
-                "PORT": parsed.port or 3306,
-                "CONN_MAX_AGE": 60,
-                "OPTIONS": {
-                    "charset": "utf8mb4",
-                    "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
-                },
-            }
-        }
-
-    elif parsed.scheme.startswith("sqlite"):
-
-        db_path = DATABASE_URL.replace("sqlite:///", "")
-
-        DATABASES = {
-            "default": {
-                "ENGINE": "django.db.backends.sqlite3",
-                "NAME": BASE_DIR / db_path,
-            }
-        }
-
-else:
-
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": parsed.path.lstrip("/"),
+        "USER": parsed.username,
+        "PASSWORD": parsed.password,
+        "HOST": parsed.hostname or "localhost",
+        "PORT": parsed.port or 3306,
+        "CONN_MAX_AGE": 60,
+        "OPTIONS": {
+            "charset": "utf8mb4",
+            "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
     }
-
+}
 # =========================================================
 # PASSWORD VALIDATION
 # =========================================================
