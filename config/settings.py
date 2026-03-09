@@ -258,8 +258,18 @@ LOGGING = {
 
         "django": {
             "handlers": ["file_errors"],
-            "level": "ERROR",
+            "level": "WARNING",
             "propagate": True,
+        },
+        "django.request": {
+            "handlers": ["file_errors"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+        "django.db.backends": {
+            "handlers": ["file_errors"],
+            "level": "ERROR",
+            "propagate": False,
         },
 
         "django.security": {
