@@ -25,6 +25,17 @@ from procurement.views.clientes.clientes_views import (
     delete_cliente_view,
 )
 
+from procurement.views.fornecedores.fornecedores_view import (
+    fornecedores_view,
+    fornecedor_detail_json_view,
+    create_fornecedor_view,
+    update_fornecedor_view,
+    toggle_fornecedor_status_view,
+    delete_fornecedor_view,
+)
+
+
+
 
 app_name = "procurement"
 
@@ -34,7 +45,13 @@ urlpatterns = [
     path("logout/", LogoutView.as_view(), name="logout"),
     
     
-    
+    #Fornecesores
+    path('fornecedores/', fornecedores_view, name='fornecedores'),
+    path('fornecedores/create/', create_fornecedor_view, name='fornecedores_create'),
+    path('fornecedores/<int:fornecedor_id>/json/', fornecedor_detail_json_view, name='fornecedores_detail_json'),
+    path('fornecedores/<int:fornecedor_id>/update/', update_fornecedor_view, name='fornecedores_update'),
+    path('fornecedores/<int:fornecedor_id>/toggle-status/', toggle_fornecedor_status_view, name='fornecedores_toggle_status'),
+    path('fornecedores/<int:fornecedor_id>/delete/', delete_fornecedor_view, name='fornecedores_delete'),
     
     
 
