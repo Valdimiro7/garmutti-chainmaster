@@ -229,50 +229,18 @@
 
       <!-- Clientes -->
       <li class="nav-item">
-        <a data-bs-toggle="collapse" href="#menu-clientes" class="nav-link text-dark" aria-controls="menu-clientes" role="button" aria-expanded="false">
+        <a class="nav-link {% if 'clientes' == segment %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}" href="{% url 'procurement:clientes' %}">
           <i class="material-symbols-rounded opacity-5">groups</i>
           <span class="nav-link-text ms-2 ps-1">Clientes</span>
         </a>
-        <div class="collapse" id="menu-clientes">
-          <ul class="nav">
-            <li class="nav-item">
-              <a class="nav-link text-dark" href="{% url 'procurement:clientes' %}">
-                <span class="sidenav-mini-icon">L</span>
-                <span class="sidenav-normal ms-2 ps-1">Lista de Clientes</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-dark" href="#">
-                <span class="sidenav-mini-icon">N</span>
-                <span class="sidenav-normal ms-2 ps-1">Novo Cliente</span>
-              </a>
-            </li>
-          </ul>
-        </div>
       </li>
 
       <!-- Fornecedores -->
       <li class="nav-item">
-        <a data-bs-toggle="collapse" href="#menu-fornecedores" class="nav-link text-dark" aria-controls="menu-fornecedores" role="button" aria-expanded="false">
+        <a class="nav-link {% if 'fornecedores' == segment %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}" href="{% url 'procurement:fornecedores' %}">
           <i class="material-symbols-rounded opacity-5">store</i>
           <span class="nav-link-text ms-2 ps-1">Fornecedores</span>
         </a>
-        <div class="collapse" id="menu-fornecedores">
-          <ul class="nav">
-            <li class="nav-item">
-              <a class="nav-link text-dark" href="{% url 'procurement:fornecedores' %}">
-                <span class="sidenav-mini-icon">L</span>
-                <span class="sidenav-normal ms-2 ps-1">Lista de Fornecedores</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-dark" href="#">
-                <span class="sidenav-mini-icon">N</span>
-                <span class="sidenav-normal ms-2 ps-1">Novo Fornecedor</span>
-              </a>
-            </li>
-          </ul>
-        </div>
       </li>
 
       <!-- Secção: Relatórios -->
