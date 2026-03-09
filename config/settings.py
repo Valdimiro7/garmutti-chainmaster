@@ -29,7 +29,7 @@ allowed_hosts = os.getenv("DJANGO_ALLOWED_HOSTS", "")
 ALLOWED_HOSTS = [h.strip() for h in allowed_hosts.split(",") if h.strip()]
 
 if DEBUG and not ALLOWED_HOSTS:
-    ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+    ALLOWED_HOSTS = ["localhost", "127.0.0.1", "www.app.garmutti.co.mz/admin"]
 
 csrf_origins = os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "")
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in csrf_origins.split(",") if o.strip()]
@@ -40,15 +40,12 @@ CSRF_TRUSTED_ORIGINS = [o.strip() for o in csrf_origins.split(",") if o.strip()]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
-    "admin_material.apps.AdminMaterialDashboardConfig",
+    # "admin_material.apps.AdminMaterialDashboardConfig",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
-    "widget_tweaks",
-
     "procurement",
 ]
 
