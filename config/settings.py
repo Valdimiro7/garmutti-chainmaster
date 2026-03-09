@@ -3,6 +3,9 @@ import os
 from dotenv import load_dotenv
 from urllib.parse import urlparse
 import pymysql
+
+# Garantir compatibilidade do PyMySQL com Django/MySQLdb
+pymysql.version_info = (2, 2, 1, "final", 0)
 pymysql.install_as_MySQLdb()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -18,9 +21,7 @@ load_dotenv(BASE_DIR / ".env")
 # =========================================================
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-change-me")
-
 DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() in ("1", "true", "yes")
-
 ENV = os.getenv("DJANGO_ENV", "local")
 
 # =========================================================
@@ -31,7 +32,7 @@ allowed_hosts = os.getenv("DJANGO_ALLOWED_HOSTS", "")
 ALLOWED_HOSTS = [h.strip() for h in allowed_hosts.split(",") if h.strip()]
 
 if DEBUG and not ALLOWED_HOSTS:
-    ALLOWED_HOSTS = ["localhost", "127.0.0.1", "www.app.garmutti.co.mz/admin"]
+    ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 csrf_origins = os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "")
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in csrf_origins.split(",") if o.strip()]
@@ -42,7 +43,6 @@ CSRF_TRUSTED_ORIGINS = [o.strip() for o in csrf_origins.split(",") if o.strip()]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
-    # "admin_material.apps.AdminMaterialDashboardConfig",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -65,16 +65,12 @@ LOGOUT_REDIRECT_URL = "https://garmutti.co.mz/"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-
     "whitenoise.middleware.WhiteNoiseMiddleware",
-
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
-
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
@@ -92,13 +88,10 @@ WSGI_APPLICATION = "config.wsgi.application"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-
         "DIRS": [
             BASE_DIR / "templates",
         ],
-
         "APP_DIRS": True,
-
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.request",
@@ -108,10 +101,6 @@ TEMPLATES = [
         },
     },
 ]
-
-# =========================================================
-# DATABASE
-# =========================================================
 
 # =========================================================
 # DATABASE
@@ -142,6 +131,7 @@ DATABASES = {
         },
     }
 }
+
 # =========================================================
 # PASSWORD VALIDATION
 # =========================================================
@@ -158,9 +148,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # =========================================================
 
 LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = os.getenv("DJANGO_TIME_ZONE", "UTC")
-
 USE_I18N = True
 USE_TZ = True
 
@@ -168,20 +156,15 @@ USE_TZ = True
 # STATIC FILES
 # =========================================================
 
-STATIC_URL = "/static/"
+STATIC_URL = os.getenv("DJANGO_STATIC_URL", "/static/")
 
-# pasta onde colocas logos / css / js
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
-# pasta usada pelo collectstatic
 STATIC_ROOT = BASE_DIR / "staticfiles"
-
-# cria automaticamente se não existir
 STATIC_ROOT.mkdir(exist_ok=True)
 
-# WhiteNoise
 STORAGES = {
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"
@@ -200,9 +183,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 # =========================================================
 
 SECURE_SSL_REDIRECT = os.getenv("DJANGO_SECURE_SSL_REDIRECT", "False").lower() in ("1", "true", "yes")
-
 SESSION_COOKIE_SECURE = os.getenv("DJANGO_SESSION_COOKIE_SECURE", "False").lower() in ("1", "true", "yes")
-
 CSRF_COOKIE_SECURE = os.getenv("DJANGO_CSRF_COOKIE_SECURE", "False").lower() in ("1", "true", "yes")
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -224,26 +205,21 @@ ERROR_LOG_FILE = LOG_DIR / "django_error.log"
 SECURITY_LOG_FILE = LOG_DIR / "django_security.log"
 
 LOGGING = {
-
     "version": 1,
     "disable_existing_loggers": False,
-
     "formatters": {
         "verbose": {
             "format": "[{asctime}] {levelname} {name}:{lineno} - {message}",
             "style": "{",
         },
     },
-
     "handlers": {
-
         "file_errors": {
             "class": "logging.FileHandler",
             "filename": str(ERROR_LOG_FILE),
             "formatter": "verbose",
             "level": "ERROR",
         },
-
         "file_security": {
             "class": "logging.FileHandler",
             "filename": str(SECURITY_LOG_FILE),
@@ -251,9 +227,7 @@ LOGGING = {
             "level": "WARNING",
         },
     },
-
     "loggers": {
-
         "django": {
             "handlers": ["file_errors"],
             "level": "WARNING",
@@ -269,7 +243,6 @@ LOGGING = {
             "level": "ERROR",
             "propagate": False,
         },
-
         "django.security": {
             "handlers": ["file_security"],
             "level": "WARNING",
