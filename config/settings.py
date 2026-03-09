@@ -43,6 +43,7 @@ CSRF_TRUSTED_ORIGINS = [o.strip() for o in csrf_origins.split(",") if o.strip()]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
+    "admin_material.apps.AdminMaterialDashboardConfig",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -64,6 +65,7 @@ LOGOUT_REDIRECT_URL = "https://garmutti.co.mz/"
 # =========================================================
 
 MIDDLEWARE = [
+    "procurement.middleware.RequestTraceMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
