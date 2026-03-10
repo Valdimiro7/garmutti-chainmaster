@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+
+body{
+    font-family: Arial, Helvetica, sans-serif;
+    background:#f4f6fb;
+    padding:30px;
+}
+
+.wrapper{
+    max-width:650px;
+    margin:auto;
+    background:white;
+    border-radius:8px;
+    overflow:hidden;
+    border:1px solid #e6e8f2;
+}
+
+.header{
+    background:#2E3E82;
+    color:white;
+    padding:22px;
+    text-align:center;
+    font-size:20px;
+    font-weight:bold;
+}
+
+.content{
+    padding:25px;
+    color:#444;
+}
+
+.info-box{
+    background:#f8f9fc;
+    padding:16px;
+    margin-top:15px;
+    border-radius:6px;
+}
+
+.row{
+    margin-bottom:10px;
+}
+
+.label{
+    font-weight:bold;
+}
+
+.button{
+    display:inline-block;
+    background:#2E3E82;
+    color:white;
+    padding:10px 18px;
+    text-decoration:none;
+    border-radius:6px;
+    margin-top:20px;
+}
+
+.footer{
+    text-align:center;
+    padding:18px;
+    color:#888;
+    font-size:13px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+<div class="header">
+Request for Quotation Submitted
+</div>
+
+<div class="content">
+
+<p>Hello {{ nome }},</p>
+
+<p>Your quotation request has been successfully submitted.</p>
+
+<p>Our Procurement Team will review your request and contact you shortly.</p>
+
+<div class="info-box">
+
+<div class="row">
+<span class="label">RFQ Number:</span>
+{{ rfq.numero }}
+</div>
+
+<div class="row">
+<span class="label">Name:</span>
+{{ nome }}
+</div>
+
+<div class="row">
+<span class="label">Email:</span>
+{{ email }}
+</div>
+
+<div class="row">
+<span class="label">Phone:</span>
+{{ telefone }}
+</div>
+
+</div>
+
+<p>Thank you for contacting Garmutti.</p>
+
+</div>
+
+<div class="footer">
+Garmutti Procurement Team
+</div>
+
+</div>
+
+</body>
+</html>

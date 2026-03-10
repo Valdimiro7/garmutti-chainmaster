@@ -152,6 +152,25 @@ DATABASES = {
     }
 }
 
+
+
+# =========================================================
+# EMAIL CONFIGURATION
+# =========================================================
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+EMAIL_HOST = "mail.garmutti.co.mz"
+EMAIL_PORT = 465
+EMAIL_USE_SSL = True
+
+EMAIL_HOST_USER = "info@garmutti.co.mz"
+EMAIL_HOST_PASSWORD = "dmQ4qjeF{ALBZr1H"
+
+DEFAULT_FROM_EMAIL = "Garmutti Procurement <info@garmutti.co.mz>"
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+
 # =========================================================
 # PASSWORD VALIDATION
 # =========================================================

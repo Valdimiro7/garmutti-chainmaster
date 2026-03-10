@@ -14,6 +14,8 @@ from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST, require_http_methods
+from django.core.mail import EmailMultiAlternatives
+from django.contrib.auth.models import Group
 
 from weasyprint import HTML
 
@@ -606,6 +608,12 @@ def public_create_rfq_api_view(request):
         rfq.criado_em = now
         rfq.actualizado_em = now
         rfq.save()
+        
+        # Enviar emails
+        try:
+            _send_rfq_emails(rfq, nome, email, telefone)
+        except Exception as e:
+            print("Erro ao enviar email RFQ:", str(e))
 
         for item in itens_validos:
             RFQItem.objects.create(
@@ -654,3 +662,89 @@ def public_create_rfq_api_view(request):
             request,
             status=500
         )
+        
+        
+
+#============================================================
+
+def _send_rfq_emails(rfq, nome, email, telefone):
+
+    subject_cliente = f"RFQ {rfq.numero} submitted successfully"
+
+    html_cliente = render_to_string(
+        "emails/rfq_submitted.html",
+        {
+            "rfq": rfq,
+            "nome": nome,
+            "email": email,
+            "telefone": telefone,
+        },
+    )
+
+    msg = EmailMultiAlternatives(
+        subject_cliente,
+        "",
+        settings.DEFAULT_FROM_EMAIL,
+        [email],
+    )
+
+    msg.attach_alternative(html_cliente, "text/html")
+    msg.send()
+
+    # ---------------------------------------------------
+    # EMAIL PARA PROCUREMENT OFFICERS
+    # ---------------------------------------------------
+
+    group = Group.objects.filter(id=2).first()
+
+    if not group:
+        return
+
+    emails_procurement = [
+        u.email for u in group.user_set.all() if u.email
+    ]
+
+    if not emails_procurement:
+        return
+
+    subject_internal = f"New RFQ submitted - {rfq.numero}"
+
+    html_internal = render_to_string(
+        "emails/rfq_submitted.html",
+        {
+            "rfq": rfq,
+            "nome": nome,
+            "email": email,
+            "telefone": telefone,
+        },
+    )
+
+    msg_internal = EmailMultiAlternatives(
+        subject_internal,
+        "",
+        settings.DEFAULT_FROM_EMAIL,
+        emails_procurement,
+    )
+
+    msg_internal.attach_alternative(html_internal, "text/html")
+    msg_internal.send()
+    
+    
+#============================================================
+
+#============================================================
+
+
+#============================================================
+
+
+#============================================================
+
+
+#============================================================
+
+
+#============================================================
+
+
+#============================================================
