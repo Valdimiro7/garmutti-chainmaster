@@ -34,7 +34,7 @@ db.sqlite3-journal
 
 # Static & Media (production)
 staticfiles/
-media/
+
 
 # =====================================================
 # ENVIRONMENT VARIABLES

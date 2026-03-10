@@ -611,7 +611,7 @@ def public_create_rfq_api_view(request):
         
         # Enviar emails
         try:
-            _send_rfq_emails(rfq, nome, email, telefone)
+            _send_rfq_emails(rfq, nome, email, telefone, payload, itens_validos)
         except Exception as e:
             print("Erro ao enviar email RFQ:", str(e))
 
@@ -667,55 +667,73 @@ def public_create_rfq_api_view(request):
 
 #============================================================
 
-def _send_rfq_emails(rfq, nome, email, telefone):
+def _send_rfq_emails(rfq, nome, email, telefone, payload, itens_validos):
+    assunto = (payload.get('assunto') or '').strip()
+    descricao = (payload.get('descricao') or '').strip()
+    data_contacto = (payload.get('data_contacto') or '').strip()
+    hora_contacto = (payload.get('hora_contacto') or '').strip()
+    source_page = (payload.get('source_page') or '').strip()
 
-    subject_cliente = f"RFQ {rfq.numero} submitted successfully"
+    # ---------------------------------------------------
+    # EMAIL PARA O CLIENTE
+    # ---------------------------------------------------
+    subject_cliente = f"RFQ {rfq.numero} submetida com sucesso"
 
     html_cliente = render_to_string(
         "emails/rfq_submitted.html",
         {
+            "tipo_email": "cliente",
+            "titulo_email": "Solicitação de Cotação Submetida",
             "rfq": rfq,
             "nome": nome,
             "email": email,
             "telefone": telefone,
+            "assunto": assunto,
+            "descricao": descricao,
+            "data_contacto": data_contacto,
+            "hora_contacto": hora_contacto,
+            "source_page": source_page,
+            "itens": itens_validos,
         },
     )
 
-    msg = EmailMultiAlternatives(
+    msg_cliente = EmailMultiAlternatives(
         subject_cliente,
         "",
         settings.DEFAULT_FROM_EMAIL,
         [email],
     )
-
-    msg.attach_alternative(html_cliente, "text/html")
-    msg.send()
+    msg_cliente.attach_alternative(html_cliente, "text/html")
+    msg_cliente.send()
 
     # ---------------------------------------------------
-    # EMAIL PARA PROCUREMENT OFFICERS
+    # EMAIL PARA O GRUPO PROCUREMENT OFFICER (ID = 2)
     # ---------------------------------------------------
-
     group = Group.objects.filter(id=2).first()
-
     if not group:
         return
 
-    emails_procurement = [
-        u.email for u in group.user_set.all() if u.email
-    ]
-
+    emails_procurement = [u.email for u in group.user_set.all() if u.email]
     if not emails_procurement:
         return
 
-    subject_internal = f"New RFQ submitted - {rfq.numero}"
+    subject_internal = f"Nova RFQ submetida pelo website - {rfq.numero}"
 
     html_internal = render_to_string(
         "emails/rfq_submitted.html",
         {
+            "tipo_email": "interno",
+            "titulo_email": "Nova Solicitação de Cotação Recebida",
             "rfq": rfq,
             "nome": nome,
             "email": email,
             "telefone": telefone,
+            "assunto": assunto,
+            "descricao": descricao,
+            "data_contacto": data_contacto,
+            "hora_contacto": hora_contacto,
+            "source_page": source_page,
+            "itens": itens_validos,
         },
     )
 
@@ -725,11 +743,8 @@ def _send_rfq_emails(rfq, nome, email, telefone):
         settings.DEFAULT_FROM_EMAIL,
         emails_procurement,
     )
-
     msg_internal.attach_alternative(html_internal, "text/html")
     msg_internal.send()
-    
-    
 #============================================================
 
 #============================================================
