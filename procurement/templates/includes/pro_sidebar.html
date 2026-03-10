@@ -44,26 +44,10 @@
 
       <!-- Purchase Orders -->
       <li class="nav-item">
-        <a data-bs-toggle="collapse" href="#menu-po" class="nav-link text-dark" aria-controls="menu-po" role="button" aria-expanded="false">
+        <a class="nav-link {% if 'purchase_orders' == segment %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}" href="{% url 'procurement:purchase_orders' %}">
           <i class="material-symbols-rounded opacity-5">shopping_bag</i>
           <span class="nav-link-text ms-2 ps-1">Purchase Orders</span>
         </a>
-        <div class="collapse" id="menu-po">
-          <ul class="nav">
-            <li class="nav-item">
-              <a class="nav-link text-dark" href="{% url 'procurement:purchase_orders' %}">
-                <span class="sidenav-mini-icon">L</span>
-                <span class="sidenav-normal ms-2 ps-1">Lista de POs</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-dark" href="#">
-                <span class="sidenav-mini-icon">R</span>
-                <span class="sidenav-normal ms-2 ps-1">Registar PO</span>
-              </a>
-            </li>
-          </ul>
-        </div>
       </li>
 
       <!-- Secção: Financeiro -->
@@ -73,32 +57,10 @@
 
       <!-- Pagamentos -->
       <li class="nav-item">
-        <a data-bs-toggle="collapse" href="#menu-pagamentos" class="nav-link text-dark" aria-controls="menu-pagamentos" role="button" aria-expanded="false">
+        <a class="nav-link {% if 'pagamentos' == segment %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}" href="{% url 'procurement:pagamentos' %}">
           <i class="material-symbols-rounded opacity-5">payments</i>
           <span class="nav-link-text ms-2 ps-1">Pagamentos</span>
         </a>
-        <div class="collapse" id="menu-pagamentos">
-          <ul class="nav">
-            <li class="nav-item">
-              <a class="nav-link text-dark" href="#">
-                <span class="sidenav-mini-icon">L</span>
-                <span class="sidenav-normal ms-2 ps-1">Lista de Pagamentos</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-dark" href="#">
-                <span class="sidenav-mini-icon">R</span>
-                <span class="sidenav-normal ms-2 ps-1">Registar Pagamento</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-dark" href="#">
-                <span class="sidenav-mini-icon">P</span>
-                <span class="sidenav-normal ms-2 ps-1">Pagamentos Pendentes</span>
-              </a>
-            </li>
-          </ul>
-        </div>
       </li>
 
       <!-- Facturação -->

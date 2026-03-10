@@ -17,6 +17,9 @@ from .condicaopagamento import CondicaoPagamento
 from .poestado import POEstado
 from .purchaseorder import PurchaseOrder
 from .purchaseorderanexo import PurchaseOrderAnexo
+from .pagamento import Pagamento
+from .pagamentoanexo import PagamentoAnexo
+from .pagamentoestado import PagamentoEstado
 
 
 __all__ = [
@@ -39,4 +42,7 @@ __all__ = [
     'POEstado',
     'PurchaseOrder',
     'PurchaseOrderAnexo',
+    'Pagamento',
+    'PagamentoAnexo',
+    'PagamentoEstado',
 ]

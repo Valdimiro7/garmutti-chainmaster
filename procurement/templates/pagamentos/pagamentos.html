@@ -1,0 +1,446 @@
+{% extends "layouts/pro_base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-3">
+
+  {% if messages %}
+  <div id="django-messages" style="display:none;">
+    {% for message in messages %}
+      <span data-tags="{{ message.tags }}">{{ message }}</span>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm pg-hero-card">
+        <div class="card-body p-4 p-md-5">
+          <div class="row align-items-center g-4">
+            <div class="col-lg-7">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="pg-hero-icon">
+                  <i class="material-symbols-rounded">payments</i>
+                </div>
+                <div>
+                  <h3 class="mb-1 fw-bold text-dark">Pagamentos</h3>
+                  <p class="text-muted mb-0">Gestão de pagamentos das POs confirmadas.</p>
+                </div>
+              </div>
+              <div class="d-flex flex-wrap gap-2">
+                <span class="badge rounded-pill pg-soft-badge">Pendentes</span>
+                <span class="badge rounded-pill pg-soft-badge">Recebidos</span>
+                <span class="badge rounded-pill pg-soft-badge">POP</span>
+                <span class="badge rounded-pill pg-soft-badge">Comprovativos</span>
+              </div>
+            </div>
+
+            <div class="col-lg-5">
+              <div class="pg-stats-grid">
+                <div class="mini-stat-card stat-filter stat-active" data-filter="pendente">
+                  <span class="mini-stat-label">Pendentes</span>
+                  <h4 class="mb-0 text-warning">{{ total_pendentes }}</h4>
+                </div>
+                <div class="mini-stat-card stat-filter" data-filter="recebido">
+                  <span class="mini-stat-label">Recebidos</span>
+                  <h4 class="mb-0 text-success">{{ total_recebidos }}</h4>
+                </div>
+                <div class="mini-stat-card stat-no-filter">
+                  <span class="mini-stat-label">Diário</span>
+                  <h4 class="mb-0 text-dark">{{ valor_diario|floatformat:2 }}</h4>
+                </div>
+                <div class="mini-stat-card stat-no-filter">
+                  <span class="mini-stat-label">Semanal</span>
+                  <h4 class="mb-0 text-dark">{{ valor_semanal|floatformat:2 }}</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mt-3 g-3">
+            <div class="col-md-6">
+              <div class="pg-value-card">
+                <div class="pg-value-label">Valor Recebido no Mês</div>
+                <div class="pg-value-amount">{{ valor_mensal|floatformat:2 }}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="pg-value-card">
+                <div class="pg-value-label">Saldo Pendente Total</div>
+                <div class="pg-value-amount">{{ total_saldo_pendente|floatformat:2 }}</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div class="pg-hero-accent"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm pg-main-card">
+    <div class="card-body p-0">
+      <div class="pg-topbar px-4 pt-4 pb-3">
+        <div class="row align-items-center g-3">
+          <div class="col-lg-8">
+            <h5 class="mb-1 fw-bold text-dark">Lista de Pagamentos</h5>
+            <p class="text-muted mb-0">Todos os pagamentos associados a POs confirmadas.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-4 pb-4">
+        <div class="table-responsive mt-3">
+          <table id="pgTable" class="table align-items-center mb-0 pg-table w-100">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Número</th>
+                <th>PO</th>
+                <th>Cliente</th>
+                <th>Valor PO</th>
+                <th>Valor Recebido</th>
+                <th>Saldo</th>
+                <th>Data Recebida</th>
+                <th>Estado</th>
+                <th class="text-center">Acções</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in pagamentos %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ p.numero }}</td>
+                <td>{{ p.purchase_order.numero }}</td>
+                <td>{{ p.cliente.nome }}</td>
+                <td>{% if p.moeda %}{{ p.moeda.simbolo }} {% endif %}{{ p.valor_po|floatformat:2 }}</td>
+                <td>{% if p.moeda %}{{ p.moeda.simbolo }} {% endif %}{{ p.valor_recebido|floatformat:2 }}</td>
+                <td>{% if p.moeda %}{{ p.moeda.simbolo }} {% endif %}{{ p.saldo_pendente|floatformat:2 }}</td>
+                <td>{% if p.data_pagamento_recebido %}{{ p.data_pagamento_recebido|date:"d/m/Y" }}{% else %}—{% endif %}</td>
+                <td>
+                  <span class="estado-codigo d-none">{{ p.estado.codigo }}</span>
+                  <span class="status-pill"
+                        style="background-color:{{ p.estado.cor }}18;color:{{ p.estado.cor }};border:1px solid {{ p.estado.cor }}40;">
+                    {{ p.estado.nome }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <div class="d-flex justify-content-center gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-info btn-view-pg" data-id="{{ p.id }}">
+                      <i class="material-symbols-rounded me-1">visibility</i>View
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-primary btn-edit-pg" data-id="{{ p.id }}">
+                      <i class="material-symbols-rounded me-1">edit</i>Actualizar
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% include "includes/pro_footer.html" %}
+</div>
+
+<div class="modal fade" id="pgModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-lg modal-modern">
+      <div class="modal-header border-0 pb-0">
+        <div>
+          <h5 class="modal-title fw-bold" id="pgModalLabel">Actualizar Pagamento</h5>
+          <p class="text-muted mb-0 small">Registe POP e dados do pagamento.</p>
+        </div>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+      </div>
+
+      <form id="pgForm" method="post" enctype="multipart/form-data" action="">
+        {% csrf_token %}
+        <div class="modal-body pt-3" style="max-height:72vh;overflow-y:auto;">
+          <div class="row g-3 mb-4">
+            <div class="col-md-3">
+              <label class="form-label">Número</label>
+              <input type="text" class="form-control modern-input" id="pg_numero" disabled>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">PO</label>
+              <input type="text" class="form-control modern-input" id="pg_po" disabled>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Cliente</label>
+              <input type="text" class="form-control modern-input" id="pg_cliente" disabled>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Valor PO</label>
+              <input type="text" class="form-control modern-input" id="pg_valor_po" disabled>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Data Prevista</label>
+              <input type="date" name="data_pagamento_prevista" id="pg_data_prevista" class="form-control modern-input">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Data Recebida</label>
+              <input type="date" name="data_pagamento_recebido" id="pg_data_recebida" class="form-control modern-input">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Valor Recebido</label>
+              <input type="number" step="0.01" min="0" name="valor_recebido" id="pg_valor_recebido" class="form-control modern-input">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Referência do Pagamento</label>
+              <input type="text" name="referencia_pagamento" id="pg_referencia" class="form-control modern-input">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Banco de Origem</label>
+              <input type="text" name="banco_origem" id="pg_banco" class="form-control modern-input">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Número da Transacção</label>
+              <input type="text" name="numero_transaccao" id="pg_transaccao" class="form-control modern-input">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Anexar POP</label>
+              <input type="file" name="pop_anexos" class="form-control modern-input" multiple>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Outros Anexos</label>
+              <input type="file" name="outros_anexos" class="form-control modern-input" multiple>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Observações</label>
+              <textarea name="observacoes" id="pg_observacoes" rows="4" class="form-control modern-input"></textarea>
+            </div>
+          </div>
+
+          <div id="pg_existing_attachments_wrap" class="d-none">
+            <div class="modal-section-title mb-2">
+              <i class="material-symbols-rounded me-2">attach_file</i>Anexos já registados
+            </div>
+            <div id="pg_existing_attachments" class="row g-2"></div>
+          </div>
+        </div>
+
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-outline-secondary btn-modern" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary btn-modern btn-pg">
+            <i class="material-symbols-rounded me-1">save</i>Guardar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="pgViewModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-lg modal-modern">
+      <div class="modal-header border-0">
+        <div>
+          <h5 class="modal-title fw-bold">Visualizar Pagamento</h5>
+          <p class="text-muted mb-0 small">Detalhes e anexos do pagamento.</p>
+        </div>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body bg-light">
+        <div id="pgViewContent"></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<link href="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.8/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/datatables.net-responsive-bs5@2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/datatables.net-buttons-bs5@2.4.2/css/buttons.bootstrap5.min.css" rel="stylesheet">
+
+<style>
+:root{
+  --pg:#2E3E82;
+  --pg-mid:#4256ad;
+  --pg-light:#eef2ff;
+  --pg-border:#dae3ff;
+}
+.pg-hero-card{position:relative;overflow:hidden;border-radius:22px;background:linear-gradient(135deg,#ffffff 0%,#f4f6ff 100%)}
+.pg-hero-accent{position:absolute;right:-60px;top:-60px;width:220px;height:220px;background:radial-gradient(circle,rgba(46,62,130,.15) 0%,rgba(46,62,130,0) 70%)}
+.pg-hero-icon{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--pg) 0%,var(--pg-mid) 100%);color:#fff}
+.pg-soft-badge{background:var(--pg-light);color:var(--pg);border:1px solid var(--pg-border);font-weight:600;padding:.50rem .90rem}
+.pg-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.mini-stat-card{background:#fff;border:1px solid #edf0f7;border-radius:18px;padding:18px 16px}
+.mini-stat-label{display:block;font-size:.78rem;color:#6c757d;margin-bottom:6px}
+.stat-filter{cursor:pointer}
+.stat-filter.stat-active{border-color:var(--pg)!important;background:var(--pg-light)!important}
+.pg-value-card{background:#fff;border:1px solid #e8edf8;border-radius:18px;padding:18px 20px}
+.pg-value-label{font-size:.82rem;color:#6c757d;margin-bottom:6px;font-weight:600}
+.pg-value-amount{font-size:1.45rem;font-weight:800;color:var(--pg)}
+.pg-main-card{border-radius:22px;overflow:hidden}
+.pg-topbar{border-bottom:1px solid #edf0f7;background:linear-gradient(180deg,#fff 0%,#f8f9ff 100%)}
+.btn-modern{border-radius:14px!important;padding:.75rem 1.1rem!important;font-weight:600!important;text-transform:none!important}
+.btn-pg{background:linear-gradient(135deg,var(--pg) 0%,var(--pg-mid) 100%)!important;border:none!important;color:#fff!important}
+.pg-table thead th{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#6c757d;font-weight:700;background:#f8f9ff}
+.status-pill{display:inline-flex;align-items:center;padding:.42rem .80rem;border-radius:999px;font-size:.74rem;font-weight:700}
+.modal-modern{border-radius:22px}
+.modal-section-title{display:flex;align-items:center;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--pg);border-bottom:1px solid var(--pg-border);padding-bottom:8px}
+.modern-input{border-radius:14px!important;border:1px solid #dfe5ef!important;min-height:46px;box-shadow:none!important}
+.attachment-card{background:#f8f9ff;border:1px solid #e5eaf7;border-radius:14px;padding:12px 14px}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net@1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-responsive@2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-responsive-bs5@2.5.0/js/responsive.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-buttons@2.4.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-buttons-bs5@2.4.2/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-buttons@2.4.2/js/buttons.html5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-buttons@2.4.2/js/buttons.print.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+$(function(){
+  const pgModal = new bootstrap.Modal(document.getElementById('pgModal'));
+  const pgViewModal = new bootstrap.Modal(document.getElementById('pgViewModal'));
+
+  const table = $('#pgTable').DataTable({
+    responsive:true,
+    autoWidth:false,
+    pageLength:10,
+    dom:'<"dt-buttons-row d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3"Bf>rtip',
+    buttons:[
+      {extend:'excelHtml5', text:'Excel', className:'btn btn-outline-success', title:'Pagamentos'},
+      {extend:'csvHtml5', text:'CSV', className:'btn btn-outline-secondary', title:'Pagamentos'},
+      {extend:'pdfHtml5', text:'PDF', className:'btn btn-outline-danger', title:'Pagamentos', orientation:'landscape'},
+      {extend:'print', text:'Imprimir', className:'btn btn-outline-primary', title:'Pagamentos'},
+    ],
+    language:{
+      search:'Pesquisar:',
+      lengthMenu:'Mostrar _MENU_ registos',
+      info:'Mostrando _START_ a _END_ de _TOTAL_ registos',
+      zeroRecords:'Nenhum registo encontrado',
+      emptyTable:'Sem dados disponíveis',
+      paginate:{first:'Primeiro',last:'Último',next:'Seguinte',previous:'Anterior'}
+    },
+    columnDefs:[
+      {orderable:false, targets:[9]},
+      {targets:8, render:function(data,type,row){
+        if(type==='filter'||type==='sort') return $(row[8]).find('.estado-codigo').text().trim();
+        return data;
+      }}
+    ]
+  });
+
+  $('.stat-filter').on('click', function(){
+    const f = $(this).data('filter');
+    table.column(8).search(f).draw();
+    $('.stat-filter').removeClass('stat-active');
+    $(this).addClass('stat-active');
+  });
+
+  function fmt(v){
+    return parseFloat(v || 0).toLocaleString('pt-MZ',{minimumFractionDigits:2,maximumFractionDigits:2});
+  }
+
+  $(document).on('click','.btn-edit-pg',function(){
+    const id = $(this).data('id');
+
+    $.get(`/pagamentos/${id}/json/`, function(r){
+      $('#pg_numero').val(r.numero || '');
+      $('#pg_po').val(r.purchase_order_numero || '');
+      $('#pg_cliente').val(r.cliente_nome || '');
+      $('#pg_valor_po').val(`${r.moeda_simbolo ? r.moeda_simbolo + ' ' : ''}${fmt(r.valor_po)}`);
+      $('#pg_data_prevista').val(r.data_pagamento_prevista || '');
+      $('#pg_data_recebida').val(r.data_pagamento_recebido || '');
+      $('#pg_valor_recebido').val(r.valor_recebido || '0.00');
+      $('#pg_referencia').val(r.referencia_pagamento || '');
+      $('#pg_banco').val(r.banco_origem || '');
+      $('#pg_transaccao').val(r.numero_transaccao || '');
+      $('#pg_observacoes').val(r.observacoes || '');
+      $('#pgForm').attr('action', `/pagamentos/${id}/update/`);
+
+      let anexosHtml = '';
+      if(r.anexos && r.anexos.length){
+        r.anexos.forEach(a => {
+          anexosHtml += `
+            <div class="col-md-6">
+              <div class="attachment-card">
+                <div class="fw-bold">${a.nome_ficheiro}</div>
+                <div class="text-muted small">${a.tipo_anexo}</div>
+                <a href="${a.download_url}" class="btn btn-sm btn-outline-primary mt-2" target="_blank">Baixar</a>
+              </div>
+            </div>
+          `;
+        });
+        $('#pg_existing_attachments').html(anexosHtml);
+        $('#pg_existing_attachments_wrap').removeClass('d-none');
+      } else {
+        $('#pg_existing_attachments_wrap').addClass('d-none');
+      }
+
+      pgModal.show();
+    });
+  });
+
+  $(document).on('click','.btn-view-pg',function(){
+    const id = $(this).data('id');
+
+    $.get(`/pagamentos/${id}/json/`, function(r){
+      let anexos = '';
+      if(r.anexos && r.anexos.length){
+        r.anexos.forEach(a => {
+          anexos += `
+            <div class="col-md-6">
+              <div class="attachment-card">
+                <div class="fw-bold">${a.nome_ficheiro}</div>
+                <div class="text-muted small">${a.tipo_anexo}</div>
+                <div class="text-muted small">${a.observacao || ''}</div>
+                <a href="${a.download_url}" class="btn btn-sm btn-pg mt-2" target="_blank">Baixar</a>
+              </div>
+            </div>
+          `;
+        });
+      } else {
+        anexos = `<div class="col-12"><div class="alert alert-light border">Sem anexos.</div></div>`;
+      }
+
+      $('#pgViewContent').html(`
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-4">
+            <div class="row g-3 mb-4">
+              <div class="col-md-3"><strong>Número:</strong><br>${r.numero || '—'}</div>
+              <div class="col-md-3"><strong>PO:</strong><br>${r.purchase_order_numero || '—'}</div>
+              <div class="col-md-3"><strong>Cliente:</strong><br>${r.cliente_nome || '—'}</div>
+              <div class="col-md-3"><strong>Estado:</strong><br>${r.estado_nome || '—'}</div>
+              <div class="col-md-3"><strong>Valor PO:</strong><br>${r.moeda_simbolo ? r.moeda_simbolo + ' ' : ''}${fmt(r.valor_po)}</div>
+              <div class="col-md-3"><strong>Valor Recebido:</strong><br>${r.moeda_simbolo ? r.moeda_simbolo + ' ' : ''}${fmt(r.valor_recebido)}</div>
+              <div class="col-md-3"><strong>Saldo:</strong><br>${r.moeda_simbolo ? r.moeda_simbolo + ' ' : ''}${fmt(r.saldo_pendente)}</div>
+              <div class="col-md-3"><strong>Data Recebida:</strong><br>${r.data_pagamento_recebido || '—'}</div>
+              <div class="col-md-6"><strong>Referência:</strong><br>${r.referencia_pagamento || '—'}</div>
+              <div class="col-md-6"><strong>Banco:</strong><br>${r.banco_origem || '—'}</div>
+              <div class="col-md-6"><strong>Transacção:</strong><br>${r.numero_transaccao || '—'}</div>
+              <div class="col-md-6"><strong>Quotação:</strong><br>${r.quotacao_numero || '—'}</div>
+              <div class="col-12"><strong>Observações:</strong><br>${r.observacoes || '—'}</div>
+            </div>
+            <div class="modal-section-title mb-3">
+              <i class="material-symbols-rounded me-2">attach_file</i>Anexos
+            </div>
+            <div class="row g-3">${anexos}</div>
+          </div>
+        </div>
+      `);
+
+      pgViewModal.show();
+    });
+  });
+});
+</script>
+{% endblock extra_js %}

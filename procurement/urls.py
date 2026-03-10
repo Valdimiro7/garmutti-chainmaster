@@ -50,7 +50,7 @@ from procurement.views.configuracoes.moedas_view import (moedas_view, moeda_deta
 from procurement.views.configuracoes.organizacao_view import (organizacao_view, organizacao_detail_json_view, create_organizacao_view, update_organizacao_view, toggle_organizacao_status_view, delete_organizacao_view)
 from procurement.views.configuracoes.condicoes_pagamento_view import (condicoes_pagamento_view, condicao_pagamento_detail_json_view, create_condicao_pagamento_view, update_condicao_pagamento_view, toggle_condicao_pagamento_status_view, delete_condicao_pagamento_view)
 from procurement.views.po.purchase_order_view import (download_purchase_order_anexo_view, purchase_orders_view, create_purchase_order_view, update_purchase_order_view, purchase_order_detail_json_view, change_estado_purchase_order_view)
-
+from procurement.views.pagamentos.pagamento_view import (pagamentos_view, pagamento_detail_json_view, update_pagamento_view, download_pagamento_anexo_view)
 
 
 
@@ -96,6 +96,14 @@ urlpatterns = [
     path('purchase-orders/<int:po_id>/json/', purchase_order_detail_json_view, name='purchase_orders_json'),
     path('purchase-orders/<int:po_id>/estado/', change_estado_purchase_order_view, name='purchase_orders_estado'),
     path('purchase-orders/anexos/<int:anexo_id>/download/', download_purchase_order_anexo_view, name='purchase_orders_anexo_download'),
+    
+    
+    
+    #======================Pagamentos==========================================
+    path('pagamentos/', pagamentos_view, name='pagamentos'),
+    path('pagamentos/<int:pagamento_id>/json/', pagamento_detail_json_view, name='pagamentos_json'),
+    path('pagamentos/<int:pagamento_id>/update/', update_pagamento_view, name='pagamentos_update'),
+    path('pagamentos/anexos/<int:anexo_id>/download/', download_pagamento_anexo_view, name='pagamentos_anexo_download'),
     
     
     #Fornecesores
