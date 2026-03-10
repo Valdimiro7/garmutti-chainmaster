@@ -237,19 +237,19 @@
         <div class="collapse" id="menu-configuracoes">
           <ul class="nav">
             <li class="nav-item">
-              <a class="nav-link text-dark" href="{% url 'procurement:moedas' %}">
+              <a class="nav-link {% if 'moedas' == segment %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}" href="{% url 'procurement:moedas' %}">
                 <span class="sidenav-mini-icon">M</span>
                 <span class="sidenav-normal ms-2 ps-1">Moedas</span>
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link text-dark" href="#">
+              <a class="nav-link {% if 'status_list' == segment %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}" href="#">
                 <span class="sidenav-mini-icon">S</span>
                 <span class="sidenav-normal ms-2 ps-1">Status List</span>
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link text-dark" href="{% url 'procurement:organizacao' %}">
+              <a class="nav-link {% if 'organizacao' == segment %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}" href="{% url 'procurement:organizacao' %}">
                 <span class="sidenav-mini-icon">O</span>
                 <span class="sidenav-normal ms-2 ps-1">Organização</span>
               </a>
@@ -260,15 +260,16 @@
                 <span class="sidenav-normal ms-2 ps-1">Métodos de Pagamento</span>
               </a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link {% if 'condicoes_pagamento' == segment %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}" href="{% url 'procurement:condicoes_pagamento' %}">
+                <span class="sidenav-mini-icon">C</span>
+                <span class="sidenav-normal ms-2 ps-1">Condições de Pagamento</span>
+              </a>
+            </li>
           </ul>
         </div>
       </li>
       {% endif %}
-
-      <!-- Secção: Conta -->
-      <li class="nav-item mt-3">
-        <h6 class="ps-4 ms-2 text-uppercase text-xs text-dark font-weight-bolder opacity-5">Conta</h6>
-      </li>
 
     </ul>
   </div>

@@ -48,6 +48,10 @@ from procurement.views.quotacoes.quotacoes_views import(quotacoes_view, create_q
 from procurement.views.configuracoes.metodos_pagamento_view import (metodos_pagamento_view, metodo_pagamento_detail_json_view, create_metodo_pagamento_view, update_metodo_pagamento_view, toggle_metodo_pagamento_status_view, definir_metodo_pagamento_predefinido_view, delete_metodo_pagamento_view)
 from procurement.views.configuracoes.moedas_view import (moedas_view, moeda_detail_json_view, create_moeda_view, update_moeda_view, toggle_moeda_status_view, definir_moeda_predefinida_view, delete_moeda_view)
 from procurement.views.configuracoes.organizacao_view import (organizacao_view, organizacao_detail_json_view, create_organizacao_view, update_organizacao_view, toggle_organizacao_status_view, delete_organizacao_view)
+from procurement.views.configuracoes.condicoes_pagamento_view import (condicoes_pagamento_view, condicao_pagamento_detail_json_view, create_condicao_pagamento_view, update_condicao_pagamento_view, toggle_condicao_pagamento_status_view, delete_condicao_pagamento_view)
+
+
+
 
 app_name = "procurement"
 
@@ -116,6 +120,15 @@ urlpatterns = [
 
     path('permissions/assign-user-group/', assign_user_to_group_view, name='permissions_assign_user_group'),
     path('permissions/remove-user-group/', remove_user_from_group_view, name='permissions_remove_user_group'),
+    
+    #======================configurações - condições de pagamento======================================================
+    path('condicoes-pagamento/', condicoes_pagamento_view, name='condicoes_pagamento'),
+    path('condicoes-pagamento/<int:condicao_id>/json/', condicao_pagamento_detail_json_view, name='condicoes_pagamento_detail_json'),
+    path('condicoes-pagamento/create/', create_condicao_pagamento_view, name='condicoes_pagamento_create'),
+    path('condicoes-pagamento/<int:condicao_id>/update/', update_condicao_pagamento_view, name='condicoes_pagamento_update'),
+    path('condicoes-pagamento/<int:condicao_id>/toggle-status/', toggle_condicao_pagamento_status_view, name='condicoes_pagamento_toggle_status'),
+    path('condicoes-pagamento/<int:condicao_id>/delete/', delete_condicao_pagamento_view, name='condicoes_pagamento_delete'),
+    
     
     #======================configurações - organização======================================================
     path('organizacao/', organizacao_view, name='organizacao'),
