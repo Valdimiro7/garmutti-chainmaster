@@ -14,12 +14,17 @@ from weasyprint import HTML
 
 from procurement.models import (
     Cliente,
+    CondicaoPagamento,
+    DadoBancario,
     Moeda,
     Organizacao,
     Quotacao,
+    QuotacaoDadoBancario,
     QuotacaoDescricaoSugerida,
+    QuotacaoEstado,
     QuotacaoItem,
     RFQ,
+    RFQEstado,
     Unidade,
 )
 
@@ -38,39 +43,36 @@ def _get_organizacao():
 
 
 def _generate_quotacao_number():
+    """Formato SEQ/ANO  →  018/2026"""
     year   = timezone.now().year
-    prefix = f'QT-{year}-'
+    suffix = f'/{year}'
     ultimo = (
         Quotacao.objects
-        .filter(numero__startswith=prefix)
+        .filter(numero__endswith=suffix)
         .order_by('-id')
         .first()
     )
     seq = 1
     if ultimo and ultimo.numero:
         try:
-            seq = int(ultimo.numero.split('-')[-1]) + 1
+            seq = int(ultimo.numero.split('/')[0]) + 1
         except (ValueError, IndexError):
             seq = 1
-    return f'{prefix}{seq:05d}'
+    return f'{seq:03d}/{year}'
 
 
 def _calcular_totais(itens_data, percentagem_iva_geral):
-    """Recalcula subtotal, IVA e total a partir da lista de dicts de itens."""
     subtotal  = Decimal('0')
     total_iva = Decimal('0')
-
     for item in itens_data:
         tl  = _parse_decimal(item.get('total_liquido', 0))
         iva = _parse_decimal(item.get('percentagem_iva', percentagem_iva_geral))
         subtotal  += tl
         total_iva += tl * iva / Decimal('100')
-
     return subtotal, total_iva, subtotal + total_iva
 
 
 def _upsert_descricao_sugerida(descricao: str):
-    """Insere ou incrementa o contador de descrições sugeridas."""
     descricao = descricao.strip()
     if not descricao:
         return
@@ -81,6 +83,13 @@ def _upsert_descricao_sugerida(descricao: str):
         QuotacaoDescricaoSugerida.objects.create(descricao=descricao)
 
 
+def _get_estado_enviada():
+    estado = QuotacaoEstado.objects.filter(codigo='enviada').first()
+    if not estado:
+        raise ValueError('Estado "enviada" não encontrado na tabela quotacao_estados.')
+    return estado
+
+
 # ─── list / main view ─────────────────────────────────────────────────────────
 
 @login_required
@@ -88,67 +97,74 @@ def _upsert_descricao_sugerida(descricao: str):
 def quotacoes_view(request):
     quotacoes = (
         Quotacao.objects
-        .select_related('cliente', 'rfq', 'moeda', 'criado_por')
+        .select_related('cliente', 'rfq', 'moeda', 'estado', 'criado_por')
         .prefetch_related('itens')
         .order_by('-id')
     )
 
-    clientes  = Cliente.objects.filter(estado=True).order_by('nome')
-    unidades  = Unidade.objects.filter(activo=True).order_by('ordem', 'nome')
-    moedas    = Moeda.objects.filter(estado=True).order_by('-predefinida', 'codigo')
-    rfqs      = (
+    clientes           = Cliente.objects.filter(estado=True).order_by('nome')
+    unidades           = Unidade.objects.filter(activo=True).order_by('ordem', 'nome')
+    moedas             = Moeda.objects.filter(estado=True).order_by('-predefinida', 'codigo')
+    estados            = QuotacaoEstado.objects.order_by('ordem')
+    condicoes          = CondicaoPagamento.objects.filter(activo=True).order_by('ordem', 'nome')
+    dados_bancarios    = DadoBancario.objects.filter(activo=True).order_by('ordem', 'banco')
+    rfqs               = (
         RFQ.objects
         .select_related('cliente')
         .exclude(estado__codigo__in=['cancelado', 'fechado'])
         .order_by('-id')
     )
 
-    # Sugestões de descrições (top 200 mais usadas)
     sugestoes = list(
         QuotacaoDescricaoSugerida.objects
         .order_by('-vezes', 'descricao')
         .values_list('descricao', flat=True)[:200]
     )
 
-    # Contadores por estado
-    total            = quotacoes.count()
-    total_rascunho   = quotacoes.filter(estado='rascunho').count()
-    total_enviada    = quotacoes.filter(estado='enviada').count()
-    total_aceite     = quotacoes.filter(estado='aceite').count()
-    total_cancelada  = quotacoes.filter(estado='cancelada').count()
+    total           = quotacoes.count()
+    total_enviada   = quotacoes.filter(estado__codigo='enviada').count()
+    total_aceite    = quotacoes.filter(estado__codigo='aceite').count()
+    total_cancelada = quotacoes.filter(estado__codigo='cancelada').count()
 
     moeda_predefinida = moedas.filter(predefinida=True).first() or moedas.first()
 
+    # IDs dos dados bancários predefinidos
+    db_predefinidos = list(
+        DadoBancario.objects.filter(predefinido=True, activo=True).values_list('id', flat=True)
+    )
+
     context = {
-        'segment':             'quotacoes',
-        'quotacoes':           quotacoes,
-        'clientes':            clientes,
-        'unidades':            unidades,
-        'moedas':              moedas,
-        'rfqs':                rfqs,
-        'sugestoes_json':      sugestoes,
-        'total':               total,
-        'total_rascunho':      total_rascunho,
-        'total_enviada':       total_enviada,
-        'total_aceite':        total_aceite,
-        'total_cancelada':     total_cancelada,
-        'default_numero':      _generate_quotacao_number(),
-        'today':               date.today().isoformat(),
+        'segment':              'quotacoes',
+        'quotacoes':            quotacoes,
+        'clientes':             clientes,
+        'unidades':             unidades,
+        'moedas':               moedas,
+        'estados':              estados,
+        'condicoes':            condicoes,
+        'dados_bancarios':      dados_bancarios,
+        'rfqs':                 rfqs,
+        'sugestoes_json':       sugestoes,
+        'total':                total,
+        'total_enviada':        total_enviada,
+        'total_aceite':         total_aceite,
+        'total_cancelada':      total_cancelada,
+        'default_numero':       _generate_quotacao_number(),
+        'today':                date.today().isoformat(),
         'moeda_predefinida_id': moeda_predefinida.id if moeda_predefinida else '',
+        'db_predefinidos':      db_predefinidos,
     }
     return render(request, 'quotacoes/quotacoes.html', context)
 
 
-# ─── detail JSON (para modal editar) ──────────────────────────────────────────
+# ─── detail JSON ──────────────────────────────────────────────────────────────
 
 @login_required
 @require_GET
 def quotacao_detail_json_view(request, quotacao_id):
     q = get_object_or_404(
-        Quotacao.objects.select_related('cliente', 'moeda', 'rfq'),
+        Quotacao.objects.select_related('cliente', 'moeda', 'rfq', 'estado', 'condicao_pagamento'),
         id=quotacao_id,
     )
-
     itens = list(
         q.itens.select_related('unidade').values(
             'id', 'linha', 'descricao', 'quantidade',
@@ -156,43 +172,42 @@ def quotacao_detail_json_view(request, quotacao_id):
             'total_liquido', 'comentarios', 'especificacoes',
         )
     )
+    dados_bancarios_ids = list(q.dados_bancarios.values_list('id', flat=True))
 
     data = {
-        'id':                  q.id,
-        'numero':              q.numero,
-        'estado':              q.estado,
-        'rfq_id':              q.rfq_id,
-        'cliente_id':          q.cliente_id,
-        'moeda_id':            q.moeda_id,
-        'data_quotacao':       q.data_quotacao.isoformat() if q.data_quotacao else '',
-        'validade':            q.validade.isoformat() if q.validade else '',
-        'prazo_entrega':       q.prazo_entrega or '',
-        'local_entrega':       q.local_entrega or '',
-        'pessoa_contacto':     q.pessoa_contacto or '',
-        'email_cliente':       q.email_cliente or '',
-        'telefone_cliente':    q.telefone_cliente or '',
-        'cambio':              str(q.cambio),
-        'percentagem_iva':     str(q.percentagem_iva),
-        'pagamento_condicoes': q.pagamento_condicoes or '',
-        'entidade':            q.entidade or '',
-        'referencia_cliente':  q.referencia_cliente or '',
-        'observacoes':         q.observacoes or '',
-        'termos_condicoes':    q.termos_condicoes or '',
-        'subtotal':            str(q.subtotal),
-        'total_iva':           str(q.total_iva),
-        'total':               str(q.total),
-        'itens':               itens,
+        'id':                    q.id,
+        'numero':                q.numero,
+        'estado_id':             q.estado_id,
+        'rfq_id':                q.rfq_id,
+        'cliente_id':            q.cliente_id,
+        'moeda_id':              q.moeda_id,
+        'data_quotacao':         q.data_quotacao.isoformat() if q.data_quotacao else '',
+        'validade':              q.validade.isoformat() if q.validade else '',
+        'prazo_entrega':         q.prazo_entrega or '',
+        'local_entrega':         q.local_entrega or '',
+        'pessoa_contacto':       q.pessoa_contacto or '',
+        'email_cliente':         q.email_cliente or '',
+        'telefone_cliente':      q.telefone_cliente or '',
+        'cambio':                str(q.cambio),
+        'percentagem_iva':       str(q.percentagem_iva),
+        'condicao_pagamento_id': q.condicao_pagamento_id,
+        'dados_bancarios_ids':   dados_bancarios_ids,
+        'referencia_cliente':    q.referencia_cliente or '',
+        'observacoes':           q.observacoes or '',
+        'subtotal':              str(q.subtotal),
+        'total_iva':             str(q.total_iva),
+        'total':                 str(q.total),
+        'itens':                 itens,
     }
     return JsonResponse(data)
 
 
-# ─── itens de um RFQ (para pré-popular items ao seleccionar RFQ) ───────────────
+# ─── itens do RFQ para pré-popular ────────────────────────────────────────────
 
 @login_required
 @require_GET
 def rfq_itens_json_view(request, rfq_id):
     rfq = get_object_or_404(RFQ.objects.select_related('cliente'), id=rfq_id)
-
     itens = list(
         rfq.itens.select_related('unidade').values(
             'linha', 'descricao', 'quantidade',
@@ -210,14 +225,24 @@ def rfq_itens_json_view(request, rfq_id):
     })
 
 
+# ─── condição de pagamento – detalhes (termos) ────────────────────────────────
+
+@login_required
+@require_GET
+def condicao_detalhe_json_view(request, condicao_id):
+    c = get_object_or_404(CondicaoPagamento, id=condicao_id)
+    return JsonResponse({'descricao': c.descricao or ''})
+
+
 # ─── preview HTML ─────────────────────────────────────────────────────────────
 
 @login_required
 @require_GET
 def quotacao_preview_html_view(request, quotacao_id):
     q = get_object_or_404(
-        Quotacao.objects.select_related('cliente', 'moeda', 'rfq', 'criado_por')
-                        .prefetch_related('itens__unidade'),
+        Quotacao.objects
+                .select_related('cliente', 'moeda', 'rfq', 'criado_por', 'estado', 'condicao_pagamento')
+                .prefetch_related('itens__unidade', 'dados_bancarios'),
         id=quotacao_id,
     )
     organizacao = _get_organizacao()
@@ -235,12 +260,12 @@ def quotacao_preview_html_view(request, quotacao_id):
 @require_GET
 def quotacao_download_pdf_view(request, quotacao_id):
     q = get_object_or_404(
-        Quotacao.objects.select_related('cliente', 'moeda', 'rfq', 'criado_por')
-                        .prefetch_related('itens__unidade'),
+        Quotacao.objects
+                .select_related('cliente', 'moeda', 'rfq', 'criado_por', 'estado', 'condicao_pagamento')
+                .prefetch_related('itens__unidade', 'dados_bancarios'),
         id=quotacao_id,
     )
     organizacao = _get_organizacao()
-
     html_string = render_to_string(
         'quotacoes/quotacao_pdf.html',
         {'quotacao': q, 'organizacao': organizacao, 'preview_mode': False},
@@ -252,7 +277,7 @@ def quotacao_download_pdf_view(request, quotacao_id):
     ).write_pdf()
 
     response = HttpResponse(pdf_file, content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="{q.numero}.pdf"'
+    response['Content-Disposition'] = f'attachment; filename="{q.numero.replace("/", "-")}.pdf"'
     return response
 
 
@@ -295,16 +320,17 @@ def update_quotacao_view(request, quotacao_id):
 @require_POST
 def change_estado_quotacao_view(request, quotacao_id):
     q          = get_object_or_404(Quotacao, id=quotacao_id)
-    novo_estado = request.POST.get('estado', '').strip()
-    estados_validos = [c[0] for c in Quotacao.ESTADO_CHOICES]
+    estado_id  = request.POST.get('estado_id', '').strip()
 
-    if novo_estado not in estados_validos:
+    try:
+        novo_estado = QuotacaoEstado.objects.get(id=int(estado_id))
+    except (QuotacaoEstado.DoesNotExist, ValueError):
         messages.error(request, 'Estado inválido.')
         return redirect('procurement:quotacoes')
 
     q.estado = novo_estado
-    q.save(update_fields=['estado', 'actualizado_em'])
-    messages.success(request, f'Estado da quotação "{q.numero}" alterado para "{q.get_estado_display()}".')
+    q.save(update_fields=['estado_id', 'actualizado_em'])
+    messages.success(request, f'Estado da quotação "{q.numero}" alterado para "{novo_estado.nome}".')
     return redirect('procurement:quotacoes')
 
 
@@ -317,13 +343,16 @@ def _save_quotacao(request, quotacao):
     if not cliente_id:
         raise ValueError('Seleccione o cliente.')
 
-    # ── itens ──────────────────────────────────────────────────────────────────
-    descricoes      = POST.getlist('item_descricao[]')
-    quantidades     = POST.getlist('item_quantidade[]')
-    unidades        = POST.getlist('item_unidade_id[]')
-    precos          = POST.getlist('item_preco_unitario[]')
-    ivas_item       = POST.getlist('item_percentagem_iva[]')
-    comentarios_l   = POST.getlist('item_comentarios[]')
+    # ── Estado: sempre "enviada" na criação ───────────────────────────────────
+    estado_enviada = _get_estado_enviada()
+
+    # ── Itens ─────────────────────────────────────────────────────────────────
+    descricoes       = POST.getlist('item_descricao[]')
+    quantidades      = POST.getlist('item_quantidade[]')
+    unidades_ids     = POST.getlist('item_unidade_id[]')
+    precos           = POST.getlist('item_preco_unitario[]')
+    ivas_item        = POST.getlist('item_percentagem_iva[]')
+    comentarios_l    = POST.getlist('item_comentarios[]')
     especificacoes_l = POST.getlist('item_especificacoes[]')
 
     n = max(len(descricoes), len(quantidades), len(precos))
@@ -331,14 +360,14 @@ def _save_quotacao(request, quotacao):
 
     itens_validos = []
     for i in range(n):
-        desc = (descricoes[i] if i < len(descricoes) else '').strip()
+        desc  = (descricoes[i] if i < len(descricoes) else '').strip()
         if not desc:
             continue
-        qtd  = _parse_decimal(quantidades[i] if i < len(quantidades) else '1', '1')
-        preco = _parse_decimal(precos[i] if i < len(precos) else '0', '0')
-        pct   = _parse_decimal(ivas_item[i] if i < len(ivas_item) else str(pct_iva_geral), str(pct_iva_geral))
-        uid   = unidades[i] if i < len(unidades) else ''
-        com   = (comentarios_l[i] if i < len(comentarios_l) else '').strip()
+        qtd   = _parse_decimal(quantidades[i]  if i < len(quantidades)  else '1', '1')
+        preco = _parse_decimal(precos[i]        if i < len(precos)       else '0', '0')
+        pct   = _parse_decimal(ivas_item[i]     if i < len(ivas_item)    else str(pct_iva_geral), str(pct_iva_geral))
+        uid   = unidades_ids[i] if i < len(unidades_ids) else ''
+        com   = (comentarios_l[i]    if i < len(comentarios_l)    else '').strip()
         esp   = (especificacoes_l[i] if i < len(especificacoes_l) else '').strip()
 
         if qtd <= 0:
@@ -367,13 +396,14 @@ def _save_quotacao(request, quotacao):
     if is_new:
         quotacao.numero     = _generate_quotacao_number()
         quotacao.criado_por = request.user
-        quotacao.criado_em  = now
+        quotacao.estado     = estado_enviada
 
-    rfq_id = POST.get('rfq_id', '').strip()
+    rfq_id            = POST.get('rfq_id', '').strip()
+    condicao_id       = POST.get('condicao_pagamento_id', '').strip()
+    dados_bancarios_ids = POST.getlist('dados_bancarios[]')
 
     quotacao.rfq_id              = int(rfq_id) if rfq_id else None
     quotacao.cliente_id          = int(cliente_id)
-    quotacao.estado              = POST.get('estado', 'rascunho') if not is_new else 'rascunho'
     quotacao.data_quotacao       = POST.get('data_quotacao') or date.today()
     quotacao.validade            = POST.get('validade') or None
     quotacao.prazo_entrega       = POST.get('prazo_entrega', '').strip() or None
@@ -384,22 +414,38 @@ def _save_quotacao(request, quotacao):
     quotacao.moeda_id            = int(POST.get('moeda_id')) if POST.get('moeda_id') else None
     quotacao.cambio              = _parse_decimal(POST.get('cambio', '1'), '1')
     quotacao.percentagem_iva     = pct_iva_geral
-    quotacao.pagamento_condicoes = POST.get('pagamento_condicoes', '').strip() or None
-    quotacao.entidade            = POST.get('entidade', '').strip() or None
+    quotacao.condicao_pagamento_id = int(condicao_id) if condicao_id else None
     quotacao.referencia_cliente  = POST.get('referencia_cliente', '').strip() or None
     quotacao.observacoes         = POST.get('observacoes', '').strip() or None
-    quotacao.termos_condicoes    = POST.get('termos_condicoes', '').strip() or None
     quotacao.subtotal            = subtotal
     quotacao.total_iva           = total_iva
     quotacao.total               = total
-    quotacao.actualizado_em      = now
 
     quotacao.save()
 
-    # Substituir itens
+    # ── Dados bancários (pivot) ───────────────────────────────────────────────
+    QuotacaoDadoBancario.objects.filter(quotacao_id=quotacao.id).delete()
+    for db_id in dados_bancarios_ids:
+        try:
+            QuotacaoDadoBancario.objects.create(
+                quotacao_id=quotacao.id,
+                dado_bancario_id=int(db_id),
+            )
+        except (ValueError, TypeError):
+            pass
+
+    # ── Itens ─────────────────────────────────────────────────────────────────
     QuotacaoItem.objects.filter(quotacao_id=quotacao.id).delete()
     for item in itens_validos:
         QuotacaoItem.objects.create(quotacao_id=quotacao.id, **item)
         _upsert_descricao_sugerida(item['descricao'])
+
+    # ── Actualizar estado do RFQ se ligado ────────────────────────────────────
+    # estado_id=4 → "Quotation Sent" (conforme especificado)
+    if is_new and quotacao.rfq_id:
+        try:
+            RFQ.objects.filter(id=quotacao.rfq_id).update(estado_id=4)
+        except Exception:
+            pass
 
     return quotacao

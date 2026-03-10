@@ -10,6 +10,10 @@ from .organizacao import Organizacao
 from .quotacao import Quotacao
 from .quotacaoitem import QuotacaoItem
 from .quotacaodescricaosugerida import QuotacaoDescricaoSugerida
+from .quotacaoestado import QuotacaoEstado
+from .dadobancario import DadoBancario
+from .quotacaodadobancario import QuotacaoDadoBancario
+from .condicaopagamento import CondicaoPagamento
 
 
 __all__ = [
@@ -25,4 +29,8 @@ __all__ = [
     'Quotacao',
     'QuotacaoItem',
     'QuotacaoDescricaoSugerida',
+    'QuotacaoEstado',
+    'DadoBancario',
+    'QuotacaoDadoBancario',
+    'CondicaoPagamento',
 ]

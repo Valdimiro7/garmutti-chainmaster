@@ -34,6 +34,7 @@
                 <span class="badge rounded-pill qt-soft-badge">Preview</span>
                 <span class="badge rounded-pill qt-soft-badge">Preços & IVA</span>
                 <span class="badge rounded-pill qt-soft-badge">Ligação RFQ</span>
+                <span class="badge rounded-pill qt-soft-badge">Dados Bancários</span>
               </div>
             </div>
 
@@ -47,25 +48,25 @@
                   <h4 class="mb-0">{{ total }}</h4>
                 </div>
 
-                <div class="mini-stat-card stat-filter stat-rascunho" data-filter="rascunho">
-                  <span class="mini-stat-label">
-                    <i class="material-symbols-rounded me-1" style="font-size:14px;vertical-align:-2px">edit_note</i>Rascunho
-                  </span>
-                  <h4 class="mb-0 text-secondary">{{ total_rascunho }}</h4>
-                </div>
-
-                <div class="mini-stat-card stat-filter stat-enviada" data-filter="enviada">
+                <div class="mini-stat-card stat-filter" data-filter="enviada">
                   <span class="mini-stat-label">
                     <i class="material-symbols-rounded me-1" style="font-size:14px;vertical-align:-2px">send</i>Enviadas
                   </span>
                   <h4 class="mb-0 text-primary">{{ total_enviada }}</h4>
                 </div>
 
-                <div class="mini-stat-card stat-filter stat-aceite" data-filter="aceite">
+                <div class="mini-stat-card stat-filter" data-filter="aceite">
                   <span class="mini-stat-label">
                     <i class="material-symbols-rounded me-1" style="font-size:14px;vertical-align:-2px">check_circle</i>Aceites
                   </span>
                   <h4 class="mb-0 text-success">{{ total_aceite }}</h4>
+                </div>
+
+                <div class="mini-stat-card stat-filter" data-filter="cancelada">
+                  <span class="mini-stat-label">
+                    <i class="material-symbols-rounded me-1" style="font-size:14px;vertical-align:-2px">cancel</i>Canceladas
+                  </span>
+                  <h4 class="mb-0 text-danger">{{ total_cancelada }}</h4>
                 </div>
 
               </div>
@@ -153,95 +154,64 @@
                     <td>{{ q.data_quotacao|date:"d/m/Y" }}</td>
 
                     <td>
-                      {% if q.validade %}
-                        {{ q.validade|date:"d/m/Y" }}
-                      {% else %}
-                        <span class="text-muted">—</span>
-                      {% endif %}
+                      {% if q.validade %}{{ q.validade|date:"d/m/Y" }}
+                      {% else %}<span class="text-muted">—</span>{% endif %}
                     </td>
 
                     <td>
                       <div class="d-flex flex-column">
                         <span class="fw-bold text-dark">
-                          {% if q.moeda %}{{ q.moeda.simbolo }} {% endif %}
-                          {{ q.total|floatformat:2 }}
+                          {% if q.moeda %}{{ q.moeda.simbolo }} {% endif %}{{ q.total|floatformat:2 }}
                         </span>
                         {% if q.moeda and q.moeda.codigo != 'MZN' %}
-                        <span class="table-subtext">câmbio {{ q.cambio }}</span>
+                          <span class="table-subtext">câmbio {{ q.cambio }}</span>
                         {% endif %}
                       </div>
                     </td>
 
                     <td>
-                      <span class="estado-codigo d-none">{{ q.estado }}</span>
+                      <span class="estado-codigo d-none">{{ q.estado.codigo }}</span>
                       <span class="status-pill"
-                            style="background-color:{{ q.estado_cor }}18;color:{{ q.estado_cor }};border:1px solid {{ q.estado_cor }}40;">
-                        {{ q.estado_label }}
+                            style="background-color:{{ q.estado.cor }}18;color:{{ q.estado.cor }};border:1px solid {{ q.estado.cor }}40;">
+                        {{ q.estado.nome }}
                       </span>
                     </td>
 
                     <td class="text-center">
-                      <div class="d-flex align-items-center justify-content-center gap-2 flex-wrap">
+                      <div class="d-flex align-items-center justify-content-center gap-2">
                         <button type="button" class="btn btn-sm btn-outline-primary btn-view-qt" data-id="{{ q.id }}">
                           <i class="material-symbols-rounded align-middle me-1">visibility</i>View
                         </button>
-
                         <div class="dropdown">
                           <button class="btn btn-sm btn-icon-only btn-action-menu" type="button"
                                   data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="material-symbols-rounded">more_vert</i>
                           </button>
                           <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm">
-
                             <li>
                               <a class="dropdown-item btn-edit-qt" href="#" data-id="{{ q.id }}">
                                 <i class="material-symbols-rounded me-2 align-middle">edit</i>Editar
                               </a>
                             </li>
-
                             <li>
                               <a class="dropdown-item" href="{% url 'procurement:quotacoes_download_pdf' q.id %}" target="_blank">
                                 <i class="material-symbols-rounded me-2 align-middle">download</i>Download PDF
                               </a>
                             </li>
-
                             <li><hr class="dropdown-divider"></li>
-
                             <!-- Alterar Estado -->
-                            {% if q.estado == 'rascunho' %}
-                            <li>
-                              <a class="dropdown-item btn-change-estado" href="#"
-                                 data-id="{{ q.id }}" data-estado="enviada" data-label="Enviada">
-                                <i class="material-symbols-rounded me-2 align-middle">send</i>Marcar como Enviada
-                              </a>
-                            </li>
-                            {% endif %}
-
-                            {% if q.estado == 'enviada' %}
-                            <li>
-                              <a class="dropdown-item btn-change-estado" href="#"
-                                 data-id="{{ q.id }}" data-estado="aceite" data-label="Aceite">
-                                <i class="material-symbols-rounded me-2 align-middle">thumb_up</i>Marcar como Aceite
-                              </a>
-                            </li>
-                            <li>
-                              <a class="dropdown-item btn-change-estado" href="#"
-                                 data-id="{{ q.id }}" data-estado="recusada" data-label="Recusada">
-                                <i class="material-symbols-rounded me-2 align-middle">thumb_down</i>Marcar como Recusada
-                              </a>
-                            </li>
-                            {% endif %}
-
-                            {% if q.estado != 'cancelada' %}
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                              <a class="dropdown-item text-warning btn-change-estado" href="#"
-                                 data-id="{{ q.id }}" data-estado="cancelada" data-label="Cancelada">
-                                <i class="material-symbols-rounded me-2 align-middle">cancel</i>Cancelar
-                              </a>
-                            </li>
-                            {% endif %}
-
+                            {% for estado in estados %}
+                              {% if estado.id != q.estado_id %}
+                              <li>
+                                <a class="dropdown-item btn-change-estado" href="#"
+                                   data-id="{{ q.id }}"
+                                   data-estado-id="{{ estado.id }}"
+                                   data-label="{{ estado.nome }}">
+                                  <i class="material-symbols-rounded me-2 align-middle">swap_horiz</i>{{ estado.nome }}
+                                </a>
+                              </li>
+                              {% endif %}
+                            {% endfor %}
                           </ul>
                         </div>
                       </div>
@@ -266,19 +236,20 @@
 <div class="modal fade" id="qtModal" tabindex="-1" aria-labelledby="qtModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content border-0 shadow-lg modal-modern">
+
       <div class="modal-header border-0 pb-0">
         <div>
           <h5 class="modal-title fw-bold" id="qtModalLabel">Nova Quotação</h5>
           <p class="text-muted mb-0 small">Preencha os dados da cotação a emitir.</p>
         </div>
-        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
       </div>
 
       <form id="qtForm" method="post" action="{% url 'procurement:quotacoes_create' %}">
         {% csrf_token %}
         <input type="hidden" name="quotacao_id" id="qt_id">
 
-        <div class="modal-body pt-3">
+        <div class="modal-body pt-3" style="max-height:72vh;overflow-y:auto;overflow-x:hidden;">
 
           <!-- ── Dados Gerais ── -->
           <div class="modal-section-title mb-3">
@@ -286,40 +257,32 @@
           </div>
 
           <div class="row g-3 mb-4">
-
-            <div class="col-md-3">
+            <div class="col-md-2">
               <label class="form-label">Número</label>
               <input type="text" class="form-control modern-input" id="qt_numero_preview"
                      value="{{ default_numero }}" disabled>
             </div>
-
-            <div class="col-md-3">
+            <div class="col-md-2">
               <label class="form-label">Data <span class="text-danger">*</span></label>
               <input type="date" name="data_quotacao" id="qt_data"
                      class="form-control modern-input" value="{{ today }}" required>
             </div>
-
-            <div class="col-md-3">
+            <div class="col-md-2">
               <label class="form-label">Validade</label>
-              <input type="date" name="validade" id="qt_validade"
-                     class="form-control modern-input">
+              <input type="date" name="validade" id="qt_validade" class="form-control modern-input">
             </div>
-
             <div class="col-md-3">
               <label class="form-label">RFQ (opcional)</label>
               <select name="rfq_id" id="qt_rfq_id" class="form-select modern-input">
                 <option value="">— Sem RFQ —</option>
                 {% for rfq in rfqs %}
-                  <option value="{{ rfq.id }}"
-                          data-cliente="{{ rfq.cliente_id }}"
-                          data-numero="{{ rfq.numero }}">
+                  <option value="{{ rfq.id }}" data-cliente="{{ rfq.cliente_id }}">
                     {{ rfq.numero }} – {{ rfq.cliente.nome }}
                   </option>
                 {% endfor %}
               </select>
             </div>
-
-            <div class="col-md-6">
+            <div class="col-md-3">
               <label class="form-label">Cliente <span class="text-danger">*</span></label>
               <select name="cliente_id" id="qt_cliente_id" class="form-select modern-input" required>
                 <option value="">— Seleccione —</option>
@@ -334,38 +297,34 @@
               </select>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-md-4">
               <label class="form-label">Pessoa de Contacto</label>
-              <input type="text" name="pessoa_contacto" id="qt_pessoa_contacto"
-                     class="form-control modern-input">
+              <input type="text" name="pessoa_contacto" id="qt_pessoa_contacto" class="form-control modern-input">
             </div>
-
-            <div class="col-md-3">
+            <div class="col-md-4">
               <label class="form-label">Telefone</label>
-              <input type="text" name="telefone_cliente" id="qt_telefone"
-                     class="form-control modern-input">
+              <input type="text" name="telefone_cliente" id="qt_telefone" class="form-control modern-input">
             </div>
-
             <div class="col-md-4">
               <label class="form-label">Email</label>
-              <input type="email" name="email_cliente" id="qt_email"
-                     class="form-control modern-input">
+              <input type="email" name="email_cliente" id="qt_email" class="form-control modern-input">
             </div>
 
             <div class="col-md-4">
               <label class="form-label">Prazo de Entrega</label>
               <input type="text" name="prazo_entrega" id="qt_prazo_entrega"
-                     class="form-control modern-input"
-                     placeholder="Ex: 4-5 semanas, 30 dias…">
+                     class="form-control modern-input" placeholder="Ex: 4-5 semanas, 30 dias…">
             </div>
-
             <div class="col-md-4">
               <label class="form-label">Local de Entrega</label>
               <input type="text" name="local_entrega" id="qt_local_entrega"
-                     class="form-control modern-input"
-                     placeholder="Maputo, armazém, obra…">
+                     class="form-control modern-input" placeholder="Maputo, armazém, obra…">
             </div>
-
+            <div class="col-md-4">
+              <label class="form-label">Referência do Cliente</label>
+              <input type="text" name="referencia_cliente" id="qt_ref_cliente"
+                     class="form-control modern-input" placeholder="Nº de requisição / PO">
+            </div>
           </div>
 
           <!-- ── Condições Financeiras ── -->
@@ -374,7 +333,6 @@
           </div>
 
           <div class="row g-3 mb-4">
-
             <div class="col-md-3">
               <label class="form-label">Moeda</label>
               <select name="moeda_id" id="qt_moeda_id" class="form-select modern-input">
@@ -387,40 +345,84 @@
                 {% endfor %}
               </select>
             </div>
-
             <div class="col-md-2">
               <label class="form-label">Câmbio</label>
               <input type="number" name="cambio" id="qt_cambio"
                      class="form-control modern-input" value="1.000000" step="0.000001" min="0.000001">
             </div>
-
             <div class="col-md-2">
               <label class="form-label">IVA (%)</label>
               <input type="number" name="percentagem_iva" id="qt_iva"
-                     class="form-control modern-input" value="16" step="0.01" min="0"
-                     title="IVA padrão aplicado a todos os itens">
+                     class="form-control modern-input" value="16" step="0.01" min="0">
             </div>
-
-            <div class="col-md-3">
-              <label class="form-label">Condições Pagamento</label>
-              <input type="text" name="pagamento_condicoes" id="qt_pagamento"
-                     class="form-control modern-input"
-                     placeholder="Ex: 100%, 50% adiantamento…">
+            <div class="col-md-5">
+              <label class="form-label d-flex align-items-center justify-content-between">
+                Condições de Pagamento
+                <button type="button" class="btn btn-link btn-sm p-0 ms-2" id="btnVerTermos"
+                        style="font-size:.75rem;color:#2E3E82;" title="Ver termos desta condição">
+                  <i class="material-symbols-rounded" style="font-size:16px;vertical-align:-4px">info</i> Ver Termos
+                </button>
+              </label>
+              <select name="condicao_pagamento_id" id="qt_condicao_id" class="form-select modern-input">
+                <option value="">— Seleccione —</option>
+                {% for c in condicoes %}
+                  <option value="{{ c.id }}" data-descricao="{{ c.descricao|default:'' }}">{{ c.nome }}</option>
+                {% endfor %}
+              </select>
+              <!-- Termos inline -->
+              <div id="termos_preview" class="qt-termos-preview d-none mt-2">
+                <span id="termos_texto" class="text-muted" style="font-size:.82rem;white-space:pre-line;"></span>
+              </div>
             </div>
+          </div>
 
-            <div class="col-md-2">
-              <label class="form-label">Entidade</label>
-              <input type="text" name="entidade" id="qt_entidade"
-                     class="form-control modern-input" placeholder="Ex: 230">
+          <!-- ── Dados Bancários ── -->
+          <div class="modal-section-title mb-3">
+            <i class="material-symbols-rounded me-2">account_balance</i>Dados Bancários
+            <span class="ms-2 text-muted fw-normal" style="font-size:.75rem;text-transform:none;letter-spacing:0">
+              (seleccione os que aparecem no documento)
+            </span>
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-12">
+              <!-- Trigger button -->
+              <div class="qt-banco-dropdown-wrap">
+                <button type="button" class="qt-banco-trigger modern-input" id="btnBancoDropdown"
+                        aria-expanded="false">
+                  <i class="material-symbols-rounded" style="font-size:18px;color:#2E3E82;flex-shrink:0">account_balance</i>
+                  <span id="bancoTriggerLabel">Seleccione dados bancários…</span>
+                  <i class="material-symbols-rounded ms-auto qt-banco-chevron">expand_more</i>
+                </button>
+
+                <!-- Dropdown panel -->
+                <div class="qt-banco-panel" id="bancoPanelDropdown">
+                  {% for db in dados_bancarios %}
+                  <label class="qt-banco-option {% if db.id in db_predefinidos %}checked{% endif %}"
+                         id="banco_label_{{ db.id }}">
+                    <input type="checkbox" name="dados_bancarios[]" value="{{ db.id }}"
+                           class="qt-banco-check" id="banco_{{ db.id }}"
+                           {% if db.id in db_predefinidos %}checked{% endif %}>
+                    <div class="qt-banco-option-inner">
+                      <span class="qt-banco-moeda-badge">{{ db.moeda }}</span>
+                      <div class="qt-banco-option-text">
+                        <span class="qt-banco-nome">{{ db.banco }}</span>
+                        <span class="qt-banco-detalhe">
+                          {% if db.conta %}Conta: {{ db.conta }}{% endif %}
+                          {% if db.nib %} · NIB: {{ db.nib }}{% endif %}
+                          {% if db.swift %} · SWIFT: {{ db.swift }}{% endif %}
+                        </span>
+                      </div>
+                    </div>
+                    <i class="material-symbols-rounded qt-banco-tick">check</i>
+                  </label>
+                  {% endfor %}
+                </div>
+              </div>
+
+              <!-- Chips dos seleccionados -->
+              <div id="bancoChips" class="d-flex flex-wrap gap-2 mt-2"></div>
             </div>
-
-            <div class="col-md-4">
-              <label class="form-label">Referência do Cliente</label>
-              <input type="text" name="referencia_cliente" id="qt_ref_cliente"
-                     class="form-control modern-input"
-                     placeholder="Nº de requisição / PO do cliente">
-            </div>
-
           </div>
 
           <!-- ── Itens ── -->
@@ -451,34 +453,26 @@
                 <tr>
                   <th style="width:44px;">#</th>
                   <th>Descrição</th>
-                  <th style="width:110px;">Qtd.</th>
-                  <th style="width:150px;">Unidade</th>
-                  <th style="width:140px;">P. Unit.</th>
-                  <th style="width:90px;">IVA %</th>
-                  <th style="width:130px;">Total Líq.</th>
-                  <th style="width:70px;" class="text-center">Acção</th>
+                  <th style="width:100px;">Qtd.</th>
+                  <th style="width:140px;">Unidade</th>
+                  <th style="width:130px;">P. Unit.</th>
+                  <th style="width:80px;">IVA %</th>
+                  <th style="width:120px;">Total Líq.</th>
+                  <th style="width:60px;" class="text-center">Del.</th>
                 </tr>
               </thead>
               <tbody id="qtItemsBody"></tbody>
             </table>
           </div>
 
-          <!-- ── Observações / Termos ── -->
-          <div class="row g-3">
-            <div class="col-md-6">
-              <div class="modal-section-title mb-2">
-                <i class="material-symbols-rounded me-2">notes</i>Observações
-              </div>
-              <textarea name="observacoes" id="qt_observacoes"
-                        class="form-control modern-input" rows="3"></textarea>
-            </div>
-            <div class="col-md-6">
-              <div class="modal-section-title mb-2">
-                <i class="material-symbols-rounded me-2">gavel</i>Termos e Condições
-              </div>
-              <textarea name="termos_condicoes" id="qt_termos"
-                        class="form-control modern-input" rows="3"></textarea>
-            </div>
+          <!-- ── Observações ── -->
+          <div class="modal-section-title mb-2">
+            <i class="material-symbols-rounded me-2">notes</i>Observações
+          </div>
+          <div class="mb-3">
+            <textarea name="observacoes" id="qt_observacoes"
+                      class="form-control modern-input" rows="3"
+                      placeholder="Informações adicionais para o cliente…"></textarea>
           </div>
 
         </div><!-- /modal-body -->
@@ -503,13 +497,12 @@
 
 
 <!-- ===== MODAL: PREVIEW ===== -->
-<div class="modal fade" id="qtPreviewModal" tabindex="-1"
-     aria-labelledby="qtPreviewModalLabel" aria-hidden="true">
+<div class="modal fade" id="qtPreviewModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-fullscreen-lg-down modal-xl modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content border-0 shadow-lg modal-modern">
       <div class="modal-header border-0">
         <div>
-          <h5 class="modal-title fw-bold" id="qtPreviewModalLabel">Visualizar Quotação</h5>
+          <h5 class="modal-title fw-bold">Visualizar Quotação</h5>
           <p class="text-muted mb-0 small">Preview do documento formal.</p>
         </div>
         <div class="d-flex align-items-center gap-2">
@@ -530,11 +523,9 @@
   </div>
 </div>
 
-<!-- Datalist para autocomplete de descrições -->
+<!-- Datalist autocomplete -->
 <datalist id="dl_descricoes">
-  {% for s in sugestoes_json %}
-    <option value="{{ s }}">
-  {% endfor %}
+  {% for s in sugestoes_json %}<option value="{{ s }}">{% endfor %}
 </datalist>
 
 {% endblock content %}
@@ -547,86 +538,114 @@
 <link href="https://cdn.jsdelivr.net/npm/datatables.net-buttons-bs5@2.4.2/css/buttons.bootstrap5.min.css" rel="stylesheet">
 
 <style>
-/* ─── Paleta (verde-azulado Garmutti) ─────────────────────── */
 :root{
-  --qt-primary:#1B6B5A;
-  --qt-primary-light:#e6f4f1;
-  --qt-primary-mid:#2d8a73;
-  --qt-accent:#27ae60;
+  --qt:#2E3E82;
+  --qt-mid:#4256ad;
+  --qt-light:#eef2ff;
+  --qt-border:#dae3ff;
 }
 
-/* ─── Hero ────────────────────────────────────────────────── */
-.qt-hero-card{position:relative;overflow:hidden;border-radius:22px;background:linear-gradient(135deg,#ffffff 0%,#f0f9f6 100%)}
-.qt-hero-accent{position:absolute;right:-60px;top:-60px;width:220px;height:220px;background:radial-gradient(circle,rgba(27,107,90,.14) 0%,rgba(27,107,90,0) 70%);pointer-events:none}
-.qt-hero-icon{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--qt-primary) 0%,var(--qt-primary-mid) 100%);color:#fff;box-shadow:0 12px 30px rgba(27,107,90,.22)}
+/* Hero */
+.qt-hero-card{position:relative;overflow:hidden;border-radius:22px;background:linear-gradient(135deg,#ffffff 0%,#f4f6ff 100%)}
+.qt-hero-accent{position:absolute;right:-60px;top:-60px;width:220px;height:220px;background:radial-gradient(circle,rgba(46,62,130,.15) 0%,rgba(46,62,130,0) 70%);pointer-events:none}
+.qt-hero-icon{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--qt) 0%,var(--qt-mid) 100%);color:#fff;box-shadow:0 12px 30px rgba(46,62,130,.22)}
 .qt-hero-icon i{font-size:30px}
-.qt-soft-badge{background:var(--qt-primary-light);color:var(--qt-primary);border:1px solid #b2dbd3;font-weight:600;padding:.50rem .90rem}
+.qt-soft-badge{background:var(--qt-light);color:var(--qt);border:1px solid var(--qt-border);font-weight:600;padding:.50rem .90rem}
 
-/* ─── Stats ───────────────────────────────────────────────── */
+/* Stats */
 .qt-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .mini-stat-card{background:#fff;border:1px solid #edf0f7;border-radius:18px;padding:18px 16px;box-shadow:0 8px 22px rgba(15,23,42,.04)}
 .mini-stat-label{display:block;font-size:.78rem;color:#6c757d;margin-bottom:6px}
 .stat-filter{cursor:pointer;transition:border-color .18s,box-shadow .18s,background .18s}
-.stat-filter:hover{border-color:var(--qt-primary)!important;box-shadow:0 6px 20px rgba(27,107,90,.14)!important}
-.stat-filter.stat-active{border-color:var(--qt-primary)!important;background:var(--qt-primary-light)!important}
-.stat-filter.stat-active .mini-stat-label{color:var(--qt-primary)}
+.stat-filter:hover{border-color:var(--qt)!important;box-shadow:0 6px 20px rgba(46,62,130,.14)!important}
+.stat-filter.stat-active{border-color:var(--qt)!important;background:var(--qt-light)!important}
+.stat-filter.stat-active .mini-stat-label{color:var(--qt)}
 
-/* ─── Main card ───────────────────────────────────────────── */
+/* Cards */
 .qt-main-card{border-radius:22px;overflow:hidden}
-.qt-topbar{border-bottom:1px solid #edf0f7;background:linear-gradient(180deg,#fff 0%,#f6fbf9 100%)}
+.qt-topbar{border-bottom:1px solid #edf0f7;background:linear-gradient(180deg,#fff 0%,#f8f9ff 100%)}
 
-/* ─── Buttons ─────────────────────────────────────────────── */
+/* Buttons */
 .btn-modern{border-radius:14px!important;padding:.75rem 1.1rem!important;font-weight:600!important;box-shadow:none!important;text-transform:none!important}
-.btn-qt{background:linear-gradient(135deg,var(--qt-primary) 0%,var(--qt-primary-mid) 100%)!important;border:none!important;color:#fff!important;box-shadow:0 10px 24px rgba(27,107,90,.22)!important}
+.btn-qt{background:linear-gradient(135deg,var(--qt) 0%,var(--qt-mid) 100%)!important;border:none!important;color:#fff!important;box-shadow:0 10px 24px rgba(46,62,130,.22)!important}
 
-/* ─── Table ───────────────────────────────────────────────── */
-.qt-table thead th{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#6c757d;font-weight:700;border-bottom:1px solid #eef1f6!important;padding-top:1rem!important;padding-bottom:1rem!important;background:#f6fbf9}
+/* Table */
+.qt-table thead th{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#6c757d;font-weight:700;border-bottom:1px solid #eef1f6!important;padding-top:1rem!important;padding-bottom:1rem!important;background:#f8f9ff}
 .qt-table tbody td{vertical-align:middle;border-bottom:1px solid #f3f5f9!important;padding-top:.85rem!important;padding-bottom:.85rem!important}
 .table-subtext{font-size:.77rem;color:#8a93a2}
 
-/* ─── Pills ───────────────────────────────────────────────── */
-.avatar-circle-qt{width:42px;height:42px;min-width:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--qt-primary-light);color:var(--qt-primary);font-weight:700;font-size:.85rem}
-.rfq-ref-pill{display:inline-flex;align-items:center;background:#eef2ff;color:#2E3E82;border:1px solid #dae3ff;border-radius:8px;padding:3px 10px;font-size:.78rem;font-weight:700}
+/* Pills */
+.avatar-circle-qt{width:42px;height:42px;min-width:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--qt-light);color:var(--qt);font-weight:700;font-size:.85rem}
+.rfq-ref-pill{display:inline-flex;align-items:center;background:var(--qt-light);color:var(--qt);border:1px solid var(--qt-border);border-radius:8px;padding:3px 10px;font-size:.78rem;font-weight:700}
 .status-pill{display:inline-flex;align-items:center;padding:.42rem .80rem;border-radius:999px;font-size:.74rem;font-weight:700}
 
-/* ─── Action menu ─────────────────────────────────────────── */
+/* Action */
 .btn-action-menu{width:38px;height:38px;border-radius:12px!important;border:1px solid #e9edf5!important;background:#fff!important;color:#495057!important;display:inline-flex;align-items:center;justify-content:center}
 .btn-view-qt{border-radius:12px!important}
 
-/* ─── Modal ───────────────────────────────────────────────── */
+/* Modal */
 .modal-modern{border-radius:22px}
-.modal-section-title{display:flex;align-items:center;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--qt-primary);border-bottom:1px solid #b2dbd3;padding-bottom:8px}
+.modal-section-title{display:flex;align-items:center;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--qt);border-bottom:1px solid var(--qt-border);padding-bottom:8px}
 .modern-input{border-radius:14px!important;border:1px solid #dfe5ef!important;min-height:46px;box-shadow:none!important}
-.modern-input:focus{border-color:var(--qt-primary)!important;box-shadow:0 0 0 .2rem rgba(27,107,90,.10)!important}
+.modern-input:focus{border-color:var(--qt)!important;box-shadow:0 0 0 .2rem rgba(46,62,130,.10)!important}
 
-/* ─── Items table ─────────────────────────────────────────── */
-.qt-items-table thead th{background:#f0f9f6;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:#6c757d;border-bottom:1px solid #c8e6de!important}
-.qt-items-table tbody td{border-bottom:1px solid #e8f5f1!important;vertical-align:middle}
-.btn-remove-item{width:38px;height:38px;border-radius:12px!important;border:none!important;background:#fff1f1!important;color:#dc3545!important}
+/* Items table */
+.qt-items-table thead th{background:#f4f6ff;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:#6c757d;border-bottom:1px solid #dae3ff!important}
+.qt-items-table tbody td{border-bottom:1px solid #edf0f7!important;vertical-align:middle}
+.btn-remove-item{width:34px;height:34px;border-radius:10px!important;border:none!important;background:#fff1f1!important;color:#dc3545!important;display:inline-flex;align-items:center;justify-content:center}
 
-/* ─── Totals bar ──────────────────────────────────────────── */
-.qt-totals-bar{display:flex;align-items:center;gap:10px;background:var(--qt-primary-light);border:1px solid #b2dbd3;border-radius:14px;padding:10px 18px;font-size:.88rem;flex-wrap:wrap}
+/* Totals bar */
+.qt-totals-bar{display:flex;align-items:center;gap:10px;background:var(--qt-light);border:1px solid var(--qt-border);border-radius:14px;padding:10px 18px;font-size:.88rem;flex-wrap:wrap}
 .qt-total-label{color:#555;font-weight:600}
-.qt-total-value{color:var(--qt-primary);font-weight:700;min-width:80px;text-align:right}
-.qt-total-sep{color:#b2dbd3}
-.qt-footer-totals{background:var(--qt-primary-light);border-radius:12px;padding:8px 16px}
+.qt-total-value{color:var(--qt);font-weight:700;min-width:90px;text-align:right}
+.qt-total-sep{color:var(--qt-border)}
+.qt-footer-totals{background:var(--qt-light);border-radius:12px;padding:8px 16px}
 
-/* ─── Preview ─────────────────────────────────────────────── */
-.qt-preview-wrap{background:#e9ecef;padding:18px;border-radius:18px}
-.qt-preview-sheet{max-width:980px;margin:0 auto;background:#fff;border-radius:8px;box-shadow:0 10px 30px rgba(15,23,42,.10);overflow:hidden}
+/* Dados Bancários – dropdown */
+.qt-banco-dropdown-wrap{position:relative}
+.qt-banco-trigger{width:100%;display:flex;align-items:center;gap:10px;padding:0 16px;height:46px;border:1px solid #dfe5ef;border-radius:14px;background:#fff;cursor:pointer;font-size:.9rem;color:#495057;transition:border-color .18s,box-shadow .18s;text-align:left}
+.qt-banco-trigger:hover,.qt-banco-trigger.open{border-color:var(--qt)!important;box-shadow:0 0 0 .2rem rgba(46,62,130,.10)!important}
+.qt-banco-trigger #bancoTriggerLabel{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qt-banco-chevron{font-size:20px;color:#6c757d;transition:transform .2s}
+.qt-banco-trigger.open .qt-banco-chevron{transform:rotate(180deg)}
+.qt-banco-panel{display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:1055;background:#fff;border:1.5px solid var(--qt-border);border-radius:16px;box-shadow:0 12px 36px rgba(46,62,130,.14);overflow:hidden;max-height:280px;overflow-y:auto}
+.qt-banco-panel.open{display:block}
+.qt-banco-option{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;transition:background .15s;border-bottom:1px solid #f0f3fa;user-select:none}
+.qt-banco-option:last-child{border-bottom:none}
+.qt-banco-option:hover{background:#f4f6ff}
+.qt-banco-option.checked{background:var(--qt-light)}
+.qt-banco-option input[type=checkbox]{display:none}
+.qt-banco-moeda-badge{background:var(--qt);color:#fff;border-radius:8px;padding:3px 9px;font-size:.70rem;font-weight:800;white-space:nowrap;flex-shrink:0}
+.qt-banco-option-inner{flex:1;display:flex;align-items:center;gap:10px;min-width:0}
+.qt-banco-option-text{display:flex;flex-direction:column;min-width:0}
+.qt-banco-nome{font-size:.86rem;font-weight:600;color:#1a1a2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qt-banco-detalhe{font-size:.74rem;color:#8a93a2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qt-banco-tick{font-size:18px;color:#cdd3e0;flex-shrink:0;transition:color .15s}
+.qt-banco-option.checked .qt-banco-tick{color:var(--qt)}
+/* chips */
+.qt-banco-chip{display:inline-flex;align-items:center;gap:6px;background:var(--qt-light);color:var(--qt);border:1px solid var(--qt-border);border-radius:999px;padding:4px 12px;font-size:.76rem;font-weight:700}
+.qt-banco-chip button{background:none;border:none;padding:0;color:var(--qt);line-height:1;cursor:pointer;display:flex;align-items:center}
+.qt-banco-chip button i{font-size:14px}
 
-/* ─── Toggle canceladas ───────────────────────────────────── */
+/* Termos preview */
+.qt-termos-preview{background:#f8f9ff;border:1px solid var(--qt-border);border-radius:10px;padding:10px 14px;font-size:.82rem}
+
+/* Toggle canceladas */
 .pill-toggle-canceladas{display:inline-flex;align-items:center;gap:6px;padding:.42rem .90rem;border-radius:999px;border:1.5px solid #f5c6cb;background:#fff5f5;color:#842029;font-size:.80rem;font-weight:700;cursor:pointer;transition:all .20s;white-space:nowrap;line-height:1}
 .pill-toggle-canceladas i{font-size:15px}
-.pill-toggle-canceladas:hover{background:#f8d7da;border-color:#dc3545;box-shadow:0 4px 14px rgba(220,53,69,.16)}
-.pill-toggle-canceladas.pill-active{background:#dc3545;border-color:#dc3545;color:#fff;box-shadow:0 6px 18px rgba(220,53,69,.28)}
+.pill-toggle-canceladas:hover{background:#f8d7da;border-color:#dc3545}
+.pill-toggle-canceladas.pill-active{background:#dc3545;border-color:#dc3545;color:#fff}
 .pill-count-badge{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;border-radius:999px;background:rgba(220,53,69,.18);color:inherit;font-size:.72rem;font-weight:800;padding:0 5px}
 .pill-toggle-canceladas.pill-active .pill-count-badge{background:rgba(255,255,255,.30)}
 
-/* ─── DataTables ──────────────────────────────────────────── */
+/* Preview */
+.qt-preview-wrap{background:#e9ecef;padding:18px;border-radius:18px}
+.qt-preview-sheet{max-width:980px;margin:0 auto;background:#fff;border-radius:8px;box-shadow:0 10px 30px rgba(15,23,42,.10);overflow:hidden}
+
+/* DataTables */
 .dataTables_wrapper .dataTables_paginate .pagination{display:flex!important;gap:4px!important;flex-wrap:wrap!important}
 .dataTables_wrapper .dataTables_paginate .pagination .page-item .page-link{all:unset!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:36px!important;height:36px!important;padding:0 10px!important;border-radius:10px!important;border:1px solid #e7ebf3!important;background:#fff!important;color:#495057!important;font-size:.85rem!important;font-weight:600!important;cursor:pointer!important;transition:all .2s!important}
-.dataTables_wrapper .dataTables_paginate .pagination .page-item.active .page-link{background:linear-gradient(135deg,var(--qt-primary) 0%,var(--qt-primary-mid) 100%)!important;border-color:var(--qt-primary)!important;color:#fff!important}
+.dataTables_wrapper .dataTables_paginate .pagination .page-item.active .page-link{background:linear-gradient(135deg,var(--qt) 0%,var(--qt-mid) 100%)!important;border-color:var(--qt)!important;color:#fff!important}
 div.dataTables_wrapper div.dataTables_filter input,
 div.dataTables_wrapper div.dataTables_length select{border-radius:12px!important;border:1px solid #dfe5ef!important;min-height:38px;box-shadow:none!important}
 .dt-buttons{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
@@ -651,147 +670,195 @@ div.dataTables_wrapper div.dataTables_length select{border-radius:12px!important
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-$(document).ready(function () {
+$(document).ready(function(){
 
   const qtModal        = new bootstrap.Modal(document.getElementById('qtModal'));
   const qtPreviewModal = new bootstrap.Modal(document.getElementById('qtPreviewModal'));
 
-  /* ── Django messages ───────────────────────────────────── */
-  const msgContainer = document.getElementById('django-messages');
-  if (msgContainer) {
-    msgContainer.querySelectorAll('span[data-tags]').forEach(span => {
-      const isError = span.getAttribute('data-tags').includes('error');
+  /* ── Django messages ─────────────────────────────────────── */
+  const mc = document.getElementById('django-messages');
+  if(mc){
+    mc.querySelectorAll('span[data-tags]').forEach(span => {
+      const isErr = span.getAttribute('data-tags').includes('error');
       Swal.fire({
-        icon: isError ? 'error' : 'success',
-        title: isError ? 'Erro' : 'Sucesso',
+        icon: isErr ? 'error' : 'success',
+        title: isErr ? 'Erro' : 'Sucesso',
         text: span.textContent.trim(),
-        confirmButtonColor: '#1B6B5A',
-        timer: isError ? undefined : 3000,
-        timerProgressBar: !isError,
-        showConfirmButton: isError,
+        confirmButtonColor:'#2E3E82',
+        timer: isErr ? undefined : 3000,
+        timerProgressBar: !isErr,
+        showConfirmButton: isErr,
       });
     });
   }
 
-  /* ── DataTable ─────────────────────────────────────────── */
+  /* ── DataTable ───────────────────────────────────────────── */
   let mostrandoCanceladas = false;
 
   const table = $('#qtTable').DataTable({
-    responsive: true,
-    autoWidth: false,
-    pageLength: 10,
-    dom: '<"dt-buttons-row d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3"Bf>rtip',
-    buttons: [
-      { extend:'excelHtml5', text:'<i class="material-symbols-rounded" style="font-size:16px">table_chart</i> Excel',  className:'btn btn-outline-success',    title:'Quotações', exportOptions:{columns:[0,1,2,3,4,5,6,7]} },
-      { extend:'csvHtml5',   text:'<i class="material-symbols-rounded" style="font-size:16px">csv</i> CSV',           className:'btn btn-outline-secondary',   title:'Quotações', exportOptions:{columns:[0,1,2,3,4,5,6,7]} },
-      { extend:'pdfHtml5',   text:'<i class="material-symbols-rounded" style="font-size:16px">picture_as_pdf</i> PDF', className:'btn btn-outline-danger',     title:'Quotações', orientation:'landscape', exportOptions:{columns:[0,1,2,3,4,5,6,7]} },
-      { extend:'print',      text:'<i class="material-symbols-rounded" style="font-size:16px">print</i> Imprimir',    className:'btn btn-outline-primary',     title:'Quotações', exportOptions:{columns:[0,1,2,3,4,5,6,7]} },
+    responsive:true, autoWidth:false, pageLength:10,
+    dom:'<"dt-buttons-row d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3"Bf>rtip',
+    buttons:[
+      {extend:'excelHtml5', text:'<i class="material-symbols-rounded" style="font-size:16px">table_chart</i> Excel', className:'btn btn-outline-success',  title:'Quotações', exportOptions:{columns:[0,1,2,3,4,5,6,7]}},
+      {extend:'csvHtml5',   text:'<i class="material-symbols-rounded" style="font-size:16px">csv</i> CSV',           className:'btn btn-outline-secondary', title:'Quotações', exportOptions:{columns:[0,1,2,3,4,5,6,7]}},
+      {extend:'pdfHtml5',   text:'<i class="material-symbols-rounded" style="font-size:16px">picture_as_pdf</i> PDF',className:'btn btn-outline-danger',    title:'Quotações', orientation:'landscape', exportOptions:{columns:[0,1,2,3,4,5,6,7]}},
+      {extend:'print',      text:'<i class="material-symbols-rounded" style="font-size:16px">print</i> Imprimir',    className:'btn btn-outline-primary',    title:'Quotações', exportOptions:{columns:[0,1,2,3,4,5,6,7]}},
     ],
-    lengthMenu: [[10,25,50,100,-1],[10,25,50,100,'Todos']],
-    language: {
+    lengthMenu:[[10,25,50,100,-1],[10,25,50,100,'Todos']],
+    language:{
       search:'Pesquisar:', lengthMenu:'Mostrar _MENU_ registos',
       info:'Mostrando _START_ a _END_ de _TOTAL_ registos',
       infoEmpty:'Mostrando 0 a 0 de 0 registos', infoFiltered:'(filtrado de _MAX_ registos no total)',
       zeroRecords:'Nenhum registo encontrado', emptyTable:'Sem dados disponíveis',
       paginate:{first:'Primeiro',last:'Último',next:'Seguinte',previous:'Anterior'},
     },
-    columnDefs: [
-      { orderable:false, targets:[8] },
-      {
-        targets:7,
-        render: function(data, type, row, meta){
-          if(type==='filter'||type==='sort'){
-            return $(row[7]).find('.estado-codigo').text().trim();
-          }
-          return data;
-        }
-      }
+    columnDefs:[
+      {orderable:false, targets:[8]},
+      {targets:7, render:function(data,type,row,meta){
+        if(type==='filter'||type==='sort') return $(row[7]).find('.estado-codigo').text().trim();
+        return data;
+      }}
     ]
   });
 
-  // ocultar canceladas ao inicio
-  $.fn.dataTable.ext.search.push(function(settings, data, dataIndex){
-    if(settings.nTable.id !== 'qtTable') return true;
+  $.fn.dataTable.ext.search.push(function(settings,data,dataIndex){
+    if(settings.nTable.id!=='qtTable') return true;
     if(mostrandoCanceladas) return true;
-    const row  = table.row(dataIndex).node();
-    const code = $(row).find('.estado-codigo').text().trim().toLowerCase();
+    const code = $(table.row(dataIndex).node()).find('.estado-codigo').text().trim().toLowerCase();
     return code !== 'cancelada';
   });
   table.draw();
 
-  /* ── Toggle canceladas ─────────────────────────────────── */
-  $('#btnToggleCanceladas').on('click', function(){
+  /* ── Toggle canceladas ───────────────────────────────────── */
+  $('#btnToggleCanceladas').on('click',function(){
     mostrandoCanceladas = !mostrandoCanceladas;
     $(this).toggleClass('pill-active', mostrandoCanceladas);
     $('#lblToggleCanceladas').text(mostrandoCanceladas ? 'Ocultar Canceladas' : 'Ver Canceladas');
-    if(mostrandoCanceladas){
-      table.column(7).search('').draw();
-      $('.stat-filter').removeClass('stat-active');
-      $('.stat-all').addClass('stat-active');
-    } else {
-      table.draw();
-    }
+    if(mostrandoCanceladas){ table.column(7).search('').draw(); $('.stat-filter').removeClass('stat-active'); $('.stat-all').addClass('stat-active'); }
+    else table.draw();
   });
 
-  /* ── Stat filter cards ─────────────────────────────────── */
-  $(document).on('click', '.stat-filter', function(){
-    const filter = $(this).data('filter');
-    if(filter==='cancelada' && !mostrandoCanceladas){
+  /* ── Stat filter cards ───────────────────────────────────── */
+  $(document).on('click','.stat-filter',function(){
+    const f=$(this).data('filter');
+    if(f==='cancelada'&&!mostrandoCanceladas){
       $('#btnToggleCanceladas').trigger('click');
-      setTimeout(()=>{
-        table.column(7).search('cancelada').draw();
-        $('.stat-filter').removeClass('stat-active');
-        $('.stat-cancelada').addClass('stat-active');
-      }, 0);
+      setTimeout(()=>{ table.column(7).search('cancelada').draw(); $('.stat-filter').removeClass('stat-active'); $(this).addClass('stat-active'); },0);
       return;
     }
-    table.column(7).search(filter).draw();
-    $('.stat-filter').removeClass('stat-active');
-    $(this).addClass('stat-active');
+    table.column(7).search(f).draw();
+    $('.stat-filter').removeClass('stat-active'); $(this).addClass('stat-active');
   });
 
-  /* ── helpers ───────────────────────────────────────────── */
-  function escHtml(str){
-    return String(str||'')
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  /* ── Helpers ─────────────────────────────────────────────── */
+  function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function fmt(n){ return parseFloat(n||0).toLocaleString('pt-MZ',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+  /* ── Dados bancários: dropdown com checkboxes ───────────── */
+  const $trigger   = $('#btnBancoDropdown');
+  const $panel     = $('#bancoPanelDropdown');
+  const $chips     = $('#bancoChips');
+
+  // Construir mapa de labels dos bancos a partir do DOM
+  const bancoLabels = {};
+  $('.qt-banco-option').each(function(){
+    const id  = $(this).find('.qt-banco-check').val();
+    const nom = $(this).find('.qt-banco-nome').text().trim();
+    const moe = $(this).find('.qt-banco-moeda-badge').text().trim();
+    bancoLabels[id] = `${nom} (${moe})`;
+  });
+
+  function updateBancoChips(){
+    $chips.html('');
+    let count = 0;
+    $('.qt-banco-check:checked').each(function(){
+      const id  = $(this).val();
+      const lbl = bancoLabels[id]||id;
+      $chips.append(
+        `<span class="qt-banco-chip">
+           ${lbl}
+           <button type="button" data-id="${id}" title="Remover">
+             <i class="material-symbols-rounded">close</i>
+           </button>
+         </span>`
+      );
+      count++;
+    });
+    $trigger.find('#bancoTriggerLabel').text(
+      count === 0 ? 'Seleccione dados bancários…' :
+      count === 1 ? '1 dado bancário seleccionado' :
+                    `${count} dados bancários seleccionados`
+    );
   }
 
-  function fmt(n){
-    return parseFloat(n||0).toLocaleString('pt-MZ',{minimumFractionDigits:2,maximumFractionDigits:2});
-  }
+  // Abrir/fechar dropdown
+  $trigger.on('click', function(e){
+    e.stopPropagation();
+    const isOpen = $panel.hasClass('open');
+    $panel.toggleClass('open', !isOpen);
+    $trigger.toggleClass('open', !isOpen);
+  });
 
-  /* ── Recalcular totais ─────────────────────────────────── */
+  // Fechar ao clicar fora
+  $(document).on('click', function(e){
+    if(!$(e.target).closest('.qt-banco-dropdown-wrap').length){
+      $panel.removeClass('open');
+      $trigger.removeClass('open');
+    }
+  });
+
+  // Toggle checkbox ao clicar na opção
+  $(document).on('change', '.qt-banco-check', function(){
+    const lbl = $('#banco_label_'+$(this).val());
+    lbl.toggleClass('checked', $(this).is(':checked'));
+    updateBancoChips();
+  });
+
+  // Remover chip → desmarcar checkbox
+  $(document).on('click', '.qt-banco-chip button', function(){
+    const id = $(this).data('id');
+    $('#banco_'+id).prop('checked', false);
+    $('#banco_label_'+id).removeClass('checked');
+    updateBancoChips();
+  });
+
+  /* ── Condições de pagamento: mostrar termos ─────────────── */
+  function mostrarTermos(){
+    const opt   = $('#qt_condicao_id option:selected');
+    const texto = opt.data('descricao')||'';
+    if(texto){
+      $('#termos_texto').text(texto);
+      $('#termos_preview').removeClass('d-none');
+    } else {
+      $('#termos_preview').addClass('d-none');
+    }
+  }
+  $('#qt_condicao_id').on('change', mostrarTermos);
+  $('#btnVerTermos').on('click', mostrarTermos);
+
+  /* ── Recalcular totais ───────────────────────────────────── */
   function recalcularTotais(){
-    let subtotal = 0;
-    let totalIva = 0;
-
+    let subtotal=0, totalIva=0;
     $('#qtItemsBody .qt-item-row').each(function(){
-      const qtd   = parseFloat($(this).find('[name="item_quantidade[]"]').val()) || 0;
-      const preco = parseFloat($(this).find('[name="item_preco_unitario[]"]').val()) || 0;
-      const pct   = parseFloat($(this).find('[name="item_percentagem_iva[]"]').val()) || 0;
-      const tl    = qtd * preco;
-
+      const qtd   = parseFloat($(this).find('[name="item_quantidade[]"]').val())||0;
+      const preco = parseFloat($(this).find('[name="item_preco_unitario[]"]').val())||0;
+      const pct   = parseFloat($(this).find('[name="item_percentagem_iva[]"]').val())||0;
+      const tl    = qtd*preco;
       $(this).find('.item-total-liquido').text(fmt(tl));
       $(this).find('[name^="item_total_liquido"]').val(tl.toFixed(2));
-
       subtotal += tl;
-      totalIva += tl * pct / 100;
+      totalIva += tl*pct/100;
     });
-
-    const total = subtotal + totalIva;
+    const total = subtotal+totalIva;
     $('#lblSubtotal').text(fmt(subtotal));
     $('#lblIva').text(fmt(totalIva));
-    $('#lblTotal').text(fmt(total));
-    $('#lblTotalFooter').text(fmt(total));
+    $('#lblTotal, #lblTotalFooter').text(fmt(total));
   }
 
-  /* ── Construtor de linha de item ───────────────────────── */
+  /* ── Construtor de linha ─────────────────────────────────── */
   function buildItemRow(index, data){
-    data = data || {};
-    const ivaGlobal = $('#qt_iva').val() || '16';
-
-    // Opções de unidade
+    data = data||{};
+    const ivaG = $('#qt_iva').val()||'16';
     let unidadeOpts = '<option value="">— —</option>';
     {% for u in unidades %}
       unidadeOpts += `<option value="{{ u.id }}">{{ u.nome }} ({{ u.sigla }})</option>`;
@@ -802,164 +869,136 @@ $(document).ready(function () {
         <td class="item-index fw-bold text-muted">${index}</td>
         <td>
           <input type="text" name="item_descricao[]" list="dl_descricoes"
-                 class="form-control modern-input item-descricao"
-                 value="${escHtml(data.descricao||'')}" required
+                 class="form-control modern-input" value="${esc(data.descricao||'')}" required
                  placeholder="Descrição do artigo…">
         </td>
         <td>
-          <input type="number" name="item_quantidade[]"
-                 class="form-control modern-input item-calc"
-                 value="${escHtml(String(data.quantidade||'1'))}"
-                 min="0.01" step="0.01" required>
+          <input type="number" name="item_quantidade[]" class="form-control modern-input item-calc"
+                 value="${esc(String(data.quantidade||'1'))}" min="0.01" step="0.01" required>
         </td>
         <td>
-          <select name="item_unidade_id[]" class="form-select modern-input">
-            ${unidadeOpts}
-          </select>
+          <select name="item_unidade_id[]" class="form-select modern-input">${unidadeOpts}</select>
         </td>
         <td>
-          <input type="number" name="item_preco_unitario[]"
-                 class="form-control modern-input item-calc"
-                 value="${escHtml(String(data.preco_unitario||'0'))}"
-                 min="0" step="0.01" required placeholder="0.00">
+          <input type="number" name="item_preco_unitario[]" class="form-control modern-input item-calc"
+                 value="${esc(String(data.preco_unitario||'0'))}" min="0" step="0.01" placeholder="0.00">
         </td>
         <td>
-          <input type="number" name="item_percentagem_iva[]"
-                 class="form-control modern-input item-calc"
-                 value="${escHtml(String(data.percentagem_iva||ivaGlobal))}"
-                 min="0" step="0.01">
+          <input type="number" name="item_percentagem_iva[]" class="form-control modern-input item-calc"
+                 value="${esc(String(data.percentagem_iva||ivaG))}" min="0" step="0.01">
         </td>
         <td>
-          <span class="item-total-liquido fw-semibold text-dark">0.00</span>
+          <span class="item-total-liquido fw-semibold">0.00</span>
           <input type="hidden" name="item_total_liquido[]" value="0">
         </td>
         <td class="text-center">
           <button type="button" class="btn btn-remove-item">
-            <i class="material-symbols-rounded">delete</i>
+            <i class="material-symbols-rounded" style="font-size:18px">delete</i>
           </button>
         </td>
       </tr>`;
   }
 
-  function refreshItemIndexes(){
-    $('#qtItemsBody .qt-item-row').each(function(i){ $(this).find('.item-index').text(i+1); });
-  }
+  function refreshIndexes(){ $('#qtItemsBody .qt-item-row').each(function(i){ $(this).find('.item-index').text(i+1); }); }
 
   function addItemRow(data){
-    const next = $('#qtItemsBody .qt-item-row').length + 1;
+    const next = $('#qtItemsBody .qt-item-row').length+1;
     $('#qtItemsBody').append(buildItemRow(next, data));
-
-    // set unidade_id se vier dos dados
-    if(data && data.unidade_id){
-      $('#qtItemsBody .qt-item-row').last()
-        .find('select[name="item_unidade_id[]"]').val(String(data.unidade_id));
-    }
+    if(data&&data.unidade_id)
+      $('#qtItemsBody .qt-item-row').last().find('select[name="item_unidade_id[]"]').val(String(data.unidade_id));
     recalcularTotais();
   }
 
-  /* ── Recalc on input ───────────────────────────────────── */
-  $(document).on('input change', '.item-calc', recalcularTotais);
+  $(document).on('input change','.item-calc', recalcularTotais);
 
-  // Quando IVA global muda, actualiza todos os itens
-  $('#qt_iva').on('change input', function(){
-    const pct = $(this).val();
-    $('#qtItemsBody .qt-item-row').each(function(){
-      $(this).find('[name="item_percentagem_iva[]"]').val(pct);
-    });
+  $('#qt_iva').on('change input',function(){
+    const pct=$(this).val();
+    $('#qtItemsBody .qt-item-row [name="item_percentagem_iva[]"]').val(pct);
     recalcularTotais();
   });
 
-  /* ── Reset form ────────────────────────────────────────── */
+  /* ── Dados bancários: resetar para predefinidos ─────────── */
+  const dbPredefinidos = {{ db_predefinidos|safe }};
+  function resetDadosBancarios(){
+    $('.qt-banco-check').each(function(){
+      const checked = dbPredefinidos.includes(parseInt($(this).val()));
+      $(this).prop('checked', checked);
+      $('#banco_label_'+$(this).val()).toggleClass('checked', checked);
+    });
+    updateBancoChips();
+  }
+
+  /* ── Reset form ─────────────────────────────────────────── */
   function resetForm(){
     $('#qtForm')[0].reset();
     $('#qt_id').val('');
     $('#qtModalLabel').text('Nova Quotação');
-    $('#qtForm').attr('action', "{% url 'procurement:quotacoes_create' %}");
+    $('#qtForm').attr('action',"{% url 'procurement:quotacoes_create' %}");
     $('#qt_numero_preview').val('{{ default_numero }}');
     $('#qt_data').val('{{ today }}');
     $('#qt_iva').val('16');
+    $('#qt_cambio').val('1.000000');
     $('#qtItemsBody').html('');
+    $('#termos_preview').addClass('d-none');
+    resetDadosBancarios();
     addItemRow();
     recalcularTotais();
   }
 
-  /* ── Abrir modal novo ──────────────────────────────────── */
-  $('#btnOpenCreateQt').on('click', function(){
-    resetForm();
-    qtModal.show();
-  });
+  /* ── Abrir novo ─────────────────────────────────────────── */
+  $('#btnOpenCreateQt').on('click',function(){ resetForm(); qtModal.show(); });
 
-  /* ── Ao seleccionar RFQ: pré-popular ───────────────────── */
-  $('#qt_rfq_id').on('change', function(){
-    const rfqId = $(this).val();
+  /* ── Seleccionar RFQ: importar dados ────────────────────── */
+  $('#qt_rfq_id').on('change',function(){
+    const rfqId=$(this).val();
     if(!rfqId) return;
-
     Swal.fire({
-      title: 'Importar itens do RFQ?',
-      text: 'Os itens actuais serão substituídos pelos itens do RFQ seleccionado.',
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonText: 'Sim, importar',
-      cancelButtonText: 'Não',
-      confirmButtonColor: '#1B6B5A',
-      cancelButtonColor: '#6c757d',
-      reverseButtons: true,
-    }).then(result => {
+      title:'Importar itens do RFQ?',
+      text:'Os itens actuais serão substituídos pelos itens do RFQ seleccionado.',
+      icon:'question', showCancelButton:true,
+      confirmButtonText:'Sim, importar', cancelButtonText:'Não',
+      confirmButtonColor:'#2E3E82', cancelButtonColor:'#6c757d', reverseButtons:true,
+    }).then(result=>{
       if(!result.isConfirmed) return;
-
-      $.get(`/rfqs/${rfqId}/itens-json/`, function(r){
-        // preencher cliente
+      $.get(`/rfqs/${rfqId}/itens-json/`,function(r){
         if(r.cliente_id) $('#qt_cliente_id').val(r.cliente_id).trigger('change');
         if(r.local_entrega)    $('#qt_local_entrega').val(r.local_entrega);
         if(r.prazo_entrega)    $('#qt_prazo_entrega').val(r.prazo_entrega);
         if(r.pessoa_contacto)  $('#qt_pessoa_contacto').val(r.pessoa_contacto);
         if(r.email_cliente)    $('#qt_email').val(r.email_cliente);
         if(r.telefone_cliente) $('#qt_telefone').val(r.telefone_cliente);
-
-        // substituir itens
         $('#qtItemsBody').html('');
-        if(r.itens && r.itens.length){
-          r.itens.forEach(item => addItemRow(item));
-        } else {
-          addItemRow();
-        }
+        (r.itens&&r.itens.length ? r.itens : [{}]).forEach(item=>addItemRow(item));
       });
     });
   });
 
-  /* ── Auto-fill ao seleccionar cliente ──────────────────── */
-  $('#qt_cliente_id').on('change', function(){
-    const opt = $(this).find('option:selected');
+  /* ── Auto-fill cliente ───────────────────────────────────── */
+  $('#qt_cliente_id').on('change',function(){
+    const opt=$(this).find('option:selected');
     $('#qt_email').val(opt.data('email')||'');
     $('#qt_telefone').val(opt.data('telefone')||'');
     $('#qt_pessoa_contacto').val(opt.data('contacto')||'');
   });
 
-  /* ── Adicionar linha ───────────────────────────────────── */
-  $('#btnAddQtItem').on('click', function(){ addItemRow(); });
-
-  /* ── Remover linha ─────────────────────────────────────── */
-  $(document).on('click', '.btn-remove-item', function(){
-    if($('#qtItemsBody .qt-item-row').length <= 1){
-      Swal.fire({
-        icon:'warning', title:'Atenção',
-        text:'A quotação deve ter pelo menos uma linha de item.',
-        confirmButtonColor:'#1B6B5A',
-      });
+  /* ── Adicionar / remover linha ───────────────────────────── */
+  $('#btnAddQtItem').on('click',function(){ addItemRow(); });
+  $(document).on('click','.btn-remove-item',function(){
+    if($('#qtItemsBody .qt-item-row').length<=1){
+      Swal.fire({icon:'warning',title:'Atenção',text:'A quotação deve ter pelo menos uma linha.',confirmButtonColor:'#2E3E82'});
       return;
     }
     $(this).closest('tr').remove();
-    refreshItemIndexes();
-    recalcularTotais();
+    refreshIndexes(); recalcularTotais();
   });
 
-  /* ── Editar Quotação ───────────────────────────────────── */
-  $(document).on('click', '.btn-edit-qt', function(e){
+  /* ── Editar Quotação ─────────────────────────────────────── */
+  $(document).on('click','.btn-edit-qt',function(e){
     e.preventDefault();
-    const id = $(this).data('id');
+    const id=$(this).data('id');
     resetForm();
 
-    $.get(`/quotacoes/${id}/json/`, function(r){
+    $.get(`/quotacoes/${id}/json/`,function(r){
       $('#qtModalLabel').text('Editar Quotação');
       $('#qt_id').val(r.id);
       $('#qt_numero_preview').val(r.numero);
@@ -975,80 +1014,66 @@ $(document).ready(function () {
       $('#qt_moeda_id').val(r.moeda_id||'');
       $('#qt_cambio').val(r.cambio);
       $('#qt_iva').val(r.percentagem_iva);
-      $('#qt_pagamento').val(r.pagamento_condicoes);
-      $('#qt_entidade').val(r.entidade);
+      $('#qt_condicao_id').val(r.condicao_pagamento_id||'').trigger('change');
       $('#qt_ref_cliente').val(r.referencia_cliente);
       $('#qt_observacoes').val(r.observacoes);
-      $('#qt_termos').val(r.termos_condicoes);
+
+      // Dados bancários
+      const dbIds = r.dados_bancarios_ids||[];
+      $('.qt-banco-check').each(function(){
+        const chk = dbIds.includes(parseInt($(this).val()));
+        $(this).prop('checked',chk);
+        $('#banco_label_'+$(this).val()).toggleClass('checked',chk);
+      });
+      updateBancoChips();
 
       $('#qtItemsBody').html('');
-      if(r.itens && r.itens.length){
-        r.itens.forEach(item => addItemRow(item));
-      } else {
-        addItemRow();
-      }
+      (r.itens&&r.itens.length ? r.itens : [{}]).forEach(item=>addItemRow(item));
 
-      $('#qtForm').attr('action', `/quotacoes/${r.id}/update/`);
+      $('#qtForm').attr('action',`/quotacoes/${r.id}/update/`);
       qtModal.show();
-    }).fail(function(){
-      Swal.fire({icon:'error',title:'Erro',text:'Não foi possível carregar os dados.',confirmButtonColor:'#1B6B5A'});
+    }).fail(()=>{
+      Swal.fire({icon:'error',title:'Erro',text:'Não foi possível carregar os dados.',confirmButtonColor:'#2E3E82'});
     });
   });
 
-  /* ── Visualizar ────────────────────────────────────────── */
-  $(document).on('click', '.btn-view-qt', function(){
-    const id = $(this).data('id');
+  /* ── Visualizar ─────────────────────────────────────────── */
+  $(document).on('click','.btn-view-qt',function(){
+    const id=$(this).data('id');
     $('#qtPreviewContent').addClass('d-none').html('');
     $('#qtPreviewLoading').removeClass('d-none');
-    $('#btnDownloadQtPdf').attr('href', `/quotacoes/${id}/download-pdf/`);
+    $('#btnDownloadQtPdf').attr('href',`/quotacoes/${id}/download-pdf/`);
     qtPreviewModal.show();
-
-    $.get(`/quotacoes/${id}/preview/`, function(html){
+    $.get(`/quotacoes/${id}/preview/`,function(html){
       $('#qtPreviewContent').html(`<div class="qt-preview-sheet">${html}</div>`).removeClass('d-none');
       $('#qtPreviewLoading').addClass('d-none');
-    }).fail(function(){
+    }).fail(()=>{
       $('#qtPreviewLoading').addClass('d-none');
-      Swal.fire({icon:'error',title:'Erro',text:'Não foi possível carregar o preview.',confirmButtonColor:'#1B6B5A'});
+      Swal.fire({icon:'error',title:'Erro',text:'Não foi possível carregar o preview.',confirmButtonColor:'#2E3E82'});
     });
   });
 
-  /* ── Alterar estado ────────────────────────────────────── */
-  $(document).on('click', '.btn-change-estado', function(e){
+  /* ── Alterar estado ─────────────────────────────────────── */
+  $(document).on('click','.btn-change-estado',function(e){
     e.preventDefault();
-    const id     = $(this).data('id');
-    const estado = $(this).data('estado');
-    const label  = $(this).data('label');
-
+    const id=$(this).data('id'), estadoId=$(this).data('estado-id'), label=$(this).data('label');
     Swal.fire({
-      title: `Alterar para "${label}"?`,
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonText: 'Sim, alterar',
-      cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#1B6B5A',
-      cancelButtonColor: '#6c757d',
-      reverseButtons: true,
-    }).then(result => {
+      title:`Alterar para "${label}"?`,
+      icon:'question', showCancelButton:true,
+      confirmButtonText:'Sim, alterar', cancelButtonText:'Cancelar',
+      confirmButtonColor:'#2E3E82', cancelButtonColor:'#6c757d', reverseButtons:true,
+    }).then(result=>{
       if(!result.isConfirmed) return;
-      const form     = document.createElement('form');
-      form.method    = 'POST';
-      form.action    = `/quotacoes/${id}/estado/`;
-      const csrf     = document.createElement('input');
-      csrf.type      = 'hidden';
-      csrf.name      = 'csrfmiddlewaretoken';
-      csrf.value     = '{{ csrf_token }}';
-      const estInput = document.createElement('input');
-      estInput.type  = 'hidden';
-      estInput.name  = 'estado';
-      estInput.value = estado;
-      form.appendChild(csrf);
-      form.appendChild(estInput);
-      document.body.appendChild(form);
-      form.submit();
+      const form=document.createElement('form');
+      form.method='POST'; form.action=`/quotacoes/${id}/estado/`;
+      const csrf=document.createElement('input'); csrf.type='hidden'; csrf.name='csrfmiddlewaretoken'; csrf.value='{{ csrf_token }}';
+      const est=document.createElement('input');  est.type='hidden';  est.name='estado_id'; est.value=estadoId;
+      form.appendChild(csrf); form.appendChild(est);
+      document.body.appendChild(form); form.submit();
     });
   });
 
-  /* ── Init ──────────────────────────────────────────────── */
+  /* ── Init ───────────────────────────────────────────────── */
   resetForm();
 
 });
