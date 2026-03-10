@@ -18,7 +18,9 @@ from procurement.models import (
     PurchaseOrderAnexo,
     Quotacao,
 )
+import logging
 
+logger = logging.getLogger(__name__)
 
 def _parse_decimal(value, default='0'):
     try:
@@ -150,9 +152,11 @@ def create_purchase_order_view(request):
         po = _save_purchase_order(request, PurchaseOrder())
         messages.success(request, f'Purchase Order "{po.numero}" criada com sucesso.')
     except ValueError as e:
+        logger.warning("Erro de validação ao criar PO: %s", e)
         messages.error(request, str(e))
-    except Exception as e:
-        messages.error(request, f'Erro ao criar Purchase Order: {e}')
+    except Exception:
+        logger.exception("Erro inesperado ao criar Purchase Order.")
+        messages.error(request, 'Ocorreu um erro inesperado ao criar a Purchase Order.')
     return redirect('procurement:purchase_orders')
 
 
@@ -165,9 +169,11 @@ def update_purchase_order_view(request, po_id):
         po = _save_purchase_order(request, po)
         messages.success(request, f'Purchase Order "{po.numero}" actualizada com sucesso.')
     except ValueError as e:
+        logger.warning("Erro de validação ao actualizar PO %s: %s", po_id, e)
         messages.error(request, str(e))
-    except Exception as e:
-        messages.error(request, f'Erro ao actualizar Purchase Order: {e}')
+    except Exception:
+        logger.exception("Erro inesperado ao actualizar Purchase Order %s.", po_id)
+        messages.error(request, 'Ocorreu um erro inesperado ao actualizar a Purchase Order.')
     return redirect('procurement:purchase_orders')
 
 

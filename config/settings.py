@@ -204,18 +204,26 @@ STATICFILES_DIRS = [
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATIC_ROOT.mkdir(exist_ok=True)
 
-STORAGES = {
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"
-    },
-}
-
 # =========================================================
 # MEDIA FILES
 # =========================================================
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_ROOT.mkdir(exist_ok=True)
+
+# =========================================================
+# STORAGES
+# =========================================================
+
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    },
+}
 
 # =========================================================
 # SECURITY
@@ -251,8 +259,17 @@ LOGGING = {
             "format": "[{asctime}] {levelname} {name}:{lineno} - {message}",
             "style": "{",
         },
+        "simple": {
+            "format": "{levelname} {name}:{lineno} - {message}",
+            "style": "{",
+        },
     },
     "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+            "level": "DEBUG" if DEBUG else "WARNING",
+        },
         "file_errors": {
             "class": "logging.FileHandler",
             "filename": str(ERROR_LOG_FILE),
@@ -268,23 +285,28 @@ LOGGING = {
     },
     "loggers": {
         "django": {
-            "handlers": ["file_errors"],
-            "level": "WARNING",
+            "handlers": ["console", "file_errors"],
+            "level": "INFO" if DEBUG else "WARNING",
             "propagate": True,
         },
         "django.request": {
-            "handlers": ["file_errors"],
+            "handlers": ["console", "file_errors"],
             "level": "ERROR",
             "propagate": False,
         },
         "django.db.backends": {
-            "handlers": ["file_errors"],
+            "handlers": ["console", "file_errors"],
             "level": "ERROR",
             "propagate": False,
         },
         "django.security": {
-            "handlers": ["file_security"],
+            "handlers": ["console", "file_security"],
             "level": "WARNING",
+            "propagate": False,
+        },
+        "procurement": {
+            "handlers": ["console", "file_errors"],
+            "level": "DEBUG" if DEBUG else "INFO",
             "propagate": False,
         },
     },
