@@ -1,0 +1,573 @@
+{% extends "layouts/pro_base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="container-fluid py-3">
+
+  {% if messages %}
+  <div id="django-messages" style="display:none;">
+    {% for message in messages %}
+      <span data-tags="{{ message.tags }}">{{ message }}</span>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm po-hero-card">
+        <div class="card-body p-4 p-md-5">
+          <div class="row align-items-center g-4">
+            <div class="col-lg-8">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="po-hero-icon">
+                  <i class="material-symbols-rounded">receipt_long</i>
+                </div>
+                <div>
+                  <h3 class="mb-1 fw-bold text-dark">Purchase Orders</h3>
+                  <p class="text-muted mb-0">Registo e gestão de POs recebidas dos clientes.</p>
+                </div>
+              </div>
+              <div class="d-flex flex-wrap gap-2">
+                <span class="badge rounded-pill po-soft-badge">PO Recebida</span>
+                <span class="badge rounded-pill po-soft-badge">Anexos múltiplos</span>
+                <span class="badge rounded-pill po-soft-badge">Conversa de Email</span>
+                <span class="badge rounded-pill po-soft-badge">Ligação à Quotação</span>
+              </div>
+            </div>
+
+            <div class="col-lg-4">
+              <div class="po-stats-grid">
+                <div class="mini-stat-card stat-filter stat-all stat-active" data-filter="">
+                  <span class="mini-stat-label">Total</span>
+                  <h4 class="mb-0">{{ total }}</h4>
+                </div>
+
+                <div class="mini-stat-card stat-filter" data-filter="po_recebida">
+                  <span class="mini-stat-label">PO Recebidas</span>
+                  <h4 class="mb-0 text-primary">{{ total_recebida }}</h4>
+                </div>
+
+                <div class="mini-stat-card stat-filter" data-filter="em_validacao">
+                  <span class="mini-stat-label">Em Validação</span>
+                  <h4 class="mb-0 text-warning">{{ total_validacao }}</h4>
+                </div>
+
+                <div class="mini-stat-card stat-filter" data-filter="confirmada">
+                  <span class="mini-stat-label">Confirmadas</span>
+                  <h4 class="mb-0 text-success">{{ total_confirmada }}</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="po-hero-accent"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm po-main-card">
+        <div class="card-body p-0">
+
+          <div class="po-topbar px-4 pt-4 pb-3">
+            <div class="row align-items-center g-3">
+              <div class="col-lg-8">
+                <h5 class="mb-1 fw-bold text-dark">Lista de Purchase Orders</h5>
+                <p class="text-muted mb-0">Todas as POs recebidas dos clientes.</p>
+              </div>
+              <div class="col-lg-4 d-flex justify-content-lg-end align-items-center gap-2 flex-wrap">
+                <button type="button" class="btn btn-primary btn-modern btn-po" id="btnOpenCreatePO">
+                  <i class="material-symbols-rounded me-1">add</i>Nova PO
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="px-4 pb-4">
+            <div class="table-responsive mt-3">
+              <table id="poTable" class="table align-items-center mb-0 po-table w-100">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Número Interno</th>
+                    <th>PO do Cliente</th>
+                    <th>Cliente</th>
+                    <th>Quotação</th>
+                    <th>Data PO</th>
+                    <th>Valor</th>
+                    <th>Anexos</th>
+                    <th>Estado</th>
+                    <th class="text-center">Acções</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for po in purchase_orders %}
+                  <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>
+                      <div class="d-flex flex-column">
+                        <span class="fw-semibold text-dark">{{ po.numero }}</span>
+                        <span class="table-subtext">
+                          {% if po.criado_por %}{{ po.criado_por.get_full_name|default:po.criado_por.username }}{% else %}—{% endif %}
+                        </span>
+                      </div>
+                    </td>
+                    <td>{{ po.po_cliente_numero|default:"—" }}</td>
+                    <td>{{ po.cliente.nome }}</td>
+                    <td>
+                      {% if po.quotacao %}
+                        <span class="rfq-ref-pill">{{ po.quotacao.numero }}</span>
+                      {% else %}
+                        <span class="text-muted">—</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ po.data_po|date:"d/m/Y" }}</td>
+                    <td>
+                      {% if po.moeda %}{{ po.moeda.simbolo }} {% endif %}{{ po.valor_total|floatformat:2 }}
+                    </td>
+                    <td>
+                      <span class="badge bg-light text-dark">{{ po.anexos.count }}</span>
+                    </td>
+                    <td>
+                      <span class="estado-codigo d-none">{{ po.estado.codigo }}</span>
+                      <span class="status-pill"
+                            style="background-color:{{ po.estado.cor }}18;color:{{ po.estado.cor }};border:1px solid {{ po.estado.cor }}40;">
+                        {{ po.estado.nome }}
+                      </span>
+                    </td>
+                    <td class="text-center">
+                      <div class="d-flex align-items-center justify-content-center gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-primary btn-edit-po" data-id="{{ po.id }}">
+                          <i class="material-symbols-rounded align-middle me-1">edit</i>Editar
+                        </button>
+
+                        <div class="dropdown">
+                          <button class="btn btn-sm btn-icon-only btn-action-menu" type="button"
+                                  data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="material-symbols-rounded">more_vert</i>
+                          </button>
+                          <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm">
+                            {% for estado in estados %}
+                              {% if estado.id != po.estado_id %}
+                              <li>
+                                <a class="dropdown-item btn-change-estado" href="#"
+                                   data-id="{{ po.id }}"
+                                   data-estado-id="{{ estado.id }}"
+                                   data-label="{{ estado.nome }}">
+                                  <i class="material-symbols-rounded me-2 align-middle">swap_horiz</i>{{ estado.nome }}
+                                </a>
+                              </li>
+                              {% endif %}
+                            {% endfor %}
+                          </ul>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% include "includes/pro_footer.html" %}
+</div>
+
+
+<div class="modal fade" id="poModal" tabindex="-1" aria-labelledby="poModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-lg modal-modern">
+      <div class="modal-header border-0 pb-0">
+        <div>
+          <h5 class="modal-title fw-bold" id="poModalLabel">Nova Purchase Order</h5>
+          <p class="text-muted mb-0 small">Registe a PO recebida do cliente.</p>
+        </div>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+      </div>
+
+      <form id="poForm" method="post" enctype="multipart/form-data" action="{% url 'procurement:purchase_orders_create' %}">
+        {% csrf_token %}
+        <input type="hidden" name="po_id" id="po_id">
+
+        <div class="modal-body pt-3" style="max-height:72vh;overflow-y:auto;overflow-x:hidden;">
+
+          <div class="modal-section-title mb-3">
+            <i class="material-symbols-rounded me-2">receipt_long</i>Dados Gerais
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-3">
+              <label class="form-label">Número Interno</label>
+              <input type="text" class="form-control modern-input" id="po_numero_preview" value="{{ default_numero }}" disabled>
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label">PO do Cliente</label>
+              <input type="text" name="po_cliente_numero" id="po_cliente_numero" class="form-control modern-input">
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label">Data da PO <span class="text-danger">*</span></label>
+              <input type="date" name="data_po" id="po_data_po" class="form-control modern-input" value="{{ today }}" required>
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label">Data Recebida</label>
+              <input type="date" name="data_recebida" id="po_data_recebida" class="form-control modern-input" value="{{ today }}">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Cliente <span class="text-danger">*</span></label>
+              <select name="cliente_id" id="po_cliente_id" class="form-select modern-input" required>
+                <option value="">— Seleccione —</option>
+                {% for c in clientes %}
+                  <option value="{{ c.id }}">{{ c.nome }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Quotação Relacionada</label>
+              <select name="quotacao_id" id="po_quotacao_id" class="form-select modern-input">
+                <option value="">— Sem ligação —</option>
+                {% for q in quotacoes %}
+                  <option value="{{ q.id }}" data-cliente="{{ q.cliente_id }}">
+                    {{ q.numero }} – {{ q.cliente.nome }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Moeda</label>
+              <select name="moeda_id" id="po_moeda_id" class="form-select modern-input">
+                <option value="">— Seleccione —</option>
+                {% for m in moedas %}
+                  <option value="{{ m.id }}"
+                    {% if m.id|stringformat:"s" == moeda_predefinida_id|stringformat:"s" %}selected{% endif %}>
+                    {{ m.codigo }} – {{ m.nome }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Valor Total</label>
+              <input type="number" name="valor_total" id="po_valor_total" class="form-control modern-input" step="0.01" min="0" value="0.00">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Referência do Cliente</label>
+              <input type="text" name="referencia_cliente" id="po_referencia_cliente" class="form-control modern-input">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Email do Remetente</label>
+              <input type="email" name="email_remetente" id="po_email_remetente" class="form-control modern-input">
+            </div>
+
+            <div class="col-md-12">
+              <label class="form-label">Assunto do Email</label>
+              <input type="text" name="assunto_email" id="po_assunto_email" class="form-control modern-input">
+            </div>
+          </div>
+
+          <div class="modal-section-title mb-3">
+            <i class="material-symbols-rounded me-2">attach_file</i>Anexos
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label">Anexar ficheiros da PO</label>
+              <input type="file" name="po_anexos" id="po_anexos" class="form-control modern-input" multiple>
+              <small class="text-muted">Pode anexar PDF, Word, imagens ou outros ficheiros enviados pelo cliente.</small>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Anexar conversa de email</label>
+              <input type="file" name="email_anexos" id="email_anexos" class="form-control modern-input" multiple>
+              <small class="text-muted">Pode anexar print, PDF, MSG convertido, ou outros ficheiros da conversa.</small>
+            </div>
+          </div>
+
+          <div class="modal-section-title mb-2">
+            <i class="material-symbols-rounded me-2">notes</i>Observações
+          </div>
+          <div class="mb-3">
+            <textarea name="observacoes" id="po_observacoes" class="form-control modern-input" rows="4"
+                      placeholder="Notas internas sobre esta PO..."></textarea>
+          </div>
+
+          <div id="po_existing_attachments_wrap" class="d-none">
+            <div class="modal-section-title mb-2">
+              <i class="material-symbols-rounded me-2">folder</i>Anexos já registados
+            </div>
+            <div id="po_existing_attachments" class="row g-2 mb-2"></div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer border-0 pt-0 d-flex justify-content-end align-items-center">
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-secondary btn-modern" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary btn-modern btn-po">
+              <i class="material-symbols-rounded me-1">save</i>Guardar PO
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+
+{% block extra_js %}
+
+<link href="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.8/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/datatables.net-responsive-bs5@2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/datatables.net-buttons-bs5@2.4.2/css/buttons.bootstrap5.min.css" rel="stylesheet">
+
+<style>
+:root{
+  --po:#2E3E82;
+  --po-mid:#4256ad;
+  --po-light:#eef2ff;
+  --po-border:#dae3ff;
+}
+.po-hero-card{position:relative;overflow:hidden;border-radius:22px;background:linear-gradient(135deg,#ffffff 0%,#f4f6ff 100%)}
+.po-hero-accent{position:absolute;right:-60px;top:-60px;width:220px;height:220px;background:radial-gradient(circle,rgba(46,62,130,.15) 0%,rgba(46,62,130,0) 70%);pointer-events:none}
+.po-hero-icon{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--po) 0%,var(--po-mid) 100%);color:#fff;box-shadow:0 12px 30px rgba(46,62,130,.22)}
+.po-hero-icon i{font-size:30px}
+.po-soft-badge{background:var(--po-light);color:var(--po);border:1px solid var(--po-border);font-weight:600;padding:.50rem .90rem}
+.po-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.mini-stat-card{background:#fff;border:1px solid #edf0f7;border-radius:18px;padding:18px 16px;box-shadow:0 8px 22px rgba(15,23,42,.04)}
+.mini-stat-label{display:block;font-size:.78rem;color:#6c757d;margin-bottom:6px}
+.stat-filter{cursor:pointer;transition:border-color .18s,box-shadow .18s,background .18s}
+.stat-filter:hover{border-color:var(--po)!important;box-shadow:0 6px 20px rgba(46,62,130,.14)!important}
+.stat-filter.stat-active{border-color:var(--po)!important;background:var(--po-light)!important}
+.po-main-card{border-radius:22px;overflow:hidden}
+.po-topbar{border-bottom:1px solid #edf0f7;background:linear-gradient(180deg,#fff 0%,#f8f9ff 100%)}
+.btn-modern{border-radius:14px!important;padding:.75rem 1.1rem!important;font-weight:600!important;text-transform:none!important}
+.btn-po{background:linear-gradient(135deg,var(--po) 0%,var(--po-mid) 100%)!important;border:none!important;color:#fff!important;box-shadow:0 10px 24px rgba(46,62,130,.22)!important}
+.po-table thead th{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#6c757d;font-weight:700;border-bottom:1px solid #eef1f6!important;padding-top:1rem!important;padding-bottom:1rem!important;background:#f8f9ff}
+.po-table tbody td{vertical-align:middle;border-bottom:1px solid #f3f5f9!important;padding-top:.85rem!important;padding-bottom:.85rem!important}
+.table-subtext{font-size:.77rem;color:#8a93a2}
+.rfq-ref-pill{display:inline-flex;align-items:center;background:var(--po-light);color:var(--po);border:1px solid var(--po-border);border-radius:8px;padding:3px 10px;font-size:.78rem;font-weight:700}
+.status-pill{display:inline-flex;align-items:center;padding:.42rem .80rem;border-radius:999px;font-size:.74rem;font-weight:700}
+.btn-action-menu{width:38px;height:38px;border-radius:12px!important;border:1px solid #e9edf5!important;background:#fff!important;color:#495057!important;display:inline-flex;align-items:center;justify-content:center}
+.modal-modern{border-radius:22px}
+.modal-section-title{display:flex;align-items:center;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--po);border-bottom:1px solid var(--po-border);padding-bottom:8px}
+.modern-input{border-radius:14px!important;border:1px solid #dfe5ef!important;min-height:46px;box-shadow:none!important}
+.modern-input:focus{border-color:var(--po)!important;box-shadow:0 0 0 .2rem rgba(46,62,130,.10)!important}
+.attachment-card{background:#f8f9ff;border:1px solid #e5eaf7;border-radius:14px;padding:12px 14px}
+.attachment-title{font-size:.85rem;font-weight:700;color:#2E3E82;word-break:break-word}
+.attachment-type{font-size:.72rem;color:#6c757d}
+.dataTables_wrapper .dataTables_paginate .pagination{display:flex!important;gap:4px!important;flex-wrap:wrap!important}
+.dataTables_wrapper .dataTables_paginate .pagination .page-item .page-link{all:unset!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:36px!important;height:36px!important;padding:0 10px!important;border-radius:10px!important;border:1px solid #e7ebf3!important;background:#fff!important;color:#495057!important;font-size:.85rem!important;font-weight:600!important;cursor:pointer!important;transition:all .2s!important}
+.dataTables_wrapper .dataTables_paginate .pagination .page-item.active .page-link{background:linear-gradient(135deg,var(--po) 0%,var(--po-mid) 100%)!important;border-color:var(--po)!important;color:#fff!important}
+div.dataTables_wrapper div.dataTables_filter input,
+div.dataTables_wrapper div.dataTables_length select{border-radius:12px!important;border:1px solid #dfe5ef!important;min-height:38px;box-shadow:none!important}
+.dt-buttons{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.dt-buttons .btn{border-radius:12px!important;padding:.45rem .90rem!important;font-size:.82rem!important;font-weight:600!important;display:inline-flex!important;align-items:center!important;gap:4px!important}
+.dt-button-background{display:none!important}
+@media(max-width:991.98px){.po-stats-grid{grid-template-columns:1fr}}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net@1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-responsive@2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-responsive-bs5@2.5.0/js/responsive.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-buttons@2.4.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-buttons-bs5@2.4.2/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-buttons@2.4.2/js/buttons.html5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-buttons@2.4.2/js/buttons.print.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+$(document).ready(function(){
+
+  const poModal = new bootstrap.Modal(document.getElementById('poModal'));
+
+  const mc = document.getElementById('django-messages');
+  if(mc){
+    mc.querySelectorAll('span[data-tags]').forEach(span => {
+      const isErr = span.getAttribute('data-tags').includes('error');
+      Swal.fire({
+        icon: isErr ? 'error' : 'success',
+        title: isErr ? 'Erro' : 'Sucesso',
+        text: span.textContent.trim(),
+        confirmButtonColor:'#2E3E82',
+        timer: isErr ? undefined : 3000,
+        timerProgressBar: !isErr,
+        showConfirmButton: isErr,
+      });
+    });
+  }
+
+  const table = $('#poTable').DataTable({
+    responsive:true,
+    autoWidth:false,
+    pageLength:10,
+    dom:'<"dt-buttons-row d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3"Bf>rtip',
+    buttons:[
+      {extend:'excelHtml5', text:'Excel', className:'btn btn-outline-success', title:'Purchase Orders'},
+      {extend:'csvHtml5', text:'CSV', className:'btn btn-outline-secondary', title:'Purchase Orders'},
+      {extend:'pdfHtml5', text:'PDF', className:'btn btn-outline-danger', title:'Purchase Orders', orientation:'landscape'},
+      {extend:'print', text:'Imprimir', className:'btn btn-outline-primary', title:'Purchase Orders'},
+    ],
+    lengthMenu:[[10,25,50,100,-1],[10,25,50,100,'Todos']],
+    language:{
+      search:'Pesquisar:',
+      lengthMenu:'Mostrar _MENU_ registos',
+      info:'Mostrando _START_ a _END_ de _TOTAL_ registos',
+      infoEmpty:'Mostrando 0 a 0 de 0 registos',
+      infoFiltered:'(filtrado de _MAX_ registos no total)',
+      zeroRecords:'Nenhum registo encontrado',
+      emptyTable:'Sem dados disponíveis',
+      paginate:{first:'Primeiro',last:'Último',next:'Seguinte',previous:'Anterior'},
+    },
+    columnDefs:[
+      {orderable:false, targets:[9]},
+      {targets:8, render:function(data,type,row,meta){
+        if(type==='filter'||type==='sort') return $(row[8]).find('.estado-codigo').text().trim();
+        return data;
+      }}
+    ]
+  });
+
+  $('.stat-filter').on('click', function(){
+    const f=$(this).data('filter');
+    table.column(8).search(f).draw();
+    $('.stat-filter').removeClass('stat-active');
+    $(this).addClass('stat-active');
+  });
+
+  function resetForm(){
+    $('#poForm')[0].reset();
+    $('#po_id').val('');
+    $('#poModalLabel').text('Nova Purchase Order');
+    $('#po_numero_preview').val('{{ default_numero }}');
+    $('#po_data_po').val('{{ today }}');
+    $('#po_data_recebida').val('{{ today }}');
+    $('#po_valor_total').val('0.00');
+    $('#poForm').attr('action', "{% url 'procurement:purchase_orders_create' %}");
+    $('#po_existing_attachments').html('');
+    $('#po_existing_attachments_wrap').addClass('d-none');
+  }
+
+  $('#btnOpenCreatePO').on('click', function(){
+    resetForm();
+    poModal.show();
+  });
+
+  $('#po_quotacao_id').on('change', function(){
+    const clienteId = $(this).find('option:selected').data('cliente');
+    if(clienteId){
+      $('#po_cliente_id').val(clienteId);
+    }
+  });
+
+  $(document).on('click', '.btn-edit-po', function(){
+    const id = $(this).data('id');
+    resetForm();
+
+    $.get(`/purchase-orders/${id}/json/`, function(r){
+      $('#poModalLabel').text('Editar Purchase Order');
+      $('#po_id').val(r.id);
+      $('#po_numero_preview').val(r.numero);
+      $('#po_cliente_numero').val(r.po_cliente_numero);
+      $('#po_cliente_id').val(r.cliente_id);
+      $('#po_quotacao_id').val(r.quotacao_id || '');
+      $('#po_moeda_id').val(r.moeda_id || '');
+      $('#po_data_po').val(r.data_po);
+      $('#po_data_recebida').val(r.data_recebida);
+      $('#po_valor_total').val(r.valor_total);
+      $('#po_referencia_cliente').val(r.referencia_cliente);
+      $('#po_email_remetente').val(r.email_remetente);
+      $('#po_assunto_email').val(r.assunto_email);
+      $('#po_observacoes').val(r.observacoes);
+
+      if(r.anexos && r.anexos.length){
+        let html = '';
+        r.anexos.forEach(a => {
+          html += `
+            <div class="col-md-6">
+              <div class="attachment-card">
+                <div class="attachment-title">${a.nome_ficheiro}</div>
+                <div class="attachment-type">${a.tipo_anexo}</div>
+              </div>
+            </div>
+          `;
+        });
+        $('#po_existing_attachments').html(html);
+        $('#po_existing_attachments_wrap').removeClass('d-none');
+      }
+
+      $('#poForm').attr('action', `/purchase-orders/${r.id}/update/`);
+      poModal.show();
+    }).fail(function(){
+      Swal.fire({
+        icon:'error',
+        title:'Erro',
+        text:'Não foi possível carregar os dados da PO.',
+        confirmButtonColor:'#2E3E82'
+      });
+    });
+  });
+
+  $(document).on('click','.btn-change-estado',function(e){
+    e.preventDefault();
+    const id=$(this).data('id'),
+          estadoId=$(this).data('estado-id'),
+          label=$(this).data('label');
+
+    Swal.fire({
+      title:`Alterar para "${label}"?`,
+      icon:'question',
+      showCancelButton:true,
+      confirmButtonText:'Sim, alterar',
+      cancelButtonText:'Cancelar',
+      confirmButtonColor:'#2E3E82',
+      cancelButtonColor:'#6c757d',
+      reverseButtons:true,
+    }).then(result=>{
+      if(!result.isConfirmed) return;
+
+      const form=document.createElement('form');
+      form.method='POST';
+      form.action=`/purchase-orders/${id}/estado/`;
+
+      const csrf=document.createElement('input');
+      csrf.type='hidden';
+      csrf.name='csrfmiddlewaretoken';
+      csrf.value='{{ csrf_token }}';
+
+      const est=document.createElement('input');
+      est.type='hidden';
+      est.name='estado_id';
+      est.value=estadoId;
+
+      form.appendChild(csrf);
+      form.appendChild(est);
+      document.body.appendChild(form);
+      form.submit();
+    });
+  });
+
+});
+</script>
+
+{% endblock extra_js %}

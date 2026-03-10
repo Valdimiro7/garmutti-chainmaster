@@ -49,6 +49,8 @@ from procurement.views.configuracoes.metodos_pagamento_view import (metodos_paga
 from procurement.views.configuracoes.moedas_view import (moedas_view, moeda_detail_json_view, create_moeda_view, update_moeda_view, toggle_moeda_status_view, definir_moeda_predefinida_view, delete_moeda_view)
 from procurement.views.configuracoes.organizacao_view import (organizacao_view, organizacao_detail_json_view, create_organizacao_view, update_organizacao_view, toggle_organizacao_status_view, delete_organizacao_view)
 from procurement.views.configuracoes.condicoes_pagamento_view import (condicoes_pagamento_view, condicao_pagamento_detail_json_view, create_condicao_pagamento_view, update_condicao_pagamento_view, toggle_condicao_pagamento_status_view, delete_condicao_pagamento_view)
+from procurement.views.po.purchase_order_view import (purchase_orders_view, create_purchase_order_view, update_purchase_order_view, purchase_order_detail_json_view, change_estado_purchase_order_view)
+
 
 
 
@@ -84,6 +86,15 @@ urlpatterns = [
     path('quotacoes/<int:quotacao_id>/download-pdf/', quotacao_download_pdf_view, name='quotacoes_download_pdf'),
     path('quotacoes/<int:quotacao_id>/estado/',     change_estado_quotacao_view,  name='quotacoes_change_estado'),
     path('rfqs/<int:rfq_id>/itens-json/',           rfq_itens_json_view,          name='rfq_itens_json'),
+    
+    
+    
+    #======================Gestão de POs - Purchase Orders==========================================
+    path('purchase-orders/', purchase_orders_view, name='purchase_orders'),
+    path('purchase-orders/create/', create_purchase_order_view, name='purchase_orders_create'),
+    path('purchase-orders/<int:po_id>/update/', update_purchase_order_view, name='purchase_orders_update'),
+    path('purchase-orders/<int:po_id>/json/', purchase_order_detail_json_view, name='purchase_orders_json'),
+    path('purchase-orders/<int:po_id>/estado/', change_estado_purchase_order_view, name='purchase_orders_estado'),
     
     
     #Fornecesores

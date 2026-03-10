@@ -14,6 +14,9 @@ from .quotacaoestado import QuotacaoEstado
 from .dadobancario import DadoBancario
 from .quotacaodadobancario import QuotacaoDadoBancario
 from .condicaopagamento import CondicaoPagamento
+from .poestado import POEstado
+from .purchaseorder import PurchaseOrder
+from .purchaseorderanexo import PurchaseOrderAnexo
 
 
 __all__ = [
@@ -33,4 +36,7 @@ __all__ = [
     'DadoBancario',
     'QuotacaoDadoBancario',
     'CondicaoPagamento',
+    'POEstado',
+    'PurchaseOrder',
+    'PurchaseOrderAnexo',
 ]
