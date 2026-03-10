@@ -415,11 +415,17 @@ def update_rfq_view(request, rfq_id):
 
 @login_required
 @require_POST
-def delete_rfq_view(request, rfq_id):
+def cancel_rfq_view(request, rfq_id):
     rfq = get_object_or_404(RFQ, id=rfq_id)
-    numero = rfq.numero
-    rfq.delete()
-    messages.success(request, f'RFQ "{numero}" removido com sucesso.')
+
+    if rfq.estado_id != 1:
+        messages.error(request, f'O RFQ "{rfq.numero}" não pode ser cancelado pois não está no estado "Novo".')
+        return redirect('procurement:rfqs')
+
+    rfq.estado_id = 7
+    rfq.actualizado_em = timezone.now()
+    rfq.save()
+    messages.success(request, f'RFQ "{rfq.numero}" cancelado com sucesso.')
     return redirect('procurement:rfqs')
 
 
@@ -709,12 +715,16 @@ def _send_rfq_emails(rfq, nome, email, telefone, payload, itens_validos):
     # ---------------------------------------------------
     # EMAIL PARA O GRUPO PROCUREMENT OFFICER (ID = 2)
     # ---------------------------------------------------
-    group = Group.objects.filter(id=2).first()
+    group = Group.objects.filter(id=3).first()
     if not group:
+        print("Grupo Procurement Officer com id=3 não encontrado.")
         return
 
     emails_procurement = [u.email for u in group.user_set.all() if u.email]
+    print("Emails Procurement Officer:", emails_procurement)
+
     if not emails_procurement:
+        print("Nenhum utilizador com email encontrado no grupo id=3.")
         return
 
     subject_internal = f"Nova RFQ submetida pelo website - {rfq.numero}"

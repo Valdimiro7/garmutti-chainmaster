@@ -13,6 +13,7 @@
   </div>
   {% endif %}
 
+  <!-- ===== HERO CARD ===== -->
   <div class="row mb-4">
     <div class="col-12">
       <div class="card border-0 shadow-sm rfq-hero-card">
@@ -38,22 +39,39 @@
 
             <div class="col-lg-4">
               <div class="rfq-stats-grid">
-                <div class="mini-stat-card">
-                  <span class="mini-stat-label">Total de RFQ</span>
+
+                <div class="mini-stat-card stat-filter stat-all stat-active" data-filter="" data-col="7">
+                  <span class="mini-stat-label">
+                    <i class="material-symbols-rounded me-1" style="font-size:14px;vertical-align:-2px">list_alt</i>
+                    Total de RFQ
+                  </span>
                   <h4 class="mb-0">{{ total }}</h4>
                 </div>
-                <div class="mini-stat-card">
-                  <span class="mini-stat-label">Novos</span>
+
+                <div class="mini-stat-card stat-filter stat-novo" data-filter="novo" data-col="7">
+                  <span class="mini-stat-label">
+                    <i class="material-symbols-rounded me-1" style="font-size:14px;vertical-align:-2px">fiber_new</i>
+                    Novos
+                  </span>
                   <h4 class="mb-0 text-primary">{{ total_novos }}</h4>
                 </div>
-                <div class="mini-stat-card">
-                  <span class="mini-stat-label">Fechados</span>
+
+                <div class="mini-stat-card stat-filter stat-fechado" data-filter="fechado" data-col="7">
+                  <span class="mini-stat-label">
+                    <i class="material-symbols-rounded me-1" style="font-size:14px;vertical-align:-2px">check_circle</i>
+                    Fechados
+                  </span>
                   <h4 class="mb-0 text-success">{{ total_fechados }}</h4>
                 </div>
-                <div class="mini-stat-card">
-                  <span class="mini-stat-label">Cancelados</span>
+
+                <div class="mini-stat-card stat-filter stat-cancelado" data-filter="cancelado" data-col="7">
+                  <span class="mini-stat-label">
+                    <i class="material-symbols-rounded me-1" style="font-size:14px;vertical-align:-2px">cancel</i>
+                    Cancelados
+                  </span>
                   <h4 class="mb-0 text-danger">{{ total_cancelados }}</h4>
                 </div>
+
               </div>
             </div>
           </div>
@@ -63,6 +81,7 @@
     </div>
   </div>
 
+  <!-- ===== MAIN TABLE CARD ===== -->
   <div class="row">
     <div class="col-12">
       <div class="card border-0 shadow-sm rfq-main-card">
@@ -74,7 +93,12 @@
                 <h5 class="mb-1 fw-bold text-dark">Lista de RFQ</h5>
                 <p class="text-muted mb-0">Todos os pedidos de cotação registados no sistema.</p>
               </div>
-              <div class="col-lg-4 d-flex justify-content-lg-end">
+              <div class="col-lg-4 d-flex justify-content-lg-end align-items-center gap-2 flex-wrap">
+                <button type="button" class="pill-toggle-cancelados" id="btnToggleCancelados">
+                  <i class="material-symbols-rounded">block</i>
+                  <span id="lblToggleCancelados">Ver Cancelados</span>
+                  <span class="pill-count-badge">{{ total_cancelados }}</span>
+                </button>
                 <button type="button" class="btn btn-primary btn-modern btn-rfq" id="btnOpenCreateRFQ">
                   <i class="material-symbols-rounded me-1">add</i>
                   Novo RFQ
@@ -84,6 +108,10 @@
           </div>
 
           <div class="px-4 pb-4">
+
+            <!-- Export buttons rendered here by DataTables (dom: 'B...') -->
+            <!-- The dt-buttons div will appear above the table -->
+
             <div class="table-responsive mt-3">
               <table id="rfqsTable" class="table align-items-center mb-0 rfq-table w-100">
                 <thead>
@@ -153,6 +181,8 @@
                     </td>
 
                     <td>
+                      <!-- hidden span for DataTable search/filter -->
+                      <span class="estado-codigo d-none">{{ rfq.estado.codigo }}</span>
                       <span class="status-pill"
                             style="background-color: {{ rfq.estado.cor }}15; color: {{ rfq.estado.cor }}; border: 1px solid {{ rfq.estado.cor }}40;">
                         {{ rfq.estado.nome }}
@@ -168,28 +198,35 @@
                         </button>
 
                         <div class="dropdown">
-                          <button class="btn btn-sm btn-icon-only btn-action-menu" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                          <button class="btn btn-sm btn-icon-only btn-action-menu" type="button"
+                                  data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="material-symbols-rounded">more_vert</i>
                           </button>
                           <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm">
+
                             <li>
                               <a class="dropdown-item btn-edit-rfq" href="#" data-id="{{ rfq.id }}">
                                 <i class="material-symbols-rounded me-2 align-middle">edit</i>Editar
                               </a>
                             </li>
+
                             <li>
                               <a class="dropdown-item" href="{% url 'procurement:rfqs_download_pdf' rfq.id %}" target="_blank">
                                 <i class="material-symbols-rounded me-2 align-middle">download</i>Download PDF
                               </a>
                             </li>
+
+                            {% if rfq.estado_id == 1 %}
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                              <a class="dropdown-item text-danger btn-delete-rfq" href="#"
+                              <a class="dropdown-item text-warning btn-cancel-rfq" href="#"
                                  data-id="{{ rfq.id }}"
                                  data-name="{{ rfq.numero }}">
-                                <i class="material-symbols-rounded me-2 align-middle">delete</i>Remover
+                                <i class="material-symbols-rounded me-2 align-middle">cancel</i>Cancelar
                               </a>
                             </li>
+                            {% endif %}
+
                           </ul>
                         </div>
                       </div>
@@ -209,6 +246,8 @@
   {% include "includes/pro_footer.html" %}
 </div>
 
+
+<!-- ===== MODAL: CRIAR / EDITAR RFQ ===== -->
 <div class="modal fade" id="rfqModal" tabindex="-1" aria-labelledby="rfqModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content border-0 shadow-lg modal-modern">
@@ -226,6 +265,7 @@
 
         <div class="modal-body pt-3">
 
+          <!-- Dados Gerais -->
           <div class="modal-section-title mb-3">
             <i class="material-symbols-rounded me-2">description</i>Dados Gerais
           </div>
@@ -233,12 +273,14 @@
           <div class="row g-3 mb-4">
             <div class="col-md-3">
               <label class="form-label">Número</label>
-              <input type="text" class="form-control modern-input" id="rfq_numero_preview" value="{{ default_numero }}" disabled>
+              <input type="text" class="form-control modern-input" id="rfq_numero_preview"
+                     value="{{ default_numero }}" disabled>
             </div>
 
             <div class="col-md-3">
               <label class="form-label">Data do RFQ <span class="text-danger">*</span></label>
-              <input type="date" name="data_rfq" id="rfq_data_rfq" class="form-control modern-input" value="{{ today }}" required>
+              <input type="date" name="data_rfq" id="rfq_data_rfq"
+                     class="form-control modern-input" value="{{ today }}" required>
             </div>
 
             <div class="col-md-6">
@@ -258,30 +300,37 @@
 
             <div class="col-md-4">
               <label class="form-label">Pessoa de Contacto</label>
-              <input type="text" name="pessoa_contacto" id="rfq_pessoa_contacto" class="form-control modern-input">
+              <input type="text" name="pessoa_contacto" id="rfq_pessoa_contacto"
+                     class="form-control modern-input">
             </div>
 
             <div class="col-md-4">
               <label class="form-label">Telefone</label>
-              <input type="text" name="telefone_cliente" id="rfq_telefone_cliente" class="form-control modern-input">
+              <input type="text" name="telefone_cliente" id="rfq_telefone_cliente"
+                     class="form-control modern-input">
             </div>
 
             <div class="col-md-4">
               <label class="form-label">Email</label>
-              <input type="email" name="email_cliente" id="rfq_email_cliente" class="form-control modern-input">
+              <input type="email" name="email_cliente" id="rfq_email_cliente"
+                     class="form-control modern-input">
             </div>
 
             <div class="col-md-6">
               <label class="form-label">Prazo de Entrega</label>
-              <input type="date" name="prazo_entrega" id="rfq_prazo_entrega" class="form-control modern-input">
+              <input type="date" name="prazo_entrega" id="rfq_prazo_entrega"
+                     class="form-control modern-input">
             </div>
 
             <div class="col-md-6">
               <label class="form-label">Local de Entrega</label>
-              <input type="text" name="local_entrega" id="rfq_local_entrega" class="form-control modern-input" placeholder="Maputo, armazém, escritório, obra, etc.">
+              <input type="text" name="local_entrega" id="rfq_local_entrega"
+                     class="form-control modern-input"
+                     placeholder="Maputo, armazém, escritório, obra, etc.">
             </div>
           </div>
 
+          <!-- Itens -->
           <div class="modal-section-title mb-3 d-flex justify-content-between align-items-center">
             <div>
               <i class="material-symbols-rounded me-2">inventory_2</i>Itens Solicitados
@@ -308,32 +357,35 @@
             </table>
           </div>
 
+          <!-- Anexos -->
           <div class="modal-section-title mb-3">
             <i class="material-symbols-rounded me-2">attach_file</i>Anexos
           </div>
-
           <div class="row g-3 mb-4">
             <div class="col-md-12">
               <label class="form-label">Ficheiros</label>
-              <input type="file" name="anexos" id="rfq_anexos" class="form-control modern-input" multiple>
+              <input type="file" name="anexos" id="rfq_anexos"
+                     class="form-control modern-input" multiple>
             </div>
           </div>
 
+          <!-- Observações -->
           <div class="modal-section-title mb-3">
             <i class="material-symbols-rounded me-2">notes</i>Observações
           </div>
-
           <div class="row g-3">
             <div class="col-md-12">
               <label class="form-label">Observações</label>
-              <textarea name="observacoes" id="rfq_observacoes" class="form-control modern-input" rows="3"></textarea>
+              <textarea name="observacoes" id="rfq_observacoes"
+                        class="form-control modern-input" rows="3"></textarea>
             </div>
           </div>
 
         </div>
 
         <div class="modal-footer border-0 pt-0">
-          <button type="button" class="btn btn-outline-secondary btn-modern" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-outline-secondary btn-modern"
+                  data-bs-dismiss="modal">Cancelar</button>
           <button type="submit" class="btn btn-primary btn-modern btn-rfq">
             <i class="material-symbols-rounded me-1">save</i>Guardar RFQ
           </button>
@@ -343,7 +395,10 @@
   </div>
 </div>
 
-<div class="modal fade" id="rfqPreviewModal" tabindex="-1" aria-labelledby="rfqPreviewModalLabel" aria-hidden="true">
+
+<!-- ===== MODAL: PREVIEW RFQ ===== -->
+<div class="modal fade" id="rfqPreviewModal" tabindex="-1"
+     aria-labelledby="rfqPreviewModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-fullscreen-lg-down modal-xl modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content border-0 shadow-lg modal-modern">
       <div class="modal-header border-0">
@@ -355,10 +410,10 @@
           <a href="#" id="btnDownloadRfqPdf" class="btn btn-rfq btn-modern" target="_blank">
             <i class="material-symbols-rounded me-1">download</i>Download PDF
           </a>
-          <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button type="button" class="btn-close shadow-none"
+                  data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
       </div>
-
       <div class="modal-body bg-light">
         <div id="rfqPreviewLoading" class="text-center py-5">
           <div class="spinner-border text-primary mb-3" role="status"></div>
@@ -372,68 +427,131 @@
 
 {% endblock content %}
 
+
 {% block extra_js %}
 
+<!-- DataTables CSS -->
 <link href="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.8/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/datatables.net-responsive-bs5@2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/datatables.net-buttons-bs5@2.4.2/css/buttons.bootstrap5.min.css" rel="stylesheet">
 
 <style>
+  /* ─── Hero ─────────────────────────────────────────────── */
   .rfq-hero-card{position:relative;overflow:hidden;border-radius:22px;background:linear-gradient(135deg,#ffffff 0%,#f8f9ff 100%)}
   .rfq-hero-accent{position:absolute;right:-60px;top:-60px;width:220px;height:220px;background:radial-gradient(circle,rgba(46,62,130,0.16) 0%,rgba(46,62,130,0) 70%);pointer-events:none}
   .rfq-hero-icon{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#2E3E82 0%,#4256ad 100%);color:#fff;box-shadow:0 12px 30px rgba(46,62,130,0.20)}
   .rfq-hero-icon i{font-size:30px}
   .rfq-soft-badge{background:#eef2ff;color:#2E3E82;border:1px solid #dae3ff;font-weight:600;padding:.50rem .90rem}
+
+  /* ─── Stats grid ────────────────────────────────────────── */
   .rfq-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .mini-stat-card{background:#fff;border:1px solid #edf0f7;border-radius:18px;padding:18px 16px;box-shadow:0 8px 22px rgba(15,23,42,0.04)}
+  .mini-stat-label{display:block;font-size:.78rem;color:#6c757d;margin-bottom:6px}
+
+  /* ─── Stat filter (clickable cards) ────────────────────── */
+  .stat-filter{cursor:pointer;transition:border-color .18s ease, box-shadow .18s ease, background .18s ease}
+  .stat-filter:hover{border-color:#2E3E82 !important;box-shadow:0 6px 20px rgba(46,62,130,0.14) !important}
+  .stat-filter.stat-active{border-color:#2E3E82 !important;background:#eef2ff !important}
+  .stat-filter.stat-active .mini-stat-label{color:#2E3E82}
+
+  /* ─── Main card ─────────────────────────────────────────── */
   .rfq-main-card{border-radius:22px;overflow:hidden}
   .rfq-topbar{border-bottom:1px solid #edf0f7;background:linear-gradient(180deg,#ffffff 0%,#fbfcff 100%)}
+
+  /* ─── Buttons ───────────────────────────────────────────── */
   .btn-modern{border-radius:14px !important;padding:.75rem 1.1rem !important;font-weight:600 !important;box-shadow:none !important;text-transform:none !important}
   .btn-rfq{background:linear-gradient(135deg,#2E3E82 0%,#4256ad 100%) !important;border:none !important;color:#fff !important;box-shadow:0 10px 24px rgba(46,62,130,0.22) !important}
+
+  /* ─── Table ─────────────────────────────────────────────── */
   .rfq-table thead th{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#6c757d;font-weight:700;border-bottom:1px solid #eef1f6 !important;padding-top:1rem !important;padding-bottom:1rem !important;background:#fbfcfe}
   .rfq-table tbody td{vertical-align:middle;border-bottom:1px solid #f3f5f9 !important;padding-top:.85rem !important;padding-bottom:.85rem !important}
   .table-subtext{font-size:.77rem;color:#8a93a2}
+
+  /* ─── Badges / pills ────────────────────────────────────── */
   .avatar-circle-rfq{width:42px;height:42px;min-width:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#eef2ff;color:#2E3E82;font-weight:700;font-size:.85rem}
   .nuit-pill{display:inline-flex;align-items:center;background:#eef2ff;color:#2E3E82;border:1px solid #dae3ff;border-radius:8px;padding:3px 10px;font-size:.78rem;font-weight:700}
   .origem-pill{display:inline-flex;align-items:center;border-radius:999px;padding:.35rem .75rem;font-size:.74rem;font-weight:700}
   .origem-manual{background:#eef2ff;color:#2E3E82;border:1px solid #dae3ff}
-  .origem-website{
-    background:#e9f7ef;
-    color:#198754;
-    border:1px solid #bfe3cd;
-  }
+  .origem-website{background:#e9f7ef;color:#198754;border:1px solid #bfe3cd}
   .status-pill{display:inline-flex;align-items:center;padding:.42rem .80rem;border-radius:999px;font-size:.74rem;font-weight:700}
+
+  /* ─── Action menu ───────────────────────────────────────── */
   .btn-action-menu{width:38px;height:38px;border-radius:12px !important;border:1px solid #e9edf5 !important;background:#fff !important;color:#495057 !important;display:inline-flex;align-items:center;justify-content:center}
+  .btn-view-rfq{border-radius:12px !important}
+
+  /* ─── Modal ─────────────────────────────────────────────── */
   .modal-modern{border-radius:22px}
   .modal-section-title{display:flex;align-items:center;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#2E3E82;border-bottom:1px solid #dae3ff;padding-bottom:8px}
   .modern-input{border-radius:14px !important;border:1px solid #dfe5ef !important;min-height:46px;box-shadow:none !important}
   .modern-input:focus{border-color:#2E3E82 !important;box-shadow:0 0 0 .2rem rgba(46,62,130,0.10) !important}
+
+  /* ─── Items table ───────────────────────────────────────── */
   .rfq-items-table thead th{background:#f8faff;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:#6c757d;border-bottom:1px solid #e8edf7 !important}
   .rfq-items-table tbody td{border-bottom:1px solid #f1f4fa !important;vertical-align:middle}
   .btn-remove-item{width:38px;height:38px;border-radius:12px !important;border:none !important;background:#fff1f1 !important;color:#dc3545 !important}
-  .mini-stat-card{background:#fff;border:1px solid #edf0f7;border-radius:18px;padding:18px 16px;box-shadow:0 8px 22px rgba(15,23,42,0.04)}
-  .mini-stat-label{display:block;font-size:.78rem;color:#6c757d;margin-bottom:6px}
-  .btn-view-rfq{border-radius:12px !important}
+
+  /* ─── Preview ───────────────────────────────────────────── */
   .rfq-preview-wrap{background:#e9ecef;padding:18px;border-radius:18px}
   .rfq-preview-sheet{max-width:980px;margin:0 auto;background:#fff;border-radius:8px;box-shadow:0 10px 30px rgba(15,23,42,.10);overflow:hidden}
+
+  /* ─── DataTables pagination ─────────────────────────────── */
   .dataTables_wrapper .dataTables_paginate .pagination{display:flex !important;gap:4px !important;flex-wrap:wrap !important}
   .dataTables_wrapper .dataTables_paginate .pagination .page-item .page-link{all:unset !important;display:inline-flex !important;align-items:center !important;justify-content:center !important;min-width:36px !important;height:36px !important;padding:0 10px !important;border-radius:10px !important;border:1px solid #e7ebf3 !important;background:#fff !important;color:#495057 !important;font-size:.85rem !important;font-weight:600 !important;cursor:pointer !important;transition:all .2s ease !important}
   .dataTables_wrapper .dataTables_paginate .pagination .page-item.active .page-link{background:linear-gradient(135deg,#2E3E82 0%,#4256ad 100%) !important;border-color:#2E3E82 !important;color:#fff !important}
   div.dataTables_wrapper div.dataTables_filter input,
   div.dataTables_wrapper div.dataTables_length select{border-radius:12px !important;border:1px solid #dfe5ef !important;min-height:38px;box-shadow:none !important}
+
+  /* ─── Pill toggle: Ver Cancelados ───────────────────────── */
+  .pill-toggle-cancelados{display:inline-flex;align-items:center;gap:6px;padding:.42rem .90rem;border-radius:999px;border:1.5px solid #f5c6cb;background:#fff5f5;color:#842029;font-size:.80rem;font-weight:700;cursor:pointer;transition:all .20s ease;white-space:nowrap;line-height:1}
+  .pill-toggle-cancelados i{font-size:15px}
+  .pill-toggle-cancelados:hover{background:#f8d7da;border-color:#dc3545;box-shadow:0 4px 14px rgba(220,53,69,.16)}
+  .pill-toggle-cancelados.pill-active{background:#dc3545;border-color:#dc3545;color:#fff;box-shadow:0 6px 18px rgba(220,53,69,.28)}
+  .pill-toggle-cancelados.pill-active:hover{background:#bb2d3b;border-color:#bb2d3b}
+  .pill-count-badge{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;border-radius:999px;background:rgba(220,53,69,.18);color:inherit;font-size:.72rem;font-weight:800;padding:0 5px}
+  .pill-toggle-cancelados.pill-active .pill-count-badge{background:rgba(255,255,255,.30)}
+
+  /* ─── DataTables export buttons ─────────────────────────── */
+  .dt-buttons{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .dt-buttons .btn{border-radius:12px !important;padding:.45rem .90rem !important;font-size:.82rem !important;font-weight:600 !important;display:inline-flex !important;align-items:center !important;gap:4px !important}
+  .dt-button-background{display:none !important}
+
+  /* ─── Responsive ────────────────────────────────────────── */
   @media (max-width:991.98px){.rfq-stats-grid{grid-template-columns:1fr}}
 </style>
 
+<!-- JS: jQuery -->
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+
+<!-- JS: DataTables core + BS5 + Responsive + Buttons -->
 <script src="https://cdn.jsdelivr.net/npm/datatables.net@1.13.8/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.8/js/dataTables.bootstrap5.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/datatables.net-responsive@2.5.0/js/dataTables.responsive.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/datatables.net-responsive-bs5@2.5.0/js/responsive.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-buttons@2.4.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-buttons-bs5@2.4.2/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-buttons@2.4.2/js/buttons.html5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-buttons@2.4.2/js/buttons.print.min.js"></script>
+
+<!-- JS: Export libs -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+<!-- JS: SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
 $(document).ready(function () {
-  const rfqModal = new bootstrap.Modal(document.getElementById('rfqModal'));
+
+  /* ─────────────────────────────────────────────────────────
+     Bootstrap modals
+  ───────────────────────────────────────────────────────── */
+  const rfqModal        = new bootstrap.Modal(document.getElementById('rfqModal'));
   const rfqPreviewModal = new bootstrap.Modal(document.getElementById('rfqPreviewModal'));
 
+  /* ─────────────────────────────────────────────────────────
+     Django messages → SweetAlert
+  ───────────────────────────────────────────────────────── */
   const msgContainer = document.getElementById('django-messages');
   if (msgContainer) {
     msgContainer.querySelectorAll('span[data-tags]').forEach(function (span) {
@@ -450,10 +568,50 @@ $(document).ready(function () {
     });
   }
 
-  $('#rfqsTable').DataTable({
+  /* ─────────────────────────────────────────────────────────
+     DataTable
+     - dom: 'Blfrtip'  →  Buttons | Length | Filter | Table | Info | Pagination
+     - columnDefs col 7: renderiza só o texto do .estado-codigo (oculto) para search
+  ───────────────────────────────────────────────────────── */
+  // Estado interno do toggle
+  let mostrandoCancelados = false;
+
+  const table = $('#rfqsTable').DataTable({
     responsive: true,
     autoWidth: false,
     pageLength: 10,
+    dom: '<"dt-buttons-row d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3"Bf>rtip',
+    buttons: [
+      {
+        extend: 'excelHtml5',
+        text: '<i class="material-symbols-rounded" style="font-size:16px">table_chart</i> Excel',
+        className: 'btn btn-outline-success',
+        title: 'RFQ - Lista',
+        exportOptions: { columns: [0, 1, 2, 3, 4, 5, 6, 7] }
+      },
+      {
+        extend: 'csvHtml5',
+        text: '<i class="material-symbols-rounded" style="font-size:16px">csv</i> CSV',
+        className: 'btn btn-outline-secondary',
+        title: 'RFQ - Lista',
+        exportOptions: { columns: [0, 1, 2, 3, 4, 5, 6, 7] }
+      },
+      {
+        extend: 'pdfHtml5',
+        text: '<i class="material-symbols-rounded" style="font-size:16px">picture_as_pdf</i> PDF',
+        className: 'btn btn-outline-danger',
+        title: 'RFQ - Lista',
+        orientation: 'landscape',
+        exportOptions: { columns: [0, 1, 2, 3, 4, 5, 6, 7] }
+      },
+      {
+        extend: 'print',
+        text: '<i class="material-symbols-rounded" style="font-size:16px">print</i> Imprimir',
+        className: 'btn btn-outline-primary',
+        title: 'RFQ - Lista',
+        exportOptions: { columns: [0, 1, 2, 3, 4, 5, 6, 7] }
+      },
+    ],
     lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'Todos']],
     language: {
       search: 'Pesquisar:',
@@ -463,17 +621,92 @@ $(document).ready(function () {
       infoFiltered: '(filtrado de _MAX_ registos no total)',
       zeroRecords: 'Nenhum registo encontrado',
       emptyTable: 'Sem dados disponíveis',
-      paginate: { first: 'Primeiro', last: 'Último', next: 'Seguinte', previous: 'Anterior' }
+      paginate: { first: 'Primeiro', last: 'Último', next: 'Seguinte', previous: 'Anterior' },
+      buttons: { copyTitle: 'Copiado!', copySuccess: { 1: '1 linha copiada', _: '%d linhas copiadas' } }
     },
-    columnDefs: [{ orderable: false, targets: [8] }]
+    columnDefs: [
+      { orderable: false, targets: [8] },
+      /*
+        Col 7 = Estado: usa o texto do span .estado-codigo (hidden) como dado de pesquisa,
+        assim o filtro dos mini-stat cards funciona pelo código (novo, cancelado, fechado…)
+      */
+      {
+        targets: 7,
+        render: function (data, type, row, meta) {
+          if (type === 'filter' || type === 'sort') {
+            const cell = $(row[7]);
+            return cell.find('.estado-codigo').text().trim();
+          }
+          return data;
+        }
+      }
+    ]
   });
 
-  function buildItemRow(index, data = {}) {
+  // Ocultar cancelados ao iniciar — lê o span.estado-codigo do DOM da linha
+  $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+    if (settings.nTable.id !== 'rfqsTable') return true;
+    if (mostrandoCancelados) return true;
+    const row  = table.row(dataIndex).node();
+    const code = $(row).find('.estado-codigo').text().trim().toLowerCase();
+    return code !== 'cancelado';
+  });
+  table.draw();
+
+  /* ─────────────────────────────────────────────────────────
+     Pill toggle: mostrar / ocultar cancelados
+  ───────────────────────────────────────────────────────── */
+  $('#btnToggleCancelados').on('click', function () {
+    mostrandoCancelados = !mostrandoCancelados;
+    $(this).toggleClass('pill-active', mostrandoCancelados);
+    $('#lblToggleCancelados').text(mostrandoCancelados ? 'Ocultar Cancelados' : 'Ver Cancelados');
+
+    // Se está a mostrar cancelados, reseta filtros dos stat cards para "Todos"
+    if (mostrandoCancelados) {
+      table.column(7).search('').draw();
+      $('.stat-filter').removeClass('stat-active');
+      $('.stat-all').addClass('stat-active');
+    } else {
+      table.draw();
+    }
+  });
+
+  /* ─────────────────────────────────────────────────────────
+     Mini-stat cards → filtrar tabela por estado
+     (card Cancelados não faz sentido sem o toggle activo)
+  ───────────────────────────────────────────────────────── */
+  $(document).on('click', '.stat-filter', function () {
+    const filter = $(this).data('filter'); // '' | 'novo' | 'fechado' | 'cancelado'
+
+    // Card "Cancelados" activa automaticamente o toggle
+    if (filter === 'cancelado' && !mostrandoCancelados) {
+      $('#btnToggleCancelados').trigger('click');
+      // Após activar, filtra só cancelados
+      setTimeout(function () {
+        table.column(7).search('cancelado').draw();
+        $('.stat-filter').removeClass('stat-active');
+        $('.stat-cancelado').addClass('stat-active');
+      }, 0);
+      return;
+    }
+
+    table.column(7).search(filter).draw();
+    $('.stat-filter').removeClass('stat-active');
+    $(this).addClass('stat-active');
+  });
+
+  /* ─────────────────────────────────────────────────────────
+     Construtor de linhas de itens
+  ───────────────────────────────────────────────────────── */
+  function buildItemRow(index, data) {
+    data = data || {};
     return `
       <tr class="rfq-item-row">
         <td class="item-index fw-bold text-muted">${index}</td>
-        <td><input type="text" name="item_descricao[]" class="form-control modern-input" value="${data.descricao || ''}" required></td>
-        <td><input type="number" name="item_quantidade[]" class="form-control modern-input" value="${data.quantidade || '1'}" min="0.01" step="0.01" required></td>
+        <td><input type="text" name="item_descricao[]" class="form-control modern-input"
+                   value="${escHtml(data.descricao || '')}" required></td>
+        <td><input type="number" name="item_quantidade[]" class="form-control modern-input"
+                   value="${escHtml(String(data.quantidade || '1'))}" min="0.01" step="0.01" required></td>
         <td>
           <select name="item_unidade_id[]" class="form-select modern-input">
             <option value="">— Unidade —</option>
@@ -482,8 +715,10 @@ $(document).ready(function () {
             {% endfor %}
           </select>
         </td>
-        <td><input type="text" name="item_comentarios[]" class="form-control modern-input" value="${data.comentarios || ''}"></td>
-        <td><input type="text" name="item_especificacoes[]" class="form-control modern-input" value="${data.especificacoes || ''}"></td>
+        <td><input type="text" name="item_comentarios[]" class="form-control modern-input"
+                   value="${escHtml(data.comentarios || '')}"></td>
+        <td><input type="text" name="item_especificacoes[]" class="form-control modern-input"
+                   value="${escHtml(data.especificacoes || '')}"></td>
         <td class="text-center">
           <button type="button" class="btn btn-remove-item">
             <i class="material-symbols-rounded">delete</i>
@@ -493,21 +728,32 @@ $(document).ready(function () {
     `;
   }
 
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
   function refreshItemIndexes() {
-    $('#rfqItemsBody .rfq-item-row').each(function(index) {
+    $('#rfqItemsBody .rfq-item-row').each(function (index) {
       $(this).find('.item-index').text(index + 1);
     });
   }
 
-  function addItemRow(data = {}) {
+  function addItemRow(data) {
     const nextIndex = $('#rfqItemsBody .rfq-item-row').length + 1;
     $('#rfqItemsBody').append(buildItemRow(nextIndex, data));
-    const lastRow = $('#rfqItemsBody .rfq-item-row').last();
-    if (data.unidade_id) {
+    if (data && data.unidade_id) {
+      const lastRow = $('#rfqItemsBody .rfq-item-row').last();
       lastRow.find('select[name="item_unidade_id[]"]').val(String(data.unidade_id));
     }
   }
 
+  /* ─────────────────────────────────────────────────────────
+     Reset do formulário
+  ───────────────────────────────────────────────────────── */
   function resetForm() {
     $('#rfqForm')[0].reset();
     $('#rfq_id').val('');
@@ -519,15 +765,24 @@ $(document).ready(function () {
     addItemRow();
   }
 
+  /* ─────────────────────────────────────────────────────────
+     Abrir modal Novo RFQ
+  ───────────────────────────────────────────────────────── */
   $('#btnOpenCreateRFQ').on('click', function () {
     resetForm();
     rfqModal.show();
   });
 
+  /* ─────────────────────────────────────────────────────────
+     Adicionar linha de item
+  ───────────────────────────────────────────────────────── */
   $('#btnAddItem').on('click', function () {
     addItemRow();
   });
 
+  /* ─────────────────────────────────────────────────────────
+     Remover linha de item
+  ───────────────────────────────────────────────────────── */
   $(document).on('click', '.btn-remove-item', function () {
     const rows = $('#rfqItemsBody .rfq-item-row').length;
     if (rows <= 1) {
@@ -543,6 +798,9 @@ $(document).ready(function () {
     refreshItemIndexes();
   });
 
+  /* ─────────────────────────────────────────────────────────
+     Auto-fill campos ao seleccionar cliente
+  ───────────────────────────────────────────────────────── */
   $('#rfq_cliente_id').on('change', function () {
     const opt = $(this).find('option:selected');
     $('#rfq_email_cliente').val(opt.data('email') || '');
@@ -550,6 +808,9 @@ $(document).ready(function () {
     $('#rfq_pessoa_contacto').val(opt.data('contacto') || '');
   });
 
+  /* ─────────────────────────────────────────────────────────
+     Editar RFQ
+  ───────────────────────────────────────────────────────── */
   $(document).on('click', '.btn-edit-rfq', function (e) {
     e.preventDefault();
     const id = $(this).data('id');
@@ -573,9 +834,7 @@ $(document).ready(function () {
 
         $('#rfqItemsBody').html('');
         if (r.itens && r.itens.length) {
-          r.itens.forEach(function (item) {
-            addItemRow(item);
-          });
+          r.itens.forEach(function (item) { addItemRow(item); });
         } else {
           addItemRow();
         }
@@ -594,6 +853,9 @@ $(document).ready(function () {
     });
   });
 
+  /* ─────────────────────────────────────────────────────────
+     Visualizar RFQ (preview modal)
+  ───────────────────────────────────────────────────────── */
   $(document).on('click', '.btn-view-rfq', function () {
     const id = $(this).data('id');
 
@@ -607,7 +869,9 @@ $(document).ready(function () {
       url: `/rfqs/${id}/preview/`,
       type: 'GET',
       success: function (html) {
-        $('#rfqPreviewContent').html(`<div class="rfq-preview-sheet">${html}</div>`).removeClass('d-none');
+        $('#rfqPreviewContent')
+          .html(`<div class="rfq-preview-sheet">${html}</div>`)
+          .removeClass('d-none');
         $('#rfqPreviewLoading').addClass('d-none');
       },
       error: function () {
@@ -622,30 +886,35 @@ $(document).ready(function () {
     });
   });
 
-  $(document).on('click', '.btn-delete-rfq', function (e) {
+  /* ─────────────────────────────────────────────────────────
+     Cancelar RFQ  (só disponível quando estado_id == 1)
+  ───────────────────────────────────────────────────────── */
+  $(document).on('click', '.btn-cancel-rfq', function (e) {
     e.preventDefault();
-    const id = $(this).data('id');
+    const id   = $(this).data('id');
     const nome = $(this).data('name');
 
     Swal.fire({
-      title: 'Remover RFQ?',
-      html: `Tem a certeza que deseja remover <strong>${nome}</strong>? Esta acção é irreversível.`,
+      title: 'Cancelar RFQ?',
+      html: `Tem a certeza que deseja cancelar <strong>${nome}</strong>?<br>
+             <small class="text-muted">Esta acção não pode ser desfeita.</small>`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Sim, remover',
-      cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#dc3545',
-      cancelButtonColor: '#6c757d'
+      confirmButtonText: 'Sim, cancelar RFQ',
+      cancelButtonText: 'Voltar',
+      confirmButtonColor: '#fd7e14',
+      cancelButtonColor: '#6c757d',
+      reverseButtons: true,
     }).then((result) => {
       if (result.isConfirmed) {
-        const form = document.createElement('form');
+        const form  = document.createElement('form');
         form.method = 'POST';
-        form.action = `/rfqs/${id}/delete/`;
+        form.action = `/rfqs/${id}/cancel/`;
 
-        const csrf = document.createElement('input');
-        csrf.type = 'hidden';
-        csrf.name = 'csrfmiddlewaretoken';
-        csrf.value = '{{ csrf_token }}';
+        const csrf       = document.createElement('input');
+        csrf.type        = 'hidden';
+        csrf.name        = 'csrfmiddlewaretoken';
+        csrf.value       = '{{ csrf_token }}';
 
         form.appendChild(csrf);
         document.body.appendChild(form);
@@ -654,7 +923,11 @@ $(document).ready(function () {
     });
   });
 
+  /* ─────────────────────────────────────────────────────────
+     Init: adicionar primeira linha de item
+  ───────────────────────────────────────────────────────── */
   resetForm();
+
 });
 </script>
 
