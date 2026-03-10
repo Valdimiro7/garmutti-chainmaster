@@ -1,0 +1,697 @@
+{% extends "layouts/pro_base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="container-fluid py-3">
+
+  {% if messages %}
+  <div id="django-messages" style="display:none;">
+    {% for message in messages %}
+      <span data-tags="{{ message.tags }}">{{ message }}</span>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- HERO -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm organizacao-hero-card">
+        <div class="card-body p-4 p-md-5">
+          <div class="row align-items-center g-4">
+
+            <div class="col-lg-8">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="organizacao-hero-icon">
+                  <i class="material-symbols-rounded">domain</i>
+                </div>
+                <div>
+                  <h3 class="mb-1 fw-bold text-dark">Organização</h3>
+                  <p class="text-muted mb-0">Gestão dos dados institucionais, contactos, endereço e identidade da organização.</p>
+                </div>
+              </div>
+              <div class="d-flex flex-wrap gap-2">
+                <span class="badge rounded-pill organizacao-soft-badge">Nome</span>
+                <span class="badge rounded-pill organizacao-soft-badge">NUIT</span>
+                <span class="badge rounded-pill organizacao-soft-badge">Contactos</span>
+                <span class="badge rounded-pill organizacao-soft-badge">Logo</span>
+              </div>
+            </div>
+
+            <div class="col-lg-4">
+              <div class="organizacao-stats-grid">
+                <div class="mini-stat-card">
+                  <span class="mini-stat-label">Total</span>
+                  <h4 class="mb-0">{{ total }}</h4>
+                </div>
+                <div class="mini-stat-card">
+                  <span class="mini-stat-label">Activas</span>
+                  <h4 class="mb-0 text-success">{{ total_activas }}</h4>
+                </div>
+                <div class="mini-stat-card">
+                  <span class="mini-stat-label">Inactivas</span>
+                  <h4 class="mb-0 text-danger">{{ total_inactivas }}</h4>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        <div class="organizacao-hero-accent"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CARD -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm organizacao-main-card">
+        <div class="card-body p-0">
+
+          <div class="organizacao-topbar px-4 pt-4 pb-3">
+          <div class="row align-items-center g-3">
+            <div class="col-12">
+              <h5 class="mb-1 fw-bold text-dark">Lista de Organizações</h5>
+              <p class="text-muted mb-0">Todas as organizações registadas no sistema.</p>
+            </div>
+          </div>
+        </div>
+
+          <div class="px-4 pb-4">
+            <div class="table-responsive mt-3">
+              <table id="organizacaoTable" class="table align-items-center mb-0 organizacao-table w-100">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Organização</th>
+                    <th>NUIT</th>
+                    <th>Contacto</th>
+                    <th>Localização</th>
+                    <th>Website</th>
+                    <th>Logo</th>
+                    <th>Estado</th>
+                    <th class="text-center">Acções</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for org in organizacoes %}
+                  <tr>
+                    <td>{{ forloop.counter }}</td>
+
+                    <td>
+                      <div class="d-flex align-items-center gap-2">
+                        <div class="avatar-circle-org">{{ org.iniciais }}</div>
+                        <div>
+                          <span class="fw-semibold text-dark d-block">{{ org.nome }}</span>
+                          <span class="table-subtext">
+                            {% if org.slogan %}{{ org.slogan }}{% else %}—{% endif %}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td>
+                      {% if org.nuit %}
+                        <span class="nuit-pill">{{ org.nuit }}</span>
+                      {% else %}
+                        <span class="text-muted">—</span>
+                      {% endif %}
+                    </td>
+
+                    <td>
+                      <div>
+                        {% if org.telefone_1 %}
+                          <span class="d-block small">{{ org.telefone_1 }}</span>
+                        {% endif %}
+                        {% if org.email %}
+                          <span class="d-block small text-muted">{{ org.email }}</span>
+                        {% endif %}
+                        {% if not org.telefone_1 and not org.email %}
+                          <span class="text-muted">—</span>
+                        {% endif %}
+                      </div>
+                    </td>
+
+                    <td>
+                      <div>
+                        {% if org.cidade %}
+                          <span class="d-block">{{ org.cidade }}</span>
+                        {% endif %}
+                        <span class="table-subtext">{{ org.pais|default:"Moçambique" }}</span>
+                      </div>
+                    </td>
+
+                    <td>
+                      {% if org.website %}
+                        <a href="{{ org.website }}" target="_blank" class="text-decoration-none fw-semibold">Abrir</a>
+                      {% else %}
+                        <span class="text-muted">—</span>
+                      {% endif %}
+                    </td>
+
+                    <td>
+                      {% if org.logo %}
+                        <a href="{{ org.logo }}" target="_blank" class="logo-link-pill">Ver logo</a>
+                      {% else %}
+                        <span class="text-muted">—</span>
+                      {% endif %}
+                    </td>
+
+                    <td>
+                      {% if org.activo %}
+                        <span class="status-pill status-active">Activa</span>
+                      {% else %}
+                        <span class="status-pill status-inactive">Inactiva</span>
+                      {% endif %}
+                    </td>
+
+                    <td class="text-center">
+                      <div class="dropdown">
+                        <button class="btn btn-sm btn-icon-only btn-action-menu" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                          <i class="material-symbols-rounded">more_vert</i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm">
+                          <li>
+                            <a class="dropdown-item btn-edit-organizacao" href="#" data-id="{{ org.id }}">
+                              <i class="material-symbols-rounded me-2 align-middle">edit</i>Editar
+                            </a>
+                          </li>
+                          <li>
+                            <a class="dropdown-item btn-toggle-organizacao-status" href="#"
+                               data-id="{{ org.id }}"
+                               data-name="{{ org.nome }}"
+                               data-status="{% if org.activo %}1{% else %}0{% endif %}">
+                              <i class="material-symbols-rounded me-2 align-middle">{% if org.activo %}block{% else %}check_circle{% endif %}</i>
+                              {% if org.activo %}Desactivar{% else %}Activar{% endif %}
+                            </a>
+                          </li>
+                          <li><hr class="dropdown-divider"></li>
+                          <li>
+                            <a class="dropdown-item text-danger btn-delete-organizacao" href="#"
+                               data-id="{{ org.id }}"
+                               data-name="{{ org.nome }}">
+                              <i class="material-symbols-rounded me-2 align-middle">delete</i>Remover
+                            </a>
+                          </li>
+                        </ul>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% include "includes/pro_footer.html" %}
+</div>
+
+<!-- MODAL -->
+<div class="modal fade" id="organizacaoModal" tabindex="-1" aria-labelledby="organizacaoModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-lg modal-modern">
+
+      <div class="modal-header border-0 pb-0">
+        <div>
+          <h5 class="modal-title fw-bold" id="organizacaoModalLabel">Nova Organização</h5>
+          <p class="text-muted mb-0 small">Preencha os dados institucionais da organização.</p>
+        </div>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <form id="organizacaoForm" method="post" action="{% url 'procurement:organizacao_create' %}">
+        {% csrf_token %}
+        <input type="hidden" name="organizacao_id" id="organizacao_id">
+
+        <div class="modal-body pt-3">
+
+          <div class="modal-section-title mb-3">
+            <i class="material-symbols-rounded me-2">badge</i>Identificação
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label">Nome da Organização <span class="text-danger">*</span></label>
+              <input type="text" name="nome" id="org_nome" class="form-control modern-input" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Slogan</label>
+              <input type="text" name="slogan" id="org_slogan" class="form-control modern-input">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">NUIT</label>
+              <input type="text" name="nuit" id="org_nuit" class="form-control modern-input">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Email</label>
+              <input type="email" name="email" id="org_email" class="form-control modern-input">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Website</label>
+              <input type="text" name="website" id="org_website" class="form-control modern-input" placeholder="https://...">
+            </div>
+          </div>
+
+          <div class="modal-section-title mb-3">
+            <i class="material-symbols-rounded me-2">contact_phone</i>Contactos
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label">Telefone 1</label>
+              <input type="text" name="telefone_1" id="org_telefone_1" class="form-control modern-input">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Telefone 2</label>
+              <input type="text" name="telefone_2" id="org_telefone_2" class="form-control modern-input">
+            </div>
+          </div>
+
+          <div class="modal-section-title mb-3">
+            <i class="material-symbols-rounded me-2">location_on</i>Morada
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label">Endereço</label>
+              <input type="text" name="endereco" id="org_endereco" class="form-control modern-input">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Cidade</label>
+              <input type="text" name="cidade" id="org_cidade" class="form-control modern-input">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">País</label>
+              <input type="text" name="pais" id="org_pais" class="form-control modern-input" value="Moçambique">
+            </div>
+          </div>
+
+          <div class="modal-section-title mb-3">
+            <i class="material-symbols-rounded me-2">image</i>Identidade Visual
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-12">
+              <label class="form-label">Caminho / URL do Logo</label>
+              <input type="text" name="logo" id="org_logo" class="form-control modern-input" placeholder="/static/assets/img/logo.png ou https://...">
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-3">
+              <label class="form-label">Estado</label>
+              <select name="activo" id="org_activo" class="form-select modern-input">
+                <option value="1">Activa</option>
+                <option value="0">Inactiva</option>
+              </select>
+            </div>
+            <div class="col-md-9">
+              <label class="form-label">Observações</label>
+              <textarea name="observacoes" id="org_observacoes" class="form-control modern-input" rows="3"></textarea>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-outline-secondary btn-modern" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary btn-modern btn-organizacao">
+            <i class="material-symbols-rounded me-1">save</i>Guardar Organização
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+{% block extra_js %}
+
+<link href="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.8/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/datatables.net-responsive-bs5@2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
+
+<style>
+  .organizacao-hero-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+  }
+  .organizacao-hero-accent {
+    position: absolute;
+    right: -60px; top: -60px;
+    width: 220px; height: 220px;
+    background: radial-gradient(circle, rgba(46,62,130,0.16) 0%, rgba(46,62,130,0) 70%);
+    pointer-events: none;
+  }
+  .organizacao-hero-icon {
+    width: 64px; height: 64px;
+    border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #2E3E82 0%, #4256ad 100%);
+    color: #fff;
+    box-shadow: 0 12px 30px rgba(46,62,130,0.20);
+  }
+  .organizacao-hero-icon i { font-size: 30px; }
+
+  .organizacao-soft-badge {
+    background: #eef2ff; color: #2E3E82;
+    border: 1px solid #dae3ff;
+    font-weight: 600; padding: 0.50rem 0.90rem;
+  }
+
+  .organizacao-stats-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  }
+
+  .organizacao-main-card { border-radius: 22px; overflow: hidden; }
+  .organizacao-topbar {
+    border-bottom: 1px solid #edf0f7;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
+  }
+
+  .btn-modern {
+    border-radius: 14px !important;
+    padding: 0.75rem 1.1rem !important;
+    font-weight: 600 !important;
+    box-shadow: none !important;
+    text-transform: none !important;
+  }
+
+  .btn-organizacao {
+    background: linear-gradient(135deg, #2E3E82 0%, #4256ad 100%) !important;
+    border: none !important;
+    color: #fff !important;
+    box-shadow: 0 10px 24px rgba(46,62,130,0.22) !important;
+  }
+
+  .organizacao-table thead th {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #6c757d;
+    font-weight: 700;
+    border-bottom: 1px solid #eef1f6 !important;
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+    background: #fbfcfe;
+  }
+
+  .organizacao-table tbody td {
+    vertical-align: middle;
+    border-bottom: 1px solid #f3f5f9 !important;
+    padding-top: 0.85rem !important;
+    padding-bottom: 0.85rem !important;
+  }
+
+  .table-subtext { font-size: 0.77rem; color: #8a93a2; }
+
+  .avatar-circle-org {
+    width: 42px; height: 42px; min-width: 42px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: #eef2ff;
+    color: #2E3E82; font-weight: 700; font-size: 0.85rem;
+  }
+
+  .nuit-pill,
+  .logo-link-pill {
+    display: inline-flex; align-items: center;
+    background: #eef2ff; color: #2E3E82;
+    border: 1px solid #dae3ff;
+    border-radius: 8px; padding: 3px 10px;
+    font-size: 0.78rem; font-weight: 700;
+  }
+
+  .status-pill {
+    display: inline-flex; align-items: center;
+    padding: 0.42rem 0.80rem;
+    border-radius: 999px;
+    font-size: 0.74rem; font-weight: 700;
+  }
+  .status-active   { background: #e9f9ef; color: #198754; border: 1px solid #c9efd7; }
+  .status-inactive { background: #fff1f1; color: #dc3545; border: 1px solid #ffd3d7; }
+
+  .btn-action-menu {
+    width: 38px; height: 38px;
+    border-radius: 12px !important;
+    border: 1px solid #e9edf5 !important;
+    background: #fff !important; color: #495057 !important;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+
+  .modal-modern { border-radius: 22px; }
+
+  .modal-section-title {
+    display: flex; align-items: center;
+    font-size: 0.78rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.07em;
+    color: #2E3E82;
+    border-bottom: 1px solid #dae3ff;
+    padding-bottom: 8px;
+  }
+
+  .modern-input {
+    border-radius: 14px !important;
+    border: 1px solid #dfe5ef !important;
+    min-height: 46px;
+    box-shadow: none !important;
+  }
+
+  .modern-input:focus {
+    border-color: #2E3E82 !important;
+    box-shadow: 0 0 0 0.2rem rgba(46,62,130,0.10) !important;
+  }
+
+  .dataTables_wrapper .dataTables_paginate .pagination {
+    display: flex !important;
+    gap: 4px !important;
+    flex-wrap: wrap !important;
+  }
+
+  .dataTables_wrapper .dataTables_paginate .pagination .page-item .page-link {
+    all: unset !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 36px !important;
+    height: 36px !important;
+    padding: 0 10px !important;
+    border-radius: 10px !important;
+    border: 1px solid #e7ebf3 !important;
+    background: #fff !important;
+    color: #495057 !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    box-shadow: none !important;
+    line-height: 1 !important;
+  }
+
+  .dataTables_wrapper .dataTables_paginate .pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #2E3E82 0%, #4256ad 100%) !important;
+    border-color: #2E3E82 !important;
+    color: #fff !important;
+  }
+
+  div.dataTables_wrapper div.dataTables_filter input,
+  div.dataTables_wrapper div.dataTables_length select {
+    border-radius: 12px !important;
+    border: 1px solid #dfe5ef !important;
+    min-height: 38px;
+    box-shadow: none !important;
+  }
+
+  .mini-stat-card {
+    background: #fff;
+    border: 1px solid #edf0f7;
+    border-radius: 18px;
+    padding: 18px 16px;
+    box-shadow: 0 8px 22px rgba(15,23,42,0.04);
+  }
+
+  .mini-stat-label {
+    display: block;
+    font-size: 0.78rem;
+    color: #6c757d;
+    margin-bottom: 6px;
+  }
+
+  @media (max-width: 991.98px) {
+    .organizacao-stats-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net@1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-responsive@2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-responsive-bs5@2.5.0/js/responsive.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+$(document).ready(function () {
+
+  const msgContainer = document.getElementById('django-messages');
+  if (msgContainer) {
+    msgContainer.querySelectorAll('span[data-tags]').forEach(function (span) {
+      const isError = span.getAttribute('data-tags').includes('error');
+      Swal.fire({
+        icon: isError ? 'error' : 'success',
+        title: isError ? 'Erro' : 'Sucesso',
+        text: span.textContent.trim(),
+        confirmButtonColor: '#2E3E82',
+        timer: isError ? undefined : 3000,
+        timerProgressBar: !isError,
+        showConfirmButton: isError,
+      });
+    });
+  }
+
+  const organizacaoModalEl = document.getElementById('organizacaoModal');
+  const organizacaoModal = new bootstrap.Modal(organizacaoModalEl);
+
+  $('#organizacaoTable').DataTable({
+    responsive: true,
+    autoWidth: false,
+    pageLength: 10,
+    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'Todos']],
+    language: {
+      search: 'Pesquisar:',
+      lengthMenu: 'Mostrar _MENU_ registos',
+      info: 'Mostrando _START_ a _END_ de _TOTAL_ registos',
+      infoEmpty: 'Mostrando 0 a 0 de 0 registos',
+      infoFiltered: '(filtrado de _MAX_ registos no total)',
+      zeroRecords: 'Nenhum registo encontrado',
+      emptyTable: 'Sem dados disponíveis',
+      paginate: { first: 'Primeiro', last: 'Último', next: 'Seguinte', previous: 'Anterior' }
+    },
+    columnDefs: [{ orderable: false, targets: [2, 3, 4, 5, 6, 7, 8] }]
+  });
+
+  function resetForm() {
+    $('#organizacaoForm')[0].reset();
+    $('#organizacao_id').val('');
+    $('#org_pais').val('Moçambique');
+    $('#org_activo').val('1');
+    $('#organizacaoModalLabel').text('Nova Organização');
+    $('#organizacaoForm').attr('action', "{% url 'procurement:organizacao_create' %}");
+  }
+
+  $(document).on('click', '.btn-edit-organizacao', function (e) {
+    e.preventDefault();
+    const id = $(this).data('id');
+    resetForm();
+
+    $.ajax({
+      url: `/organizacao/${id}/json/`,
+      type: 'GET',
+      success: function (r) {
+        $('#organizacaoModalLabel').text('Editar Organização');
+        $('#organizacao_id').val(r.id);
+        $('#org_nome').val(r.nome);
+        $('#org_slogan').val(r.slogan);
+        $('#org_nuit').val(r.nuit);
+        $('#org_email').val(r.email);
+        $('#org_telefone_1').val(r.telefone_1);
+        $('#org_telefone_2').val(r.telefone_2);
+        $('#org_website').val(r.website);
+        $('#org_endereco').val(r.endereco);
+        $('#org_cidade').val(r.cidade);
+        $('#org_pais').val(r.pais);
+        $('#org_logo').val(r.logo);
+        $('#org_observacoes').val(r.observacoes);
+        $('#org_activo').val(r.activo ? '1' : '0');
+
+        $('#organizacaoForm').attr('action', `/organizacao/${r.id}/update/`);
+        organizacaoModal.show();
+      },
+      error: function () {
+        Swal.fire({
+          icon: 'error',
+          title: 'Erro',
+          text: 'Não foi possível carregar os dados da organização.',
+          confirmButtonColor: '#2E3E82'
+        });
+      }
+    });
+  });
+
+  $(document).on('click', '.btn-toggle-organizacao-status', function (e) {
+    e.preventDefault();
+    const id = $(this).data('id');
+    const nome = $(this).data('name');
+    const status = String($(this).data('status'));
+    const action = status === '1' ? 'desactivar' : 'activar';
+
+    Swal.fire({
+      title: `${action.charAt(0).toUpperCase() + action.slice(1)} organização?`,
+      html: `Tem a certeza que deseja ${action} a organização <strong>${nome}</strong>?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sim, confirmar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#2E3E82',
+      cancelButtonColor: '#6c757d'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/organizacao/${id}/toggle-status/`;
+
+        const csrf = document.createElement('input');
+        csrf.type = 'hidden';
+        csrf.name = 'csrfmiddlewaretoken';
+        csrf.value = '{{ csrf_token }}';
+
+        form.appendChild(csrf);
+        document.body.appendChild(form);
+        form.submit();
+      }
+    });
+  });
+
+  $(document).on('click', '.btn-delete-organizacao', function (e) {
+    e.preventDefault();
+    const id = $(this).data('id');
+    const nome = $(this).data('name');
+
+    Swal.fire({
+      title: 'Remover organização?',
+      html: `Tem a certeza que deseja remover <strong>${nome}</strong>? Esta acção é irreversível.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sim, remover',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#dc3545',
+      cancelButtonColor: '#6c757d'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/organizacao/${id}/delete/`;
+
+        const csrf = document.createElement('input');
+        csrf.type = 'hidden';
+        csrf.name = 'csrfmiddlewaretoken';
+        csrf.value = '{{ csrf_token }}';
+
+        form.appendChild(csrf);
+        document.body.appendChild(form);
+        form.submit();
+      }
+    });
+  });
+
+});
+</script>
+
+{% endblock extra_js %}

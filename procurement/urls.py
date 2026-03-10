@@ -47,6 +47,7 @@ from procurement.views.rfq.rfq_view import (
 from procurement.views.quotacoes.quotacoes_views import(quotacoes_view, create_quotacao_view, update_quotacao_view, quotacao_detail_json_view, quotacao_preview_html_view, quotacao_download_pdf_view, change_estado_quotacao_view, rfq_itens_json_view)
 from procurement.views.configuracoes.metodos_pagamento_view import (metodos_pagamento_view, metodo_pagamento_detail_json_view, create_metodo_pagamento_view, update_metodo_pagamento_view, toggle_metodo_pagamento_status_view, definir_metodo_pagamento_predefinido_view, delete_metodo_pagamento_view)
 from procurement.views.configuracoes.moedas_view import (moedas_view, moeda_detail_json_view, create_moeda_view, update_moeda_view, toggle_moeda_status_view, definir_moeda_predefinida_view, delete_moeda_view)
+from procurement.views.configuracoes.organizacao_view import (organizacao_view, organizacao_detail_json_view, create_organizacao_view, update_organizacao_view, toggle_organizacao_status_view, delete_organizacao_view)
 
 app_name = "procurement"
 
@@ -115,6 +116,14 @@ urlpatterns = [
 
     path('permissions/assign-user-group/', assign_user_to_group_view, name='permissions_assign_user_group'),
     path('permissions/remove-user-group/', remove_user_from_group_view, name='permissions_remove_user_group'),
+    
+    #======================configurações - organização======================================================
+    path('organizacao/', organizacao_view, name='organizacao'),
+    path('organizacao/<int:organizacao_id>/json/', organizacao_detail_json_view, name='organizacao_detail_json'),
+    path('organizacao/create/', create_organizacao_view, name='organizacao_create'),
+    path('organizacao/<int:organizacao_id>/update/', update_organizacao_view, name='organizacao_update'),
+    path('organizacao/<int:organizacao_id>/toggle-status/', toggle_organizacao_status_view, name='organizacao_toggle_status'),
+    path('organizacao/<int:organizacao_id>/delete/', delete_organizacao_view, name='organizacao_delete'),
     
     #======================configurações - moedas======================================================
     path('moedas/', moedas_view, name='moedas'),
