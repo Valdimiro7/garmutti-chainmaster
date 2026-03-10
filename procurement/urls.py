@@ -46,7 +46,7 @@ from procurement.views.rfq.rfq_view import (
 )
 from procurement.views.quotacoes.quotacoes_views import(quotacoes_view, create_quotacao_view, update_quotacao_view, quotacao_detail_json_view, quotacao_preview_html_view, quotacao_download_pdf_view, change_estado_quotacao_view, rfq_itens_json_view)
 from procurement.views.configuracoes.metodos_pagamento_view import (metodos_pagamento_view, metodo_pagamento_detail_json_view, create_metodo_pagamento_view, update_metodo_pagamento_view, toggle_metodo_pagamento_status_view, definir_metodo_pagamento_predefinido_view, delete_metodo_pagamento_view)
-
+from procurement.views.configuracoes.moedas_view import (moedas_view, moeda_detail_json_view, create_moeda_view, update_moeda_view, toggle_moeda_status_view, definir_moeda_predefinida_view, delete_moeda_view)
 
 app_name = "procurement"
 
@@ -116,7 +116,14 @@ urlpatterns = [
     path('permissions/assign-user-group/', assign_user_to_group_view, name='permissions_assign_user_group'),
     path('permissions/remove-user-group/', remove_user_from_group_view, name='permissions_remove_user_group'),
     
-    
+    #======================configurações - moedas======================================================
+    path('moedas/', moedas_view, name='moedas'),
+    path('moedas/<int:moeda_id>/json/', moeda_detail_json_view, name='moedas_detail_json'),
+    path('moedas/create/', create_moeda_view, name='moedas_create'),
+    path('moedas/<int:moeda_id>/update/', update_moeda_view, name='moedas_update'),
+    path('moedas/<int:moeda_id>/toggle-status/', toggle_moeda_status_view, name='moedas_toggle_status'),
+    path('moedas/<int:moeda_id>/definir-predefinida/', definir_moeda_predefinida_view, name='moedas_definir_predefinida'),
+    path('moedas/<int:moeda_id>/delete/', delete_moeda_view, name='moedas_delete'),
     
     #=====================configurações - métodos de pagamento==========================================
     path('metodos-pagamento/', metodos_pagamento_view, name='metodos_pagamento'),
