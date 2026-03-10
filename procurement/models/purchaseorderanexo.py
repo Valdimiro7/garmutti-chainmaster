@@ -25,8 +25,3 @@ class PurchaseOrderAnexo(models.Model):
         managed = False
         db_table = 'purchase_order_anexos'
         ordering = ['id']
-        verbose_name = 'Anexo da PO'
-        verbose_name_plural = 'Anexos das POs'
-
-    def __str__(self):
-        return f'{self.purchase_order.numero} - {self.nome_ficheiro}'

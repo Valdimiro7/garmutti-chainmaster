@@ -1,11 +1,14 @@
 from datetime import date
 from decimal import Decimal, InvalidOperation
+import logging
+import mimetypes
 import os
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.http import JsonResponse
+from django.db.models import Sum
+from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
@@ -18,9 +21,9 @@ from procurement.models import (
     PurchaseOrderAnexo,
     Quotacao,
 )
-import logging
 
 logger = logging.getLogger(__name__)
+
 
 def _parse_decimal(value, default='0'):
     try:
@@ -54,10 +57,18 @@ def _generate_po_number():
 
 
 def _get_estado_po_recebida():
-    estado = POEstado.objects.filter(codigo='po_recebida').first()
+    estado = POEstado.objects.filter(codigo='po_recebida', activo=True).first()
     if not estado:
         raise ValueError('Estado "PO Recebida" não encontrado.')
     return estado
+
+
+def _get_estado_confirmada():
+    return POEstado.objects.filter(codigo='confirmada', activo=True).first()
+
+
+def _get_estado_cancelada():
+    return POEstado.objects.filter(codigo='cancelada', activo=True).first()
 
 
 @login_required
@@ -72,7 +83,15 @@ def purchase_orders_view(request):
 
     clientes = Cliente.objects.filter(estado=True).order_by('nome')
     moedas = Moeda.objects.filter(estado=True).order_by('-predefinida', 'codigo')
-    estados = POEstado.objects.filter(activo=True).order_by('ordem', 'nome')
+
+    # Sem "em_validacao"
+    estados = (
+        POEstado.objects
+        .filter(activo=True)
+        .exclude(codigo='em_validacao')
+        .order_by('ordem', 'nome')
+    )
+
     quotacoes = (
         Quotacao.objects
         .select_related('cliente', 'estado', 'moeda')
@@ -81,9 +100,22 @@ def purchase_orders_view(request):
 
     total = purchase_orders.count()
     total_recebida = purchase_orders.filter(estado__codigo='po_recebida').count()
-    total_validacao = purchase_orders.filter(estado__codigo='em_validacao').count()
     total_confirmada = purchase_orders.filter(estado__codigo='confirmada').count()
     total_cancelada = purchase_orders.filter(estado__codigo='cancelada').count()
+
+    valor_total_recebida = (
+        purchase_orders
+        .filter(estado__codigo='po_recebida')
+        .aggregate(total=Sum('valor_total'))
+        .get('total') or Decimal('0')
+    )
+
+    valor_total_confirmada = (
+        purchase_orders
+        .filter(estado__codigo='confirmada')
+        .aggregate(total=Sum('valor_total'))
+        .get('total') or Decimal('0')
+    )
 
     moeda_predefinida = moedas.filter(predefinida=True).first() or moedas.first()
 
@@ -94,11 +126,15 @@ def purchase_orders_view(request):
         'moedas': moedas,
         'estados': estados,
         'quotacoes': quotacoes,
+
         'total': total,
         'total_recebida': total_recebida,
-        'total_validacao': total_validacao,
         'total_confirmada': total_confirmada,
         'total_cancelada': total_cancelada,
+
+        'valor_total_recebida': valor_total_recebida,
+        'valor_total_confirmada': valor_total_confirmada,
+
         'default_numero': _generate_po_number(),
         'today': date.today().isoformat(),
         'moeda_predefinida_id': moeda_predefinida.id if moeda_predefinida else '',
@@ -110,27 +146,34 @@ def purchase_orders_view(request):
 @require_GET
 def purchase_order_detail_json_view(request, po_id):
     po = get_object_or_404(
-        PurchaseOrder.objects.select_related('cliente', 'quotacao', 'moeda', 'estado'),
+        PurchaseOrder.objects.select_related('cliente', 'quotacao', 'moeda', 'estado', 'criado_por'),
         id=po_id,
     )
 
-    anexos = list(
-        po.anexos.values(
-            'id',
-            'tipo_anexo',
-            'nome_ficheiro',
-            'ficheiro',
-            'observacao',
-        )
-    )
+    anexos = []
+    for a in po.anexos.all():
+        anexos.append({
+            'id': a.id,
+            'tipo_anexo': a.tipo_anexo,
+            'nome_ficheiro': a.nome_ficheiro,
+            'ficheiro': a.ficheiro.url if a.ficheiro else '',
+            'observacao': a.observacao or '',
+            'download_url': f'/purchase-orders/anexos/{a.id}/download/',
+        })
 
     data = {
         'id': po.id,
         'numero': po.numero,
         'estado_id': po.estado_id,
+        'estado_nome': po.estado.nome if po.estado else '',
+        'estado_codigo': po.estado.codigo if po.estado else '',
         'quotacao_id': po.quotacao_id,
+        'quotacao_numero': po.quotacao.numero if po.quotacao else '',
         'cliente_id': po.cliente_id,
+        'cliente_nome': po.cliente.nome if po.cliente else '',
         'moeda_id': po.moeda_id,
+        'moeda_codigo': po.moeda.codigo if po.moeda else '',
+        'moeda_simbolo': po.moeda.simbolo if po.moeda else '',
         'po_cliente_numero': po.po_cliente_numero or '',
         'referencia_cliente': po.referencia_cliente or '',
         'data_po': po.data_po.isoformat() if po.data_po else '',
@@ -139,9 +182,35 @@ def purchase_order_detail_json_view(request, po_id):
         'email_remetente': po.email_remetente or '',
         'assunto_email': po.assunto_email or '',
         'observacoes': po.observacoes or '',
+        'criado_por': po.criado_por.get_full_name() if po.criado_por else '',
         'anexos': anexos,
+        'pode_mudar_estado': (po.estado.codigo != 'confirmada') if po.estado else False,
     }
     return JsonResponse(data)
+
+
+@login_required
+@require_GET
+def download_purchase_order_anexo_view(request, anexo_id):
+    anexo = get_object_or_404(PurchaseOrderAnexo, id=anexo_id)
+
+    if not anexo.ficheiro:
+        raise Http404('Ficheiro não encontrado.')
+
+    try:
+        file_handle = anexo.ficheiro.open('rb')
+    except Exception:
+        logger.exception("Erro ao abrir anexo da PO %s", anexo_id)
+        raise Http404('Ficheiro não encontrado.')
+
+    content_type, _ = mimetypes.guess_type(anexo.nome_ficheiro or '')
+    response = FileResponse(
+        file_handle,
+        as_attachment=True,
+        filename=anexo.nome_ficheiro or os.path.basename(anexo.ficheiro.name),
+        content_type=content_type or 'application/octet-stream'
+    )
+    return response
 
 
 @login_required
@@ -165,6 +234,11 @@ def create_purchase_order_view(request):
 @transaction.atomic
 def update_purchase_order_view(request, po_id):
     po = get_object_or_404(PurchaseOrder, id=po_id)
+
+    if po.estado and po.estado.codigo == 'confirmada':
+        messages.error(request, 'PO confirmada não pode ser alterada.')
+        return redirect('procurement:purchase_orders')
+
     try:
         po = _save_purchase_order(request, po)
         messages.success(request, f'Purchase Order "{po.numero}" actualizada com sucesso.')
@@ -180,12 +254,22 @@ def update_purchase_order_view(request, po_id):
 @login_required
 @require_POST
 def change_estado_purchase_order_view(request, po_id):
-    po = get_object_or_404(PurchaseOrder, id=po_id)
+    po = get_object_or_404(PurchaseOrder.objects.select_related('estado'), id=po_id)
+
+    if po.estado and po.estado.codigo == 'confirmada':
+        messages.error(request, 'PO confirmada não pode ter o estado alterado.')
+        return redirect('procurement:purchase_orders')
+
     estado_id = request.POST.get('estado_id', '').strip()
 
     try:
-        novo_estado = POEstado.objects.get(id=int(estado_id))
+        novo_estado = POEstado.objects.get(id=int(estado_id), activo=True)
     except (POEstado.DoesNotExist, ValueError):
+        messages.error(request, 'Estado inválido.')
+        return redirect('procurement:purchase_orders')
+
+    # impedir usar estado em_validacao
+    if novo_estado.codigo == 'em_validacao':
         messages.error(request, 'Estado inválido.')
         return redirect('procurement:purchase_orders')
 

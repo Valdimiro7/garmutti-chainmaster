@@ -18,7 +18,7 @@
       <div class="card border-0 shadow-sm po-hero-card">
         <div class="card-body p-4 p-md-5">
           <div class="row align-items-center g-4">
-            <div class="col-lg-8">
+            <div class="col-lg-7">
               <div class="d-flex align-items-center gap-3 mb-3">
                 <div class="po-hero-icon">
                   <i class="material-symbols-rounded">receipt_long</i>
@@ -30,16 +30,17 @@
               </div>
               <div class="d-flex flex-wrap gap-2">
                 <span class="badge rounded-pill po-soft-badge">PO Recebida</span>
+                <span class="badge rounded-pill po-soft-badge">Confirmada</span>
                 <span class="badge rounded-pill po-soft-badge">Anexos múltiplos</span>
                 <span class="badge rounded-pill po-soft-badge">Conversa de Email</span>
                 <span class="badge rounded-pill po-soft-badge">Ligação à Quotação</span>
               </div>
             </div>
 
-            <div class="col-lg-4">
-              <div class="po-stats-grid">
+            <div class="col-lg-5">
+              <div class="po-stats-grid po-stats-grid-2x2">
                 <div class="mini-stat-card stat-filter stat-all stat-active" data-filter="">
-                  <span class="mini-stat-label">Total</span>
+                  <span class="mini-stat-label">Total de POs</span>
                   <h4 class="mb-0">{{ total }}</h4>
                 </div>
 
@@ -48,18 +49,38 @@
                   <h4 class="mb-0 text-primary">{{ total_recebida }}</h4>
                 </div>
 
-                <div class="mini-stat-card stat-filter" data-filter="em_validacao">
-                  <span class="mini-stat-label">Em Validação</span>
-                  <h4 class="mb-0 text-warning">{{ total_validacao }}</h4>
+                <div class="mini-stat-card stat-filter" data-filter="confirmada">
+                  <span class="mini-stat-label">PO Confirmadas</span>
+                  <h4 class="mb-0 text-success">{{ total_confirmada }}</h4>
                 </div>
 
-                <div class="mini-stat-card stat-filter" data-filter="confirmada">
-                  <span class="mini-stat-label">Confirmadas</span>
-                  <h4 class="mb-0 text-success">{{ total_confirmada }}</h4>
+                <div class="mini-stat-card stat-filter" data-filter="cancelada">
+                  <span class="mini-stat-label">PO Canceladas</span>
+                  <h4 class="mb-0 text-danger">{{ total_cancelada }}</h4>
                 </div>
               </div>
             </div>
           </div>
+
+          <div class="row mt-3 g-3">
+            <div class="col-md-6">
+              <div class="po-value-card">
+                <div class="po-value-label">Valor Total de PO Recebidas</div>
+                <div class="po-value-amount">
+                  {% if moedas and moedas.0.simbolo %}{{ moedas.0.simbolo }} {% endif %}{{ valor_total_recebida|floatformat:2 }}
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="po-value-card po-value-card-success">
+                <div class="po-value-label">Valor Total de PO Confirmadas</div>
+                <div class="po-value-amount">
+                  {% if moedas and moedas.0.simbolo %}{{ moedas.0.simbolo }} {% endif %}{{ valor_total_confirmada|floatformat:2 }}
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
         <div class="po-hero-accent"></div>
       </div>
@@ -139,10 +160,17 @@
                     </td>
                     <td class="text-center">
                       <div class="d-flex align-items-center justify-content-center gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-info btn-view-po" data-id="{{ po.id }}">
+                          <i class="material-symbols-rounded align-middle me-1">visibility</i>View
+                        </button>
+
+                        {% if po.estado.codigo != 'confirmada' %}
                         <button type="button" class="btn btn-sm btn-outline-primary btn-edit-po" data-id="{{ po.id }}">
                           <i class="material-symbols-rounded align-middle me-1">edit</i>Editar
                         </button>
+                        {% endif %}
 
+                        {% if po.estado.codigo != 'confirmada' %}
                         <div class="dropdown">
                           <button class="btn btn-sm btn-icon-only btn-action-menu" type="button"
                                   data-bs-toggle="dropdown" aria-expanded="false">
@@ -150,7 +178,7 @@
                           </button>
                           <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm">
                             {% for estado in estados %}
-                              {% if estado.id != po.estado_id %}
+                              {% if estado.id != po.estado_id and estado.codigo != 'em_validacao' %}
                               <li>
                                 <a class="dropdown-item btn-change-estado" href="#"
                                    data-id="{{ po.id }}"
@@ -163,6 +191,7 @@
                             {% endfor %}
                           </ul>
                         </div>
+                        {% endif %}
                       </div>
                     </td>
                   </tr>
@@ -327,6 +356,100 @@
   </div>
 </div>
 
+
+<div class="modal fade" id="poViewModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-lg modal-modern">
+      <div class="modal-header border-0">
+        <div>
+          <h5 class="modal-title fw-bold">Visualizar Purchase Order</h5>
+          <p class="text-muted mb-0 small">Detalhes e anexos da PO.</p>
+        </div>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body bg-light">
+        <div id="poViewLoading" class="text-center py-5">
+          <div class="spinner-border text-primary mb-3" role="status"></div>
+          <div class="fw-semibold text-muted">A carregar dados da PO…</div>
+        </div>
+
+        <div id="poViewContent" class="d-none">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+              <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                  <div class="view-label">Número Interno</div>
+                  <div class="view-value" id="view_po_numero"></div>
+                </div>
+                <div class="col-md-3">
+                  <div class="view-label">PO do Cliente</div>
+                  <div class="view-value" id="view_po_cliente_numero"></div>
+                </div>
+                <div class="col-md-3">
+                  <div class="view-label">Estado</div>
+                  <div class="view-value" id="view_po_estado"></div>
+                </div>
+                <div class="col-md-3">
+                  <div class="view-label">Valor Total</div>
+                  <div class="view-value" id="view_po_valor_total"></div>
+                </div>
+
+                <div class="col-md-4">
+                  <div class="view-label">Cliente</div>
+                  <div class="view-value" id="view_po_cliente"></div>
+                </div>
+                <div class="col-md-4">
+                  <div class="view-label">Quotação</div>
+                  <div class="view-value" id="view_po_quotacao"></div>
+                </div>
+                <div class="col-md-4">
+                  <div class="view-label">Referência do Cliente</div>
+                  <div class="view-value" id="view_po_referencia"></div>
+                </div>
+
+                <div class="col-md-3">
+                  <div class="view-label">Data da PO</div>
+                  <div class="view-value" id="view_po_data_po"></div>
+                </div>
+                <div class="col-md-3">
+                  <div class="view-label">Data Recebida</div>
+                  <div class="view-value" id="view_po_data_recebida"></div>
+                </div>
+                <div class="col-md-3">
+                  <div class="view-label">Email do Remetente</div>
+                  <div class="view-value" id="view_po_email"></div>
+                </div>
+                <div class="col-md-3">
+                  <div class="view-label">Criado por</div>
+                  <div class="view-value" id="view_po_criado_por"></div>
+                </div>
+
+                <div class="col-md-12">
+                  <div class="view-label">Assunto do Email</div>
+                  <div class="view-value" id="view_po_assunto"></div>
+                </div>
+
+                <div class="col-md-12">
+                  <div class="view-label">Observações</div>
+                  <div class="view-value" id="view_po_observacoes"></div>
+                </div>
+              </div>
+
+              <div class="modal-section-title mb-3">
+                <i class="material-symbols-rounded me-2">attach_file</i>Anexos para Download
+              </div>
+
+              <div id="view_po_anexos" class="row g-3"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 {% endblock content %}
 
 
@@ -349,11 +472,16 @@
 .po-hero-icon i{font-size:30px}
 .po-soft-badge{background:var(--po-light);color:var(--po);border:1px solid var(--po-border);font-weight:600;padding:.50rem .90rem}
 .po-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.po-stats-grid-2x2{grid-template-columns:1fr 1fr}
 .mini-stat-card{background:#fff;border:1px solid #edf0f7;border-radius:18px;padding:18px 16px;box-shadow:0 8px 22px rgba(15,23,42,.04)}
 .mini-stat-label{display:block;font-size:.78rem;color:#6c757d;margin-bottom:6px}
 .stat-filter{cursor:pointer;transition:border-color .18s,box-shadow .18s,background .18s}
 .stat-filter:hover{border-color:var(--po)!important;box-shadow:0 6px 20px rgba(46,62,130,.14)!important}
 .stat-filter.stat-active{border-color:var(--po)!important;background:var(--po-light)!important}
+.po-value-card{background:#fff;border:1px solid #e8edf8;border-radius:18px;padding:18px 20px;box-shadow:0 8px 22px rgba(15,23,42,.04)}
+.po-value-card-success{background:linear-gradient(135deg,#ffffff 0%,#f2fff7 100%)}
+.po-value-label{font-size:.82rem;color:#6c757d;margin-bottom:6px;font-weight:600}
+.po-value-amount{font-size:1.45rem;font-weight:800;color:var(--po)}
 .po-main-card{border-radius:22px;overflow:hidden}
 .po-topbar{border-bottom:1px solid #edf0f7;background:linear-gradient(180deg,#fff 0%,#f8f9ff 100%)}
 .btn-modern{border-radius:14px!important;padding:.75rem 1.1rem!important;font-weight:600!important;text-transform:none!important}
@@ -368,9 +496,12 @@
 .modal-section-title{display:flex;align-items:center;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--po);border-bottom:1px solid var(--po-border);padding-bottom:8px}
 .modern-input{border-radius:14px!important;border:1px solid #dfe5ef!important;min-height:46px;box-shadow:none!important}
 .modern-input:focus{border-color:var(--po)!important;box-shadow:0 0 0 .2rem rgba(46,62,130,.10)!important}
-.attachment-card{background:#f8f9ff;border:1px solid #e5eaf7;border-radius:14px;padding:12px 14px}
+.attachment-card{background:#f8f9ff;border:1px solid #e5eaf7;border-radius:14px;padding:12px 14px;height:100%}
 .attachment-title{font-size:.85rem;font-weight:700;color:#2E3E82;word-break:break-word}
 .attachment-type{font-size:.72rem;color:#6c757d}
+.attachment-download{margin-top:10px}
+.view-label{font-size:.74rem;text-transform:uppercase;letter-spacing:.05em;color:#8892a6;font-weight:700;margin-bottom:6px}
+.view-value{font-size:.95rem;color:#1f2937;font-weight:600;min-height:24px;word-break:break-word}
 .dataTables_wrapper .dataTables_paginate .pagination{display:flex!important;gap:4px!important;flex-wrap:wrap!important}
 .dataTables_wrapper .dataTables_paginate .pagination .page-item .page-link{all:unset!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:36px!important;height:36px!important;padding:0 10px!important;border-radius:10px!important;border:1px solid #e7ebf3!important;background:#fff!important;color:#495057!important;font-size:.85rem!important;font-weight:600!important;cursor:pointer!important;transition:all .2s!important}
 .dataTables_wrapper .dataTables_paginate .pagination .page-item.active .page-link{background:linear-gradient(135deg,var(--po) 0%,var(--po-mid) 100%)!important;border-color:var(--po)!important;color:#fff!important}
@@ -379,7 +510,10 @@ div.dataTables_wrapper div.dataTables_length select{border-radius:12px!important
 .dt-buttons{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 .dt-buttons .btn{border-radius:12px!important;padding:.45rem .90rem!important;font-size:.82rem!important;font-weight:600!important;display:inline-flex!important;align-items:center!important;gap:4px!important}
 .dt-button-background{display:none!important}
-@media(max-width:991.98px){.po-stats-grid{grid-template-columns:1fr}}
+
+@media(max-width:991.98px){
+  .po-stats-grid,.po-stats-grid-2x2{grid-template-columns:1fr}
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
@@ -400,6 +534,7 @@ div.dataTables_wrapper div.dataTables_length select{border-radius:12px!important
 $(document).ready(function(){
 
   const poModal = new bootstrap.Modal(document.getElementById('poModal'));
+  const poViewModal = new bootstrap.Modal(document.getElementById('poViewModal'));
 
   const mc = document.getElementById('django-messages');
   if(mc){
@@ -441,7 +576,7 @@ $(document).ready(function(){
     },
     columnDefs:[
       {orderable:false, targets:[9]},
-      {targets:8, render:function(data,type,row,meta){
+      {targets:8, render:function(data,type,row){
         if(type==='filter'||type==='sort') return $(row[8]).find('.estado-codigo').text().trim();
         return data;
       }}
@@ -455,6 +590,21 @@ $(document).ready(function(){
     $(this).addClass('stat-active');
   });
 
+  function fmtMoney(n){
+    return parseFloat(n || 0).toLocaleString('pt-MZ', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  function esc(s){
+    return String(s || '')
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+
   function resetForm(){
     $('#poForm')[0].reset();
     $('#po_id').val('');
@@ -466,6 +616,9 @@ $(document).ready(function(){
     $('#poForm').attr('action', "{% url 'procurement:purchase_orders_create' %}");
     $('#po_existing_attachments').html('');
     $('#po_existing_attachments_wrap').addClass('d-none');
+    $('#poForm button[type="submit"]').prop('disabled', false).removeClass('btn-secondary').addClass('btn-primary btn-po').html('<i class="material-symbols-rounded me-1">save</i>Guardar PO');
+    $('#poForm input, #poForm select, #poForm textarea').prop('disabled', false);
+    $('#po_anexos, #email_anexos').prop('disabled', false);
   }
 
   $('#btnOpenCreatePO').on('click', function(){
@@ -506,14 +659,25 @@ $(document).ready(function(){
           html += `
             <div class="col-md-6">
               <div class="attachment-card">
-                <div class="attachment-title">${a.nome_ficheiro}</div>
-                <div class="attachment-type">${a.tipo_anexo}</div>
+                <div class="attachment-title">${esc(a.nome_ficheiro)}</div>
+                <div class="attachment-type">${esc(a.tipo_anexo)}</div>
+                <div class="attachment-download">
+                  <a href="${a.download_url}" class="btn btn-sm btn-outline-primary" target="_blank">
+                    <i class="material-symbols-rounded align-middle me-1">download</i>Download
+                  </a>
+                </div>
               </div>
             </div>
           `;
         });
         $('#po_existing_attachments').html(html);
         $('#po_existing_attachments_wrap').removeClass('d-none');
+      }
+
+      if(r.estado_codigo === 'confirmada'){
+        $('#poForm input, #poForm select, #poForm textarea').prop('disabled', true);
+        $('#po_existing_attachments_wrap').find('a').prop('disabled', false);
+        $('#poForm button[type="submit"]').prop('disabled', true).removeClass('btn-primary btn-po').addClass('btn-secondary').text('PO Confirmada');
       }
 
       $('#poForm').attr('action', `/purchase-orders/${r.id}/update/`);
@@ -523,6 +687,77 @@ $(document).ready(function(){
         icon:'error',
         title:'Erro',
         text:'Não foi possível carregar os dados da PO.',
+        confirmButtonColor:'#2E3E82'
+      });
+    });
+  });
+
+  $(document).on('click', '.btn-view-po', function(){
+    const id = $(this).data('id');
+
+    $('#poViewLoading').removeClass('d-none');
+    $('#poViewContent').addClass('d-none');
+    $('#view_po_anexos').html('');
+    poViewModal.show();
+
+    $.get(`/purchase-orders/${id}/json/`, function(r){
+      $('#view_po_numero').text(r.numero || '—');
+      $('#view_po_cliente_numero').text(r.po_cliente_numero || '—');
+      $('#view_po_estado').text(r.estado_nome || '—');
+      $('#view_po_valor_total').text(`${r.moeda_simbolo ? r.moeda_simbolo + ' ' : ''}${fmtMoney(r.valor_total)}`);
+      $('#view_po_cliente').text(r.cliente_nome || '—');
+      $('#view_po_quotacao').text(r.quotacao_numero || '—');
+      $('#view_po_referencia').text(r.referencia_cliente || '—');
+      $('#view_po_data_po').text(r.data_po || '—');
+      $('#view_po_data_recebida').text(r.data_recebida || '—');
+      $('#view_po_email').text(r.email_remetente || '—');
+      $('#view_po_criado_por').text(r.criado_por || '—');
+      $('#view_po_assunto').text(r.assunto_email || '—');
+      $('#view_po_observacoes').text(r.observacoes || '—');
+
+      let anexosHtml = '';
+      if(r.anexos && r.anexos.length){
+        r.anexos.forEach(a => {
+          const badge = a.tipo_anexo === 'email'
+            ? '<span class="badge bg-info-subtle text-info">Email</span>'
+            : '<span class="badge bg-primary-subtle text-primary">PO</span>';
+
+          anexosHtml += `
+            <div class="col-md-6 col-lg-4">
+              <div class="attachment-card">
+                <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                  <div class="attachment-title">${esc(a.nome_ficheiro)}</div>
+                  ${badge}
+                </div>
+                <div class="attachment-type">${esc(a.observacao || '')}</div>
+                <div class="attachment-download">
+                  <a href="${a.download_url}" class="btn btn-sm btn-po" target="_blank">
+                    <i class="material-symbols-rounded align-middle me-1">download</i>Baixar
+                  </a>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+      } else {
+        anexosHtml = `
+          <div class="col-12">
+            <div class="alert alert-light border text-muted mb-0">
+              Nenhum anexo registado para esta PO.
+            </div>
+          </div>
+        `;
+      }
+
+      $('#view_po_anexos').html(anexosHtml);
+      $('#poViewLoading').addClass('d-none');
+      $('#poViewContent').removeClass('d-none');
+    }).fail(function(){
+      $('#poViewLoading').addClass('d-none');
+      Swal.fire({
+        icon:'error',
+        title:'Erro',
+        text:'Não foi possível carregar a visualização da PO.',
         confirmButtonColor:'#2E3E82'
       });
     });
