@@ -30,7 +30,7 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:10.5px;co
 .cli .cl{font-size:9.5px;color:#333;margin-bottom:2px}
 
 /* título */
-.dtitle{font-weight:700;font-size:11.5px;margin-bottom:8px}
+.dtitle{font-weight:700;font-size:15px;margin-bottom:8px}
 
 /* separador */
 hr{border:none;border-top:1.5px solid #1a1a1a;margin:0}
@@ -119,7 +119,8 @@ table.tsum tr.sf td{font-weight:800;font-size:10.5px;border-top:1.5px solid #1a1
   </div>
 
   <!-- Título -->
-  <div class="dtitle">Pro-Forma # {{ quotacao.numero }}&nbsp;&nbsp;<span style="font-weight:400;font-size:10.5px">(ORIGINAL)</span></div>
+  <div style="margin-top:18px"></div>
+  <div class="dtitle">Pro-Forma # {{ quotacao.numero }}&nbsp;&nbsp;<span style="font-weight:400;font-size:11px">(ORIGINAL)</span></div>
 
   <hr>
 
@@ -146,6 +147,7 @@ table.tsum tr.sf td{font-weight:800;font-size:10.5px;border-top:1.5px solid #1a1
   </table>
 
   <!-- Itens -->
+  <div style="min-height:100mm">
   <table class="ti">
     <thead>
       <tr>
@@ -176,8 +178,7 @@ table.tsum tr.sf td{font-weight:800;font-size:10.5px;border-top:1.5px solid #1a1
       {% endfor %}
     </tbody>
   </table>
-
-  <!-- Bottom: Impostos + Sumário -->
+  </div><!-- /min-height items -->
   <div class="bot">
 
     <div class="imp">
