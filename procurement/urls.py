@@ -42,6 +42,7 @@ from procurement.views.rfq.rfq_view import (
     create_rfq_view,
     update_rfq_view,
     delete_rfq_view,
+    public_create_rfq_api_view,
 )
 
 
@@ -62,6 +63,8 @@ urlpatterns = [
     path('rfqs/<int:rfq_id>/download-pdf/', rfq_download_pdf_view, name='rfqs_download_pdf'),
     path('rfqs/<int:rfq_id>/update/', update_rfq_view, name='rfqs_update'),
     path('rfqs/<int:rfq_id>/delete/', delete_rfq_view, name='rfqs_delete'),
+    
+    path('api/public/rfqs/create/', public_create_rfq_api_view, name='public_create_rfq_api'),
     
     
     #Fornecesores

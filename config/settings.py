@@ -37,6 +37,15 @@ if DEBUG and not ALLOWED_HOSTS:
 csrf_origins = os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "")
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in csrf_origins.split(",") if o.strip()]
 
+
+
+
+WEBSITE_RFQ_CLIENTE_ID = 4  # ID do cliente genérico "Website / Portal Garmutti"
+
+WEBSITE_RFQ_ALLOWED_ORIGINS = [
+    "https://garmutti.co.mz",
+    "https://www.garmutti.co.mz",
+]
 # =========================================================
 # APPLICATIONS
 # =========================================================

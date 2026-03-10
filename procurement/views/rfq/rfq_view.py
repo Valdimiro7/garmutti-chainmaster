@@ -1,3 +1,4 @@
+import json
 import os
 from datetime import date
 from decimal import Decimal, InvalidOperation
@@ -10,7 +11,9 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils import timezone
-from django.views.decorators.http import require_GET, require_POST
+from django.utils.dateparse import parse_date
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET, require_POST, require_http_methods
 
 from weasyprint import HTML
 
@@ -88,6 +91,161 @@ def _get_estado_novo():
 
 def _get_organizacao():
     return Organizacao.objects.filter(activo=True).order_by('id').first()
+
+
+def _get_allowed_origins():
+    return getattr(settings, 'WEBSITE_RFQ_ALLOWED_ORIGINS', [])
+
+
+def _add_cors_headers(response, request):
+    origin = request.headers.get('Origin')
+    allowed_origins = _get_allowed_origins()
+
+    if origin and origin in allowed_origins:
+        response['Access-Control-Allow-Origin'] = origin
+        response['Vary'] = 'Origin'
+        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response['Access-Control-Allow-Headers'] = 'Content-Type, X-Requested-With'
+        response['Access-Control-Allow-Credentials'] = 'false'
+
+    return response
+
+
+def _json_response(data, request, status=200):
+    response = JsonResponse(data, status=status)
+    return _add_cors_headers(response, request)
+
+
+def _get_default_website_cliente():
+    """
+    Define no settings.py:
+    WEBSITE_RFQ_CLIENTE_ID = 1
+    """
+    cliente_id = getattr(settings, 'WEBSITE_RFQ_CLIENTE_ID', None)
+    if not cliente_id:
+        raise ValueError(
+            'WEBSITE_RFQ_CLIENTE_ID não está configurado no settings.py. '
+            'Crie um cliente genérico para RFQs do website e defina o ID.'
+        )
+
+    cliente = Cliente.objects.filter(id=cliente_id).first()
+    if not cliente:
+        raise ValueError(
+            f'Cliente padrão do website com ID {cliente_id} não foi encontrado.'
+        )
+    return cliente
+
+
+def _build_observacoes_website(payload):
+    linhas = []
+
+    subject = (payload.get('assunto') or '').strip()
+    description = (payload.get('descricao') or '').strip()
+    contact_date = (payload.get('data_contacto') or '').strip()
+    contact_time = (payload.get('hora_contacto') or '').strip()
+    company = (payload.get('empresa') or '').strip()
+    source_page = (payload.get('source_page') or '').strip()
+
+    if company:
+        linhas.append(f'Empresa: {company}')
+
+    if subject:
+        linhas.append(f'Assunto: {subject}')
+
+    if description:
+        linhas.append(f'Descrição: {description}')
+
+    if contact_date or contact_time:
+        linhas.append(
+            f'Melhor hora para contactar: {contact_date or "—"} {contact_time or ""}'.strip()
+        )
+
+    if source_page:
+        linhas.append(f'Origem website: {source_page}')
+
+    return '\n'.join(linhas) if linhas else None
+
+
+def _parse_items_from_api(payload):
+    """
+    Espera:
+    payload["items"] = [
+        {
+            "descricao": "Laptop Dell",
+            "quantidade": 2,
+            "unidade_id": 1,
+            "comentarios": "Core i7",
+            "especificacoes": "16GB RAM"
+        }
+    ]
+
+    ou
+    payload["items_json"] = '[...]'
+    """
+    items = payload.get('items')
+
+    if items is None:
+        items_json = payload.get('items_json')
+        if items_json:
+            try:
+                items = json.loads(items_json)
+            except json.JSONDecodeError:
+                raise ValueError('O campo items_json contém JSON inválido.')
+
+    if not items:
+        raise ValueError('Adicione pelo menos um item no RFQ.')
+
+    if not isinstance(items, list):
+        raise ValueError('O campo items deve ser uma lista.')
+
+    itens_validos = []
+
+    for index, item in enumerate(items, start=1):
+        if not isinstance(item, dict):
+            continue
+
+        descricao = (item.get('descricao') or '').strip()
+        quantidade = item.get('quantidade', 1)
+        unidade_id = item.get('unidade_id')
+        comentarios = (item.get('comentarios') or '').strip()
+        especificacoes = (item.get('especificacoes') or '').strip()
+
+        if not descricao:
+            continue
+
+        quantidade_decimal = _parse_decimal(quantidade, '1')
+        if quantidade_decimal <= 0:
+            raise ValueError(f'A quantidade do item "{descricao}" deve ser maior que zero.')
+
+        try:
+            unidade_id = int(unidade_id) if unidade_id not in (None, '', 'null') else None
+        except (ValueError, TypeError):
+            unidade_id = None
+
+        itens_validos.append({
+            'linha': len(itens_validos) + 1,
+            'descricao': descricao,
+            'quantidade': quantidade_decimal,
+            'unidade_id': unidade_id,
+            'comentarios': comentarios or None,
+            'especificacoes': especificacoes or None,
+        })
+
+    if not itens_validos:
+        raise ValueError('Adicione pelo menos um item válido no RFQ.')
+
+    return itens_validos
+
+
+def _parse_api_payload(request):
+    content_type = request.content_type or ''
+
+    if 'application/json' in content_type:
+        try:
+            return json.loads(request.body.decode('utf-8') or '{}')
+        except json.JSONDecodeError:
+            raise ValueError('JSON inválido.')
+    return request.POST
 
 
 @login_required
@@ -366,3 +524,133 @@ def _save_rfq(request, rfq):
         )
 
     return rfq
+
+
+@csrf_exempt
+@require_http_methods(["POST", "OPTIONS"])
+@transaction.atomic
+def public_create_rfq_api_view(request):
+    """
+    Endpoint público para o WordPress/Elementor enviar RFQs.
+
+    Aceita:
+    - application/json
+    - multipart/form-data
+
+    Campos esperados:
+    - nome
+    - telefone
+    - email
+    - assunto
+    - descricao
+    - data_contacto
+    - hora_contacto
+    - local_entrega (opcional)
+    - prazo_entrega (opcional)
+    - referencia_externa (opcional)
+    - items_json ou items
+    - anexos (opcional, múltiplos)
+    """
+    if request.method == 'OPTIONS':
+        response = HttpResponse(status=204)
+        return _add_cors_headers(response, request)
+
+    try:
+        payload = _parse_api_payload(request)
+
+        # Honeypot opcional
+        website_field = (payload.get('website') or '').strip()
+        if website_field:
+            return _json_response(
+                {'success': False, 'message': 'Submissão inválida.'},
+                request,
+                status=400
+            )
+
+        nome = (payload.get('nome') or '').strip()
+        telefone = (payload.get('telefone') or '').strip()
+        email = (payload.get('email') or '').strip()
+        local_entrega = (payload.get('local_entrega') or '').strip()
+        referencia_externa = (payload.get('referencia_externa') or '').strip()
+        prazo_entrega_raw = (payload.get('prazo_entrega') or '').strip()
+
+        if not nome:
+            raise ValueError('O nome é obrigatório.')
+
+        if not email:
+            raise ValueError('O email é obrigatório.')
+
+        estado_novo = _get_estado_novo()
+        cliente = _get_default_website_cliente()
+        itens_validos = _parse_items_from_api(payload)
+
+        prazo_entrega = parse_date(prazo_entrega_raw) if prazo_entrega_raw else None
+        observacoes = _build_observacoes_website(payload)
+
+        now = timezone.now()
+
+        rfq = RFQ()
+        rfq.numero = _generate_rfq_number()
+        rfq.origem = 'api'
+        rfq.cliente_id = cliente.id
+        rfq.estado_id = estado_novo.id
+        rfq.data_rfq = timezone.localdate()
+        rfq.prazo_entrega = prazo_entrega
+        rfq.local_entrega = local_entrega or None
+        rfq.email_cliente = email or None
+        rfq.telefone_cliente = telefone or None
+        rfq.pessoa_contacto = nome or None
+        rfq.referencia_externa = referencia_externa or 'Website'
+        rfq.observacoes = observacoes
+        rfq.criado_por = None
+        rfq.criado_em = now
+        rfq.actualizado_em = now
+        rfq.save()
+
+        for item in itens_validos:
+            RFQItem.objects.create(
+                rfq_id=rfq.id,
+                linha=item['linha'],
+                descricao=item['descricao'],
+                quantidade=item['quantidade'],
+                unidade_id=item['unidade_id'],
+                comentarios=item['comentarios'],
+                especificacoes=item['especificacoes'],
+            )
+
+        for ficheiro in request.FILES.getlist('anexos'):
+            relative_path = _save_uploaded_file(ficheiro)
+
+            RFQAnexo.objects.create(
+                rfq_id=rfq.id,
+                ficheiro=relative_path,
+                nome_original=ficheiro.name,
+                tamanho=ficheiro.size,
+                content_type=getattr(ficheiro, 'content_type', None),
+                carregado_por=None,
+                carregado_em=now,
+            )
+
+        return _json_response(
+            {
+                'success': True,
+                'message': 'RFQ submetida com sucesso.',
+                'rfq_id': rfq.id,
+                'numero': rfq.numero,
+            },
+            request,
+            status=201
+        )
+
+    except ValueError as e:
+        return _json_response(
+            {'success': False, 'message': str(e)},
+            request,
+            status=400
+        )
+    except Exception as e:
+        return _json_response(
+            {'success': False, 'message': f'Ocorreu um erro ao processar a RFQ: {str(e)}'},
+            request,
+            status=500
+        )
