@@ -7,6 +7,9 @@ from .rfq import RFQ
 from .rfq_item import RFQItem
 from .rfq_anexo import RFQAnexo
 from .organizacao import Organizacao
+from .quotacao import Quotacao
+from .quotacaoitem import QuotacaoItem
+from .quotacaodescricaosugerida import QuotacaoDescricaoSugerida
 
 
 __all__ = [
@@ -19,4 +22,7 @@ __all__ = [
     'RFQItem',
     'RFQAnexo',
     'Organizacao',
+    'Quotacao',
+    'QuotacaoItem',
+    'QuotacaoDescricaoSugerida',
 ]

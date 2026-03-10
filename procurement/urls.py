@@ -44,7 +44,7 @@ from procurement.views.rfq.rfq_view import (
     cancel_rfq_view,
     public_create_rfq_api_view,
 )
-
+from procurement.views.quotacoes.quotacoes_views import(quotacoes_view, create_quotacao_view, update_quotacao_view, quotacao_detail_json_view, quotacao_preview_html_view, quotacao_download_pdf_view, change_estado_quotacao_view, rfq_itens_json_view)
 
 
 
@@ -65,6 +65,20 @@ urlpatterns = [
     path('rfqs/<int:rfq_id>/cancel/', cancel_rfq_view, name='rfqs_cancel'),
     
     path('api/public/rfqs/create/', public_create_rfq_api_view, name='public_create_rfq_api'),
+    
+    
+    
+    # Adicionar ao procurement/urls.py (dentro do urlpatterns existente):
+
+    # ── Quotações ──────────────────────────────────────────────────────────────────
+    path('quotacoes/',                              quotacoes_view,               name='quotacoes'),
+    path('quotacoes/create/',                       create_quotacao_view,         name='quotacoes_create'),
+    path('quotacoes/<int:quotacao_id>/update/',     update_quotacao_view,         name='quotacoes_update'),
+    path('quotacoes/<int:quotacao_id>/json/',       quotacao_detail_json_view,    name='quotacoes_detail_json'),
+    path('quotacoes/<int:quotacao_id>/preview/',    quotacao_preview_html_view,   name='quotacoes_preview'),
+    path('quotacoes/<int:quotacao_id>/download-pdf/', quotacao_download_pdf_view, name='quotacoes_download_pdf'),
+    path('quotacoes/<int:quotacao_id>/estado/',     change_estado_quotacao_view,  name='quotacoes_change_estado'),
+    path('rfqs/<int:rfq_id>/itens-json/',           rfq_itens_json_view,          name='rfq_itens_json'),
     
     
     #Fornecesores
