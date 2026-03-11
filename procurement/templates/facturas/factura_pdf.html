@@ -50,24 +50,39 @@ hr{border:none;border-top:1.5px solid #1a1a1a;margin:0}
 /* tabela cabeçalho */
 table.th{width:100%;border-collapse:collapse;margin-bottom:8px}
 table.th th{
-  font-size:8.8px;font-weight:600;padding:4px 6px;
-  border-bottom:1px solid #ccc;text-align:left;background:transparent
+  font-size:8.8px;
+  font-weight:600;
+  padding:4px 6px;
+  border-bottom:1px solid #ccc;
+  text-align:left;
+  background:transparent
 }
-table.th td{font-size:9.3px;padding:4px 6px;color:#1a1a1a}
+table.th td{
+  font-size:9.3px;
+  padding:4px 6px;
+  color:#1a1a1a
+}
 
 /* tabela itens */
 table.ti{width:100%;border-collapse:collapse;page-break-inside:auto}
 table.ti thead th{
-  font-size:8.8px;font-weight:600;padding:5px 7px;
-  border-top:1px solid #ccc;border-bottom:1px solid #ccc;
-  text-align:right;background:transparent
+  font-size:8.8px;
+  font-weight:600;
+  padding:5px 7px;
+  border-top:1px solid #ccc;
+  border-bottom:1px solid #ccc;
+  text-align:right;
+  background:transparent
 }
 table.ti thead th.al{text-align:left}
 table.ti thead th.ac{text-align:center}
 table.ti tbody tr{page-break-inside:avoid}
 table.ti tbody td{
-  font-size:9.3px;padding:5px 7px;border-bottom:1px solid #eee;
-  text-align:right;vertical-align:top
+  font-size:9.3px;
+  padding:5px 7px;
+  border-bottom:1px solid #eee;
+  text-align:right;
+  vertical-align:top
 }
 table.ti tbody td.al{text-align:left}
 table.ti tbody td.ac{text-align:center}
@@ -90,65 +105,74 @@ table.ti tbody td.ac{text-align:center}
 .imp .it{font-weight:700;font-size:9.3px;margin-bottom:6px}
 table.timp{width:100%;border-collapse:collapse}
 table.timp th{
-  font-size:8.3px;font-weight:700;border-bottom:1px solid #ccc;
-  padding:3px 6px;text-align:left;background:transparent
+  font-size:8.3px;
+  font-weight:700;
+  border-bottom:1px solid #ccc;
+  padding:3px 6px;
+  text-align:left;
+  background:transparent
 }
 table.timp td{
-  font-size:8.8px;padding:3px 6px;border-bottom:1px solid #eee;text-align:left
+  font-size:8.8px;
+  padding:3px 6px;
+  border-bottom:1px solid #eee;
+  text-align:left
 }
 
 /* dados bancários */
-.db{margin-top:12px;page-break-inside:avoid;break-inside:avoid}
-.db .dt{font-weight:700;font-size:9.3px;margin-bottom:5px}
-
-.bank-grid{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-}
-
-.bank-card{
-  border:1px solid #e6e6e6;
-  border-radius:6px;
-  padding:7px 8px;
-  width:calc(50% - 4px);
+.db{
+  margin-top:12px;
   page-break-inside:avoid;
   break-inside:avoid;
 }
-
-.bank-card.full-width{width:100%}
-
-.bank-title{
-  font-size:8.5px;
+.db .dt{
   font-weight:700;
+  font-size:9.3px;
   margin-bottom:5px;
-  color:#2E3E82;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
 }
 
-table.tdb{
+table.tdb-list{
   width:100%;
   border-collapse:collapse;
   table-layout:fixed;
 }
-table.tdb td{
+
+table.tdb-list th{
   font-size:8.4px;
-  padding:2px 5px 2px 0;
+  font-weight:700;
+  padding:4px 6px;
+  text-align:left;
+  border-bottom:1px solid #ccc;
+  background:transparent;
+  white-space:nowrap;
+}
+
+table.tdb-list td{
+  font-size:8.5px;
+  padding:4px 6px;
   border-bottom:1px solid #eee;
   vertical-align:top;
+  overflow-wrap:anywhere;
+  word-break:break-word;
 }
-table.tdb td:first-child{
-  font-weight:600;
-  width:58px;
-  color:#333;
+
+table.tdb-list th:nth-child(1),
+table.tdb-list td:nth-child(1){width:24%}
+
+table.tdb-list th:nth-child(2),
+table.tdb-list td:nth-child(2){width:22%}
+
+table.tdb-list th:nth-child(3),
+table.tdb-list td:nth-child(3){width:18%}
+
+table.tdb-list th:nth-child(4),
+table.tdb-list td:nth-child(4){width:26%}
+
+table.tdb-list th:nth-child(5),
+table.tdb-list td:nth-child(5){
+  width:10%;
   white-space:nowrap;
-}
-table.tdb td:last-child{
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
+  text-align:left;
 }
 
 /* sumário */
@@ -320,101 +344,80 @@ table.tsum tr.sf td{
         {% if contas %}
         <div class="db">
           <div class="dt">Dados Bancários para Pagamento</div>
-          <div class="bank-grid">
-            {% for rel in contas %}
-              {% with b=rel.dado_bancario %}
-                {% if b %}
-                <div class="bank-card">
-                  <div class="bank-title">
-                    Conta {{ forloop.counter }}
-                    {% if b.banco %}— {{ b.banco }}{% endif %}
-                    {% if b.moeda %} — {{ b.moeda }}{% endif %}
-                  </div>
-                  <table class="tdb">
-                    <tbody>
-                      <tr>
-                        <td>Banco</td>
-                        <td>{{ b.banco|default:"—" }}</td>
-                      </tr>
-                      <tr>
-                        <td>Titular</td>
-                        <td>{{ b.titular|default:"—" }}</td>
-                      </tr>
-                      <tr>
-                        <td>Conta</td>
-                        <td>{{ b.conta|default:"—" }}</td>
-                      </tr>
-                      <tr>
-                        <td>NIB</td>
-                        <td>{{ b.nib|default:"—" }}</td>
-                      </tr>
-                      {% if b.iban %}
-                      <tr>
-                        <td>IBAN</td>
-                        <td>{{ b.iban }}</td>
-                      </tr>
+          <table class="tdb-list">
+            <thead>
+              <tr>
+                <th>Banco</th>
+                <th>Titular</th>
+                <th>Conta</th>
+                <th>NIB</th>
+                <th>Moeda</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for rel in contas %}
+                {% with b=rel.dado_bancario %}
+                  {% if b %}
+                  <tr>
+                    <td>{{ b.banco|default:"—" }}</td>
+                    <td>{{ b.titular|default:"—" }}</td>
+                    <td>{{ b.conta|default:"—" }}</td>
+                    <td>{{ b.nib|default:"—" }}</td>
+                    <td>
+                      {% if b.moeda %}
+                        {% if b.moeda.codigo %}
+                          {{ b.moeda.codigo }}
+                        {% else %}
+                          {{ b.moeda }}
+                        {% endif %}
+                      {% else %}
+                        —
                       {% endif %}
-                      {% if b.swift %}
-                      <tr>
-                        <td>SWIFT</td>
-                        <td>{{ b.swift }}</td>
-                      </tr>
-                      {% endif %}
-                    </tbody>
-                  </table>
-                </div>
-                {% endif %}
-              {% endwith %}
-            {% endfor %}
-          </div>
+                    </td>
+                  </tr>
+                  {% endif %}
+                {% endwith %}
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
 
         {% elif factura.dado_bancario %}
-        {% with b=factura.dado_bancario %}
-        <div class="db">
-          <div class="dt">Dados Bancários para Pagamento</div>
-          <div class="bank-grid">
-            <div class="bank-card full-width">
-              <div class="bank-title">
-                {% if b.banco %}{{ b.banco }}{% endif %}
-                {% if b.moeda %} — {{ b.moeda }}{% endif %}
-              </div>
-              <table class="tdb">
-                <tbody>
-                  <tr>
-                    <td>Banco</td>
-                    <td>{{ b.banco|default:"—" }}</td>
-                  </tr>
-                  <tr>
-                    <td>Titular</td>
-                    <td>{{ b.titular|default:"—" }}</td>
-                  </tr>
-                  <tr>
-                    <td>Conta</td>
-                    <td>{{ b.conta|default:"—" }}</td>
-                  </tr>
-                  <tr>
-                    <td>NIB</td>
-                    <td>{{ b.nib|default:"—" }}</td>
-                  </tr>
-                  {% if b.iban %}
-                  <tr>
-                    <td>IBAN</td>
-                    <td>{{ b.iban }}</td>
-                  </tr>
-                  {% endif %}
-                  {% if b.swift %}
-                  <tr>
-                    <td>SWIFT</td>
-                    <td>{{ b.swift }}</td>
-                  </tr>
-                  {% endif %}
-                </tbody>
-              </table>
-            </div>
+          {% with b=factura.dado_bancario %}
+          <div class="db">
+            <div class="dt">Dados Bancários para Pagamento</div>
+            <table class="tdb-list">
+              <thead>
+                <tr>
+                  <th>Banco</th>
+                  <th>Titular</th>
+                  <th>Conta</th>
+                  <th>NIB</th>
+                  <th>Moeda</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>{{ b.banco|default:"—" }}</td>
+                  <td>{{ b.titular|default:"—" }}</td>
+                  <td>{{ b.conta|default:"—" }}</td>
+                  <td>{{ b.nib|default:"—" }}</td>
+                  <td>
+                    {% if b.moeda %}
+                      {% if b.moeda.codigo %}
+                        {{ b.moeda.codigo }}
+                      {% else %}
+                        {{ b.moeda }}
+                      {% endif %}
+                    {% else %}
+                      —
+                    {% endif %}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-        </div>
-        {% endwith %}
+          {% endwith %}
         {% endif %}
       {% endwith %}
     </div>
