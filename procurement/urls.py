@@ -52,6 +52,7 @@ from procurement.views.configuracoes.condicoes_pagamento_view import (condicoes_
 from procurement.views.po.purchase_order_view import (download_purchase_order_anexo_view, purchase_orders_view, create_purchase_order_view, update_purchase_order_view, purchase_order_detail_json_view, change_estado_purchase_order_view)
 from procurement.views.pagamentos.pagamento_view import (pagamentos_view, download_po_anexo_view, pagamento_detail_json_view, update_pagamento_view, download_pagamento_anexo_view)
 from procurement.views.facturas.facturas_view import (facturas_view, factura_create_view, factura_detail_json_view, factura_update_view, factura_change_estado_view, factura_pdf_view, po_itens_json_view)
+from procurement.views.recibos.recibos_view import (recibos_view, recibo_create_view, recibo_detail_json_view, recibo_anular_view, recibo_pdf_view, factura_info_json_view)
 
 
 
@@ -116,6 +117,16 @@ urlpatterns = [
     path('facturas/<int:factura_id>/estado/',  factura_change_estado_view, name='factura_change_estado'),
     path('facturas/<int:factura_id>/pdf/',     factura_pdf_view,           name='factura_pdf'),
     path('facturas/po/<int:po_id>/itens/',     po_itens_json_view,         name='factura_po_itens'),
+    
+    
+    #======================Recibos ==========================================
+
+    path('recibos/',                           recibos_view,             name='recibos'),
+    path('recibos/create/',                    recibo_create_view,       name='recibo_create'),
+    path('recibos/<int:recibo_id>/json/',      recibo_detail_json_view,  name='recibo_detail_json'),
+    path('recibos/<int:recibo_id>/anular/',    recibo_anular_view,       name='recibo_anular'),
+    path('recibos/<int:recibo_id>/pdf/',       recibo_pdf_view,          name='recibo_pdf'),
+    path('recibos/factura/<int:factura_id>/info/',  factura_info_json_view, name='recibo_factura_info'),
     
     
     #Fornecesores

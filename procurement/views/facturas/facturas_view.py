@@ -394,258 +394,41 @@ def factura_change_estado_view(request, factura_id):
 @login_required
 @require_GET
 def factura_pdf_view(request, factura_id):
-    """Gera e devolve o PDF da factura usando ReportLab."""
-    from reportlab.lib.pagesizes import A4
-    from reportlab.lib import colors
-    from reportlab.lib.units import mm
-    from reportlab.platypus import (
-        SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
-    )
-    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-    from reportlab.lib.enums import TA_RIGHT, TA_CENTER, TA_LEFT
-    import io
+    """Gera e devolve o PDF da factura usando WeasyPrint — mesmo padrão da Quotação."""
+    from django.template.loader import render_to_string
+    from django.http import HttpResponse
+    from weasyprint import HTML
 
     factura = get_object_or_404(
         Factura.objects.select_related(
             'cliente', 'moeda', 'estado', 'dado_bancario',
             'purchase_order', 'purchase_order__quotacao',
-        ),
+            'purchase_order__quotacao__condicao_pagamento',
+        ).prefetch_related('itens'),
         id=factura_id,
     )
 
-    buffer = io.BytesIO()
+    # Buscar organização (mesmo helper da quotação)
+    try:
+        from procurement.models import Organizacao
+        organizacao = Organizacao.objects.filter(activo=True).order_by('id').first()
+    except Exception:
+        organizacao = None
 
-    doc = SimpleDocTemplate(
-        buffer,
-        pagesize=A4,
-        rightMargin=18*mm, leftMargin=18*mm,
-        topMargin=18*mm, bottomMargin=18*mm,
-        title=f'Factura {factura.numero}',
+    html_string = render_to_string(
+        'facturas/factura_pdf.html',
+        {'factura': factura, 'organizacao': organizacao},
+        request=request,
     )
 
-    W, H = A4
-    col_w = W - 36*mm
+    pdf_file = HTML(
+        string=html_string,
+        base_url=request.build_absolute_uri('/'),
+    ).write_pdf()
 
-    # ── Cores ──────────────────────────────────────────────────────────────
-    BLUE       = colors.HexColor('#2E3E82')
-    BLUE_LIGHT = colors.HexColor('#eef2ff')
-    GREY_LINE  = colors.HexColor('#dee2e6')
-    GREY_TEXT  = colors.HexColor('#6c757d')
-    WHITE      = colors.white
-    BLACK      = colors.HexColor('#1f2937')
-
-    styles = getSampleStyleSheet()
-
-    def sty(name, **kw):
-        base = styles[name]
-        return ParagraphStyle(name + str(id(kw)), parent=base, **kw)
-
-    title_sty   = sty('Normal', fontSize=22, textColor=WHITE, fontName='Helvetica-Bold', leading=28)
-    label_sty   = sty('Normal', fontSize=8,  textColor=GREY_TEXT, fontName='Helvetica', leading=11)
-    value_sty   = sty('Normal', fontSize=10, textColor=BLACK, fontName='Helvetica-Bold', leading=14)
-    normal_sty  = sty('Normal', fontSize=9,  textColor=BLACK, fontName='Helvetica', leading=13)
-    small_sty   = sty('Normal', fontSize=8,  textColor=GREY_TEXT, fontName='Helvetica', leading=11)
-    right_sty   = sty('Normal', fontSize=9,  textColor=BLACK, fontName='Helvetica', leading=13, alignment=TA_RIGHT)
-    right_b_sty = sty('Normal', fontSize=10, textColor=BLACK, fontName='Helvetica-Bold', leading=14, alignment=TA_RIGHT)
-    total_sty   = sty('Normal', fontSize=12, textColor=WHITE, fontName='Helvetica-Bold', leading=16, alignment=TA_RIGHT)
-    sym = factura.moeda.simbolo if factura.moeda else ''
-
-    def fmt(v):
-        try:
-            return f'{sym} {float(v):,.2f}'.strip()
-        except Exception:
-            return str(v)
-
-    story = []
-
-    # ── Cabeçalho azul ─────────────────────────────────────────────────────
-    header_data = [[
-        Paragraph('<b>GARMUTTI</b><br/><font size="10" color="#ffffff">Empreendimentos, Lda</font>', title_sty),
-        Paragraph(f'FACTURA<br/><font size="13">{factura.numero}</font>', sty('Normal', fontSize=22, textColor=WHITE, fontName='Helvetica-Bold', leading=26, alignment=TA_RIGHT)),
-    ]]
-    header_tbl = Table(header_data, colWidths=[col_w * 0.55, col_w * 0.45])
-    header_tbl.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,-1), BLUE),
-        ('VALIGN',     (0,0), (-1,-1), 'MIDDLE'),
-        ('TOPPADDING', (0,0), (-1,-1), 14),
-        ('BOTTOMPADDING',(0,0),(-1,-1),14),
-        ('LEFTPADDING', (0,0),(0,-1), 14),
-        ('RIGHTPADDING',(-1,0),(-1,-1),14),
-        ('ROUNDEDCORNERS', [8, 8, 8, 8]),
-    ]))
-    story.append(header_tbl)
-    story.append(Spacer(1, 10*mm))
-
-    # ── Info: cliente + datas ───────────────────────────────────────────────
-    cli = factura.cliente
-    info_data = [[
-        # Coluna esquerda — cliente
-        Table([
-            [Paragraph('FACTURADO A', label_sty)],
-            [Paragraph(cli.nome if cli else '—', value_sty)],
-            [Paragraph(getattr(cli, 'nuit', '') or '', small_sty)],
-            [Paragraph(getattr(cli, 'endereco', '') or '', small_sty)],
-            [Paragraph(getattr(cli, 'email', '') or '', small_sty)],
-        ], colWidths=[col_w * 0.45], style=[('BOTTOMPADDING',(0,0),(-1,-1),2)]),
-
-        # Coluna direita — datas e referências
-        Table([
-            [Paragraph('DATA DE EMISSÃO', label_sty),
-             Paragraph(factura.data_emissao.strftime('%d/%m/%Y') if factura.data_emissao else '—', value_sty)],
-            [Paragraph('DATA DE VENCIMENTO', label_sty),
-             Paragraph(factura.data_vencimento.strftime('%d/%m/%Y') if factura.data_vencimento else '—', value_sty)],
-            [Paragraph('PO DO CLIENTE', label_sty),
-             Paragraph(factura.purchase_order.po_cliente_numero if factura.purchase_order and factura.purchase_order.po_cliente_numero else '—', value_sty)],
-            [Paragraph('ESTADO', label_sty),
-             Paragraph(factura.estado.nome if factura.estado else '—', value_sty)],
-        ], colWidths=[col_w * 0.28, col_w * 0.27],
-           style=[('BOTTOMPADDING',(0,0),(-1,-1),4),('ALIGN',(1,0),(1,-1),'RIGHT')]),
-    ]]
-    info_tbl = Table(info_data, colWidths=[col_w * 0.45, col_w * 0.55])
-    info_tbl.setStyle(TableStyle([
-        ('VALIGN', (0,0),(-1,-1),'TOP'),
-    ]))
-    story.append(info_tbl)
-    story.append(Spacer(1, 8*mm))
-
-    # ── Tabela de itens ─────────────────────────────────────────────────────
-    col_desc = col_w * 0.42
-    col_un   = col_w * 0.10
-    col_qty  = col_w * 0.12
-    col_pu   = col_w * 0.18
-    col_tot  = col_w * 0.18
-
-    item_header = [
-        Paragraph('<b>Descrição</b>', sty('Normal', fontSize=8, textColor=WHITE, fontName='Helvetica-Bold')),
-        Paragraph('<b>Unid.</b>',     sty('Normal', fontSize=8, textColor=WHITE, fontName='Helvetica-Bold', alignment=TA_CENTER)),
-        Paragraph('<b>Qtd.</b>',      sty('Normal', fontSize=8, textColor=WHITE, fontName='Helvetica-Bold', alignment=TA_RIGHT)),
-        Paragraph('<b>Preço Unit.</b>',sty('Normal', fontSize=8, textColor=WHITE, fontName='Helvetica-Bold', alignment=TA_RIGHT)),
-        Paragraph('<b>Total</b>',     sty('Normal', fontSize=8, textColor=WHITE, fontName='Helvetica-Bold', alignment=TA_RIGHT)),
-    ]
-
-    rows = [item_header]
-    for it in factura.itens.all():
-        rows.append([
-            Paragraph(it.descricao, normal_sty),
-            Paragraph(it.unidade or '', sty('Normal', fontSize=9, textColor=BLACK, alignment=TA_CENTER)),
-            Paragraph(f'{float(it.quantidade):g}', right_sty),
-            Paragraph(fmt(it.preco_unit), right_sty),
-            Paragraph(fmt(it.total_linha), right_sty),
-        ])
-
-    items_tbl = Table(rows, colWidths=[col_desc, col_un, col_qty, col_pu, col_tot])
-    items_tbl.setStyle(TableStyle([
-        ('BACKGROUND',    (0,0), (-1,0),  BLUE),
-        ('ROWBACKGROUNDS',(0,1), (-1,-1), [WHITE, BLUE_LIGHT]),
-        ('GRID',          (0,0), (-1,-1), 0.4, GREY_LINE),
-        ('TOPPADDING',    (0,0), (-1,-1), 7),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 7),
-        ('LEFTPADDING',   (0,0), (0,-1),  8),
-        ('RIGHTPADDING',  (-1,0),(-1,-1), 8),
-        ('VALIGN',        (0,0), (-1,-1), 'MIDDLE'),
-    ]))
-    story.append(items_tbl)
-    story.append(Spacer(1, 6*mm))
-
-    # ── Totais ──────────────────────────────────────────────────────────────
-    totais_data = [
-        [Paragraph('Subtotal', normal_sty),         Paragraph(fmt(factura.subtotal),  right_sty)],
-        [Paragraph(f'Desconto ({factura.desconto_pct}%)', normal_sty), Paragraph(f'- {fmt(factura.desconto)}', right_sty)],
-        [Paragraph(f'IVA ({factura.iva_pct}%)',     normal_sty),       Paragraph(fmt(factura.iva_valor), right_sty)],
-    ]
-    totais_tbl = Table(totais_data, colWidths=[col_w * 0.75, col_w * 0.25])
-    totais_tbl.setStyle(TableStyle([
-        ('ALIGN',        (1,0), (1,-1), 'RIGHT'),
-        ('TOPPADDING',   (0,0), (-1,-1), 4),
-        ('BOTTOMPADDING',(0,0), (-1,-1), 4),
-        ('LINEBELOW',    (0,-1),(-1,-1), 0.5, GREY_LINE),
-    ]))
-    story.append(totais_tbl)
-    story.append(Spacer(1, 2*mm))
-
-    total_data = [[
-        Paragraph('', normal_sty),
-        Table([[Paragraph('TOTAL', total_sty), Paragraph(fmt(factura.total), total_sty)]],
-              colWidths=[col_w * 0.12, col_w * 0.13],
-              style=[
-                  ('BACKGROUND', (0,0),(-1,-1), BLUE),
-                  ('TOPPADDING', (0,0),(-1,-1), 8),
-                  ('BOTTOMPADDING',(0,0),(-1,-1),8),
-                  ('LEFTPADDING',(0,0),(0,-1),10),
-                  ('RIGHTPADDING',(-1,0),(-1,-1),10),
-                  ('ROUNDEDCORNERS',[6,6,6,6]),
-              ]),
-    ]]
-    total_tbl = Table(total_data, colWidths=[col_w * 0.75, col_w * 0.25])
-    story.append(total_tbl)
-    story.append(Spacer(1, 8*mm))
-
-    # ── Dados bancários ─────────────────────────────────────────────────────
-    if factura.dado_bancario:
-        db = factura.dado_bancario
-        banco_rows = [[Paragraph('DADOS PARA PAGAMENTO', sty('Normal', fontSize=8, textColor=WHITE, fontName='Helvetica-Bold'))]]
-        banco_tbl_header = Table(banco_rows, colWidths=[col_w])
-        banco_tbl_header.setStyle(TableStyle([
-            ('BACKGROUND', (0,0),(-1,-1), BLUE),
-            ('TOPPADDING',(0,0),(-1,-1),6),('BOTTOMPADDING',(0,0),(-1,-1),6),
-            ('LEFTPADDING',(0,0),(-1,-1),10),
-        ]))
-        story.append(banco_tbl_header)
-
-        fields = []
-        if db.banco:    fields.append(('Banco', db.banco))
-        if db.titular:  fields.append(('Titular', db.titular))
-        if db.conta:    fields.append(('Nº Conta', db.conta))
-        if db.nib:      fields.append(('NIB', db.nib))
-        if db.iban:     fields.append(('IBAN', db.iban))
-        if db.swift:    fields.append(('SWIFT', db.swift))
-        if db.moeda:    fields.append(('Moeda', db.moeda))
-
-        banco_data = [[Paragraph(k, label_sty), Paragraph(v, value_sty)] for k, v in fields]
-        banco_body = Table(banco_data, colWidths=[col_w * 0.25, col_w * 0.75])
-        banco_body.setStyle(TableStyle([
-            ('BACKGROUND', (0,0),(-1,-1), BLUE_LIGHT),
-            ('TOPPADDING',(0,0),(-1,-1),4),('BOTTOMPADDING',(0,0),(-1,-1),4),
-            ('LEFTPADDING',(0,0),(-1,-1),10),
-            ('LINEBELOW',(0,0),(-1,-2),0.3,GREY_LINE),
-        ]))
-        story.append(banco_body)
-        story.append(Spacer(1, 6*mm))
-
-    # ── Observações e termos ────────────────────────────────────────────────
-    if factura.observacoes:
-        story.append(Paragraph('OBSERVAÇÕES', label_sty))
-        story.append(Spacer(1, 2*mm))
-        story.append(Paragraph(factura.observacoes, normal_sty))
-        story.append(Spacer(1, 4*mm))
-
-    if factura.termos:
-        story.append(HRFlowable(width='100%', thickness=0.5, color=GREY_LINE))
-        story.append(Spacer(1, 3*mm))
-        story.append(Paragraph('TERMOS E CONDIÇÕES', label_sty))
-        story.append(Spacer(1, 2*mm))
-        story.append(Paragraph(factura.termos, small_sty))
-
-    # ── Rodapé ──────────────────────────────────────────────────────────────
-    story.append(Spacer(1, 8*mm))
-    story.append(HRFlowable(width='100%', thickness=0.5, color=GREY_LINE))
-    story.append(Spacer(1, 3*mm))
-    footer_data = [[
-        Paragraph('Garmutti Empreendimentos, Lda  |  garmutti.co.mz', small_sty),
-        Paragraph(f'Documento gerado automaticamente  |  {factura.numero}',
-                  sty('Normal', fontSize=8, textColor=GREY_TEXT, alignment=TA_RIGHT)),
-    ]]
-    footer_tbl = Table(footer_data, colWidths=[col_w * 0.6, col_w * 0.4])
-    story.append(footer_tbl)
-
-    doc.build(story)
-    buffer.seek(0)
-
-    response = FileResponse(
-        buffer,
-        as_attachment=False,
-        filename=f'Factura_{factura.numero.replace("/","_")}.pdf',
-        content_type='application/pdf',
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = (
+        f'attachment; filename="Factura_{factura.numero.replace("/", "-")}.pdf"'
     )
     return response
 

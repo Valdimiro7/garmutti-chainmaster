@@ -24,6 +24,7 @@ from .pagamentohistorico import PagamentoHistorico
 from .factura import Factura
 from .facturaestado import FacturaEstado
 from .facturaitem import FacturaItem
+from .recibo import Recibo
 
 
 __all__ = [
@@ -53,4 +54,5 @@ __all__ = [
     'Factura',
     'FacturaEstado',
     'FacturaItem',
+    'Recibo',
 ]

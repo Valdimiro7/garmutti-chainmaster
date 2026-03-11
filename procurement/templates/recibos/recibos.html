@@ -1,0 +1,750 @@
+{% extends "layouts/pro_base.html" %}
+{% load static %}
+
+{% block content %}
+
+<style>
+:root {
+    --rc:#2E3E82;
+    --rc-mid:#4a5fa8;
+    --rc-soft:#eef2ff;
+    --rc-border:#e2e7f5
+}
+.rc-hero {
+    background: linear-gradient(135deg, var(--rc) 0%, var(--rc-mid) 100%);
+    border-radius: 20px;
+    padding: 28px 32px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 24px
+}
+.rc-hero::after {
+    content: '';
+    position: absolute;
+    right: -40px;
+    top: -40px;
+    width: 220px;
+    height: 220px;
+    background: rgba(255,255,255,.06);
+    border-radius: 50%
+}
+.rc-hero-title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    margin-bottom: 4px
+}
+.rc-hero-sub {
+    font-size: .85rem;
+    opacity: .8;
+    margin-bottom: 20px
+}
+.rc-soft-badge {
+    background: rgba(255,255,255,.15);
+    color: #fff;
+    font-size: .72rem;
+    padding: 4px 10px;
+    border-radius: 20px
+}
+.rc-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 12px
+}
+.mini-stat-card {
+    background: rgba(255,255,255,.12);
+    border-radius: 14px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: background .2s
+}
+.mini-stat-card:hover,
+.mini-stat-card.active {
+    background: rgba(255,255,255,.25)
+}
+.mini-stat-card.stat-no-filter {
+    cursor: default
+}
+.mini-stat-card.stat-no-filter:hover {
+    background: rgba(255,255,255,.12)
+}
+.mini-stat-label {
+    font-size: .72rem;
+    opacity: .8;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    display: block;
+    margin-bottom: 4px
+}
+.rc-value-card {
+    background: rgba(255,255,255,.1);
+    border-radius: 14px;
+    padding: 14px 20px
+}
+.rc-value-label {
+    font-size: .72rem;
+    opacity: .75;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-bottom: 4px
+}
+.rc-value-amount {
+    font-size: 1.3rem;
+    font-weight: 800
+}
+.rc-hero-accent {
+    position: absolute;
+    left: -60px;
+    bottom: -60px;
+    width: 180px;
+    height: 180px;
+    background: rgba(255,255,255,.04);
+    border-radius: 50%
+}
+.rc-main-card {
+    border-radius: 20px;
+    overflow: hidden
+}
+.rc-toolbar {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--rc-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap
+}
+.btn-modern {
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: .82rem;
+    padding: 8px 18px;
+    transition: all .2s
+}
+.btn-rc-primary {
+    background: linear-gradient(135deg, var(--rc), var(--rc-mid));
+    color: #fff;
+    border: none
+}
+.btn-rc-primary:hover {
+    opacity: .9;
+    color: #fff
+}
+.modern-input {
+    border-radius: 12px !important;
+    border: 1.5px solid var(--rc-border) !important;
+    font-size: .85rem
+}
+.modern-input:focus {
+    border-color: var(--rc) !important;
+    box-shadow: 0 0 0 3px rgba(46,62,130,.1) !important
+}
+
+/* estado badge */
+.estado-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: .75rem;
+    font-weight: 600
+}
+.estado-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0
+}
+
+/* anulado row */
+tr.recibo-anulado td {
+    opacity: .5;
+    text-decoration: line-through
+}
+
+/* modal */
+.modal-section-title {
+    font-size: .78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--rc);
+    display: flex;
+    align-items: center
+}
+.rc-info-card {
+    background: linear-gradient(135deg, #f0f4ff, #f8faff);
+    border: 1px solid var(--rc-border);
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin-bottom: 16px
+}
+.rc-info-label {
+    font-size: .74rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: #8892a6;
+    font-weight: 700;
+    margin-bottom: 4px
+}
+.rc-info-value {
+    font-size: .95rem;
+    color: #1f2937;
+    font-weight: 600
+}
+.rc-saldo-ok { color: #198754 }
+.rc-saldo-warn { color: #fd7e14 }
+
+/* pagination */
+.pagination .page-item .page-link {
+    all: unset;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    font-size: .82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+    color: #6c757d
+}
+.pagination .page-item .page-link:hover {
+    background: #f0f3ff;
+    color: var(--rc)
+}
+.pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, var(--rc), var(--rc-mid));
+    color: #fff
+}
+.pagination .page-item.disabled .page-link {
+    opacity: .4;
+    cursor: default
+}
+</style>
+
+<!-- Hero -->
+<div class="rc-hero">
+  <div class="row align-items-center">
+    <div class="col-lg-7">
+      <div class="rc-hero-title"><i class="material-symbols-rounded me-2" style="vertical-align:-4px">receipt</i>Recibos</div>
+      <div class="rc-hero-sub">Emissão e gestão de recibos de pagamento</div>
+      <div class="d-flex gap-2 flex-wrap">
+        <span class="badge rounded-pill rc-soft-badge">PDF Automático</span>
+        <span class="badge rounded-pill rc-soft-badge">Ligado à Factura</span>
+        <span class="badge rounded-pill rc-soft-badge">Estado Automático</span>
+      </div>
+    </div>
+    <div class="col-lg-5 mt-3 mt-lg-0">
+      <div class="rc-stats-grid">
+        <div class="mini-stat-card stat-filter" data-filter="activo">
+          <span class="mini-stat-label">Activos</span>
+          <h4 class="mb-0 text-white">{{ total_activos }}</h4>
+        </div>
+        <div class="mini-stat-card stat-filter" data-filter="anulado">
+          <span class="mini-stat-label">Anulados</span>
+          <h4 class="mb-0" style="color:#ffc107">{{ total_anulados }}</h4>
+        </div>
+        <div class="mini-stat-card stat-no-filter" style="grid-column:span 2">
+          <span class="mini-stat-label">Total Recebido</span>
+          <h4 class="mb-0 text-white">{{ valor_total|floatformat:2 }}</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="rc-hero-accent"></div>
+</div>
+
+<!-- Tabela -->
+<div class="card border-0 shadow-sm rc-main-card">
+  <div class="rc-toolbar">
+    <span class="fw-700 text-dark" style="font-size:.95rem">
+      <i class="material-symbols-rounded me-1" style="vertical-align:-4px;font-size:18px">list</i>
+      Lista de Recibos
+    </span>
+    <div class="d-flex gap-2 align-items-center">
+      <input type="text" id="rcSearch" class="form-control modern-input" placeholder="Pesquisar..." style="width:220px">
+      <button class="btn btn-modern btn-rc-primary" id="btnNovoRecibo">
+        <i class="material-symbols-rounded me-1" style="font-size:15px">add</i>Novo Recibo
+      </button>
+    </div>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table id="rcTable" class="table table-hover align-middle mb-0" style="font-size:.84rem">
+        <thead style="background:#f8f9fc">
+          <tr>
+            <th class="px-3 py-3">Número</th>
+            <th>Data</th>
+            <th>Cliente</th>
+            <th>Factura</th>
+            <th>PO Cliente</th>
+            <th>Valor Recebido</th>
+            <th>Forma Pagamento</th>
+            <th>Estado</th>
+            <th class="text-center">Acções</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in recibos %}
+          <tr class="{% if r.anulado %}recibo-anulado{% endif %}"
+              data-estado="{% if r.anulado %}anulado{% else %}activo{% endif %}">
+            <td class="px-3 fw-600">{{ r.numero }}</td>
+            <td>{{ r.data_recibo|date:"d/m/Y" }}</td>
+            <td>{{ r.cliente.nome }}</td>
+            <td>{{ r.factura.numero }}</td>
+            <td>{{ r.factura.purchase_order.po_cliente_numero|default:"—" }}</td>
+            <td class="fw-600">{{ r.valor_recebido|floatformat:2 }} {{ r.moeda.simbolo|default:"Mt" }}</td>
+            <td>{{ r.forma_pagamento|default:"—" }}</td>
+            <td>
+              <span class="estado-badge"
+                    style="background:{% if r.anulado %}#f8d7da{% else %}#d1fae5{% endif %};
+                           color:{% if r.anulado %}#842029{% else %}#065f46{% endif %}">
+                <span class="estado-dot"
+                      style="background:{% if r.anulado %}#dc3545{% else %}#198754{% endif %}"></span>
+                <span class="estado-codigo">{% if r.anulado %}Anulado{% else %}Activo{% endif %}</span>
+              </span>
+            </td>
+            <td class="text-center">
+              <button class="btn btn-sm btn-light btn-modern btn-view-recibo"
+                      data-id="{{ r.id }}" title="Ver detalhes" style="padding:5px 10px">
+                <i class="material-symbols-rounded" style="font-size:15px">visibility</i>
+              </button>
+              {% if not r.anulado %}
+              <button class="btn btn-sm btn-light btn-modern btn-anular-recibo ms-1"
+                      data-id="{{ r.id }}" data-numero="{{ r.numero }}"
+                      title="Anular" style="padding:5px 10px">
+                <i class="material-symbols-rounded" style="font-size:15px;color:#dc3545">block</i>
+              </button>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="9" class="text-center py-4 text-muted">Nenhum recibo emitido.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <!-- Pagination -->
+    <div class="d-flex align-items-center justify-content-between px-3 py-2 border-top" style="font-size:.82rem">
+      <span id="rcInfo" class="text-muted"></span>
+      <ul class="pagination mb-0 gap-1" id="rcPagination"></ul>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CRIAR -->
+<div class="modal fade" id="rcModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content" style="border-radius:20px;border:none">
+      <div class="modal-header" style="background:linear-gradient(135deg,var(--rc),var(--rc-mid));border-radius:20px 20px 0 0">
+        <h5 class="modal-title text-white fw-700">
+          <i class="material-symbols-rounded me-2" style="vertical-align:-4px">receipt</i>Novo Recibo
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <!-- Seleccionar Factura -->
+        <div class="modal-section-title mb-3">
+          <i class="material-symbols-rounded me-2">receipt_long</i>Factura
+        </div>
+        <div class="row g-3 mb-3">
+          <div class="col-md-8">
+            <label class="form-label">Factura <span class="text-danger">*</span></label>
+            <select id="rc_factura_id" class="form-select modern-input">
+              <option value="">— Seleccionar Factura —</option>
+              {% for f in facturas %}
+              <option value="{{ f.id }}"
+                      data-cliente="{{ f.cliente_id }}"
+                      data-moeda="{{ f.moeda_id|default:'' }}"
+                      data-total="{{ f.total|floatformat:2 }}"
+                      data-po="{{ f.purchase_order.po_cliente_numero|default:'' }}">
+                {{ f.numero }} — {{ f.cliente.nome }} — {{ f.total|floatformat:2 }} {{ f.moeda.simbolo|default:"Mt" }}
+                ({{ f.estado.nome }})
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Moeda</label>
+            <select id="rc_moeda_id" class="form-select modern-input">
+              <option value="">—</option>
+              {% for m in moedas %}
+              <option value="{{ m.id }}">{{ m.codigo }} — {{ m.nome }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <!-- Painel info da factura -->
+        <div id="rc_factura_info" class="rc-info-card d-none mb-3">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <div class="rc-info-label">Total da Factura</div>
+              <div class="rc-info-value" id="rc_info_total">—</div>
+            </div>
+            <div class="col-md-4">
+              <div class="rc-info-label">Já Recebido</div>
+              <div class="rc-info-value" id="rc_info_recebido">—</div>
+            </div>
+            <div class="col-md-4">
+              <div class="rc-info-label">Saldo Pendente</div>
+              <div class="rc-info-value rc-saldo-ok" id="rc_info_saldo">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dados do recibo -->
+        <div class="modal-section-title mb-3 mt-2">
+          <i class="material-symbols-rounded me-2">payments</i>Dados do Pagamento
+        </div>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Data do Recibo <span class="text-danger">*</span></label>
+            <input type="date" id="rc_data" class="form-control modern-input" value="{{ today }}">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Valor Recebido <span class="text-danger">*</span></label>
+            <input type="number" id="rc_valor" class="form-control modern-input" step="0.01" min="0.01" placeholder="0.00">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Forma de Pagamento</label>
+            <select id="rc_forma" class="form-select modern-input">
+              <option value="">— Seleccionar —</option>
+              {% for fp in formas_pagamento %}
+              <option value="{{ fp }}">{{ fp }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Referência / Nº Transacção</label>
+            <input type="text" id="rc_referencia" class="form-control modern-input" placeholder="Ex: TRF-20250301">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Observações</label>
+            <input type="text" id="rc_observacoes" class="form-control modern-input">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="border-top:1px solid var(--rc-border)">
+        <button type="button" class="btn btn-outline-secondary btn-modern" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-modern btn-rc-primary" id="btnSalvarRecibo">
+          <i class="material-symbols-rounded me-1" style="font-size:15px">save</i>Emitir Recibo
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL VER -->
+<div class="modal fade" id="rcViewModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content" style="border-radius:20px;border:none">
+      <div class="modal-header" style="background:linear-gradient(135deg,var(--rc),var(--rc-mid));border-radius:20px 20px 0 0">
+        <h5 class="modal-title text-white fw-700" id="rcViewTitle">
+          <i class="material-symbols-rounded me-2" style="vertical-align:-4px">receipt</i>Detalhe do Recibo
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4" id="rcViewBody">
+        <div class="text-center py-4">
+          <div class="spinner-border text-primary" role="status"></div>
+        </div>
+      </div>
+      <div class="modal-footer" id="rcViewFooter" style="border-top:1px solid var(--rc-border)">
+        <button type="button" class="btn btn-outline-secondary btn-modern" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ANULAR -->
+<div class="modal fade" id="rcAnularModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius:20px;border:none">
+      <div class="modal-header" style="background:#dc3545;border-radius:20px 20px 0 0">
+        <h5 class="modal-title text-white fw-700">
+          <i class="material-symbols-rounded me-2" style="vertical-align:-4px">block</i>Anular Recibo
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <p class="mb-3">Confirma a anulação do recibo <strong id="rcAnularNumero"></strong>?</p>
+        <div>
+          <label class="form-label">Motivo de Anulação</label>
+          <input type="text" id="rc_motivo_anulacao" class="form-control modern-input" placeholder="Opcional">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary btn-modern" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-danger btn-modern" id="btnConfirmarAnular">
+          <i class="material-symbols-rounded me-1" style="font-size:15px">block</i>Anular
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CSRF -->
+<input type="hidden" id="csrf_token" value="{{ csrf_token }}">
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+$(function(){
+  const csrf       = $('#csrf_token').val();
+  const rcModal    = new bootstrap.Modal('#rcModal');
+  const viewModal  = new bootstrap.Modal('#rcViewModal');
+  const anularModal= new bootstrap.Modal('#rcAnularModal');
+
+  // ── DataTable manual ──────────────────────────────────────────────────
+  const $table = $('#rcTable');
+  const $tbody = $table.find('tbody');
+  const allRows = $tbody.find('tr[data-estado]').toArray();
+  let filtered = [...allRows];
+  let currentPage = 1;
+  const perPage   = 15;
+  let activeFilter = '';
+
+  function fmt(v){ return parseFloat(v||0).toLocaleString('pt-MZ',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+  function applyFilter(){
+    const q = $('#rcSearch').val().toLowerCase();
+    filtered = allRows.filter(row => {
+      const txt  = row.innerText.toLowerCase();
+      const est  = row.dataset.estado || '';
+      const matchFilter = !activeFilter || est === activeFilter;
+      const matchSearch = !q || txt.includes(q);
+      return matchFilter && matchSearch;
+    });
+    currentPage = 1;
+    renderPage();
+  }
+
+  function renderPage(){
+    const total = filtered.length;
+    const pages = Math.max(1, Math.ceil(total / perPage));
+    if(currentPage > pages) currentPage = pages;
+    const start = (currentPage-1)*perPage;
+    const end   = start + perPage;
+    $tbody.find('tr').hide();
+    filtered.slice(start,end).forEach(r => $(r).show());
+    $('#rcInfo').text(`A mostrar ${Math.min(end,total)} de ${total} registos`);
+    renderPagination(pages);
+  }
+
+  function renderPagination(pages){
+    const $pg = $('#rcPagination').empty();
+    const mkLi = (label, page, disabled, active) => {
+      const li = $('<li class="page-item">').toggleClass('disabled',disabled).toggleClass('active',active);
+      $('<a class="page-link">').html(label).on('click', function(){
+        if(!disabled){ currentPage=page; renderPage(); }
+      }).appendTo(li);
+      return li;
+    };
+    $pg.append(mkLi('<i class="material-symbols-rounded" style="font-size:14px">chevron_left</i>', currentPage-1, currentPage===1, false));
+    const range = [];
+    for(let i=1;i<=pages;i++){
+      if(i===1||i===pages||Math.abs(i-currentPage)<=1) range.push(i);
+      else if(range[range.length-1]!=='…') range.push('…');
+    }
+    range.forEach(p => {
+      if(p==='…') $pg.append($('<li class="page-item disabled">').html('<a class="page-link">…</a>'));
+      else $pg.append(mkLi(p, p, false, p===currentPage));
+    });
+    $pg.append(mkLi('<i class="material-symbols-rounded" style="font-size:14px">chevron_right</i>', currentPage+1, currentPage===pages, false));
+  }
+
+  $('#rcSearch').on('input', applyFilter);
+
+  // Filtro por clique nos stats
+  $('.stat-filter').on('click', function(){
+    const f = $(this).data('filter');
+    if(activeFilter===f){ activeFilter=''; $(this).removeClass('active'); }
+    else { activeFilter=f; $('.stat-filter').removeClass('active'); $(this).addClass('active'); }
+    applyFilter();
+  });
+
+  applyFilter();
+
+  // ── Abrir modal criar ─────────────────────────────────────────────────
+  $('#btnNovoRecibo').on('click', function(){
+    resetModal();
+    rcModal.show();
+  });
+
+  function resetModal(){
+    $('#rc_factura_id').val('');
+    $('#rc_moeda_id').val('');
+    $('#rc_data').val('{{ today }}');
+    $('#rc_valor').val('');
+    $('#rc_forma').val('');
+    $('#rc_referencia').val('');
+    $('#rc_observacoes').val('');
+    $('#rc_factura_info').addClass('d-none');
+  }
+
+  // ── Seleccionar Factura → busca info ──────────────────────────────────
+  $('#rc_factura_id').on('change', function(){
+    const fid = $(this).val();
+    const opt = $(this).find('option:selected');
+    if(!fid){ $('#rc_factura_info').addClass('d-none'); return; }
+
+    // Pre-preencher moeda
+    const moedaId = opt.data('moeda');
+    if(moedaId) $('#rc_moeda_id').val(moedaId);
+
+    // Buscar saldo
+    $.get(`/recibos/factura/${fid}/info/`, function(r){
+      $('#rc_info_total').text(fmt(r.factura_total));
+      $('#rc_info_recebido').text(fmt(r.valor_ja_recebido));
+      const saldo = parseFloat(r.saldo_pendente||0);
+      $('#rc_info_saldo').text(fmt(saldo))
+        .removeClass('rc-saldo-ok rc-saldo-warn')
+        .addClass(saldo<=0?'rc-saldo-warn':'rc-saldo-ok');
+      // Sugerir valor = saldo
+      if(saldo>0) $('#rc_valor').val(saldo.toFixed(2));
+      $('#rc_factura_info').removeClass('d-none');
+    });
+  });
+
+  // ── Salvar recibo ─────────────────────────────────────────────────────
+  $('#btnSalvarRecibo').on('click', function(){
+    const fid   = $('#rc_factura_id').val();
+    const valor = $('#rc_valor').val();
+    const data  = $('#rc_data').val();
+    if(!fid)   return Swal.fire({icon:'warning',title:'Seleccione a factura',timer:2000,showConfirmButton:false});
+    if(!valor||parseFloat(valor)<=0) return Swal.fire({icon:'warning',title:'Indique o valor recebido',timer:2000,showConfirmButton:false});
+    if(!data)  return Swal.fire({icon:'warning',title:'Indique a data do recibo',timer:2000,showConfirmButton:false});
+
+    Swal.fire({title:'A emitir recibo...', allowOutsideClick:false, didOpen:()=>Swal.showLoading()});
+
+    $.post('/recibos/create/', {
+      csrfmiddlewaretoken : csrf,
+      factura_id          : fid,
+      moeda_id            : $('#rc_moeda_id').val(),
+      data_recibo         : data,
+      valor_recebido      : valor,
+      forma_pagamento     : $('#rc_forma').val(),
+      referencia          : $('#rc_referencia').val(),
+      observacoes         : $('#rc_observacoes').val(),
+    }, function(r){
+      if(r.success){
+        rcModal.hide();
+        Swal.fire({
+          icon:'success', title:'Recibo emitido!',
+          text: r.numero,
+          showCancelButton: true,
+          confirmButtonText: '<i class="material-symbols-rounded me-1" style="font-size:14px">picture_as_pdf</i>Descarregar PDF',
+          cancelButtonText: 'Fechar',
+        }).then(res => {
+          if(res.isConfirmed) window.open(r.pdf_url,'_blank');
+          location.reload();
+        });
+      } else {
+        Swal.fire({icon:'error', title:'Erro', text:r.message});
+      }
+    }).fail(()=>Swal.fire({icon:'error',title:'Erro de comunicação'}));
+  });
+
+  // ── Ver recibo ────────────────────────────────────────────────────────
+  $tbody.on('click', '.btn-view-recibo', function(){
+    const id = $(this).data('id');
+    $('#rcViewBody').html('<div class="text-center py-4"><div class="spinner-border text-primary"></div></div>');
+    $('#rcViewFooter').html('<button type="button" class="btn btn-outline-secondary btn-modern" data-bs-dismiss="modal">Fechar</button>');
+    viewModal.show();
+
+    $.get(`/recibos/${id}/json/`, function(r){
+      $('#rcViewTitle').html(`<i class="material-symbols-rounded me-2" style="vertical-align:-4px">receipt</i>${r.numero}`);
+
+      const anulBadge = r.anulado
+        ? `<span class="badge bg-danger ms-2">ANULADO${r.motivo_anulacao ? ' — '+r.motivo_anulacao : ''}</span>`
+        : '<span class="badge bg-success ms-2">Activo</span>';
+
+      $('#rcViewBody').html(`
+        <div class="rc-info-card mb-3">
+          <div class="row g-3">
+            <div class="col-md-3">
+              <div class="rc-info-label">Número</div>
+              <div class="rc-info-value">${r.numero} ${anulBadge}</div>
+            </div>
+            <div class="col-md-3">
+              <div class="rc-info-label">Data</div>
+              <div class="rc-info-value">${r.data_recibo}</div>
+            </div>
+            <div class="col-md-3">
+              <div class="rc-info-label">Factura</div>
+              <div class="rc-info-value">${r.factura_numero}</div>
+            </div>
+            <div class="col-md-3">
+              <div class="rc-info-label">PO do Cliente</div>
+              <div class="rc-info-value">${r.po_cliente_numero||'—'}</div>
+            </div>
+            <div class="col-md-4">
+              <div class="rc-info-label">Cliente</div>
+              <div class="rc-info-value">${r.cliente_nome}</div>
+            </div>
+            <div class="col-md-4">
+              <div class="rc-info-label">Forma de Pagamento</div>
+              <div class="rc-info-value">${r.forma_pagamento||'—'}</div>
+            </div>
+            <div class="col-md-4">
+              <div class="rc-info-label">Referência</div>
+              <div class="rc-info-value">${r.referencia||'—'}</div>
+            </div>
+          </div>
+        </div>
+        <div class="text-center py-3">
+          <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:#6c757d;margin-bottom:8px">Valor Recebido</div>
+          <div style="font-size:2.4rem;font-weight:900;color:#1a1a1a">${parseFloat(r.valor_recebido).toLocaleString('pt-MZ',{minimumFractionDigits:2})} <span style="font-size:1rem;color:#6c757d">${r.moeda_simbolo}</span></div>
+          <div style="font-size:.85rem;color:#6c757d;margin-top:4px">Total da Factura: ${parseFloat(r.factura_total).toLocaleString('pt-MZ',{minimumFractionDigits:2})} ${r.moeda_simbolo}</div>
+        </div>
+        ${r.observacoes ? `<div class="mt-2 p-3 rounded" style="background:#f8f9fc;font-size:.85rem"><strong>Observações:</strong> ${r.observacoes}</div>` : ''}
+      `);
+
+      $('#rcViewFooter').html(`
+        ${r.po_download_url ? `<a href="${r.po_download_url}" target="_blank" class="btn btn-outline-secondary btn-modern"><i class="material-symbols-rounded me-1">picture_as_pdf</i>Baixar PO</a>` : ''}
+        <a href="${r.factura_pdf_url}" target="_blank" class="btn btn-outline-primary btn-modern">
+          <i class="material-symbols-rounded me-1">description</i>Factura PDF
+        </a>
+        <a href="${r.pdf_url}" target="_blank" class="btn btn-modern btn-rc-primary">
+          <i class="material-symbols-rounded me-1">receipt</i>Recibo PDF
+        </a>
+        <button type="button" class="btn btn-outline-secondary btn-modern" data-bs-dismiss="modal">Fechar</button>
+      `);
+    });
+  });
+
+  // ── Anular ────────────────────────────────────────────────────────────
+  let anularId = null;
+  $tbody.on('click', '.btn-anular-recibo', function(){
+    anularId = $(this).data('id');
+    $('#rcAnularNumero').text($(this).data('numero'));
+    $('#rc_motivo_anulacao').val('');
+    anularModal.show();
+  });
+
+  $('#btnConfirmarAnular').on('click', function(){
+    if(!anularId) return;
+    Swal.fire({title:'A anular...', allowOutsideClick:false, didOpen:()=>Swal.showLoading()});
+    $.post(`/recibos/${anularId}/anular/`, {
+      csrfmiddlewaretoken: csrf,
+      motivo: $('#rc_motivo_anulacao').val(),
+    }, function(r){
+      anularModal.hide();
+      if(r.success){
+        Swal.fire({icon:'success', title:'Recibo anulado!', timer:1800, showConfirmButton:false})
+          .then(()=>location.reload());
+      } else {
+        Swal.fire({icon:'error', title:'Erro', text:r.message});
+      }
+    }).fail(()=>Swal.fire({icon:'error',title:'Erro de comunicação'}));
+  });
+
+});
+</script>
+
+{% endblock %}

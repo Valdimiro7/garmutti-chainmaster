@@ -57,10 +57,26 @@
 
       <!-- Pagamentos -->
       <li class="nav-item">
-        <a class="nav-link {% if 'pagamentos' == segment %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}" href="{% url 'procurement:pagamentos' %}">
+        <a data-bs-toggle="collapse" href="#menu-pagamentos" class="nav-link text-dark" aria-controls="menu-pagamentos" role="button" aria-expanded="false">
           <i class="material-symbols-rounded opacity-5">payments</i>
           <span class="nav-link-text ms-2 ps-1">Pagamentos</span>
         </a>
+        <div class="collapse" id="menu-pagamentos">
+          <ul class="nav">
+            <li class="nav-item">
+              <a class="nav-link {% if 'pagamentos' == segment %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}" href="{% url 'procurement:pagamentos' %}">
+                <span class="sidenav-mini-icon">P</span>
+                <span class="sidenav-normal ms-2 ps-1">Pagamentos</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-dark" href="#">
+                <span class="sidenav-mini-icon">H</span>
+                <span class="sidenav-normal ms-2 ps-1">Históricos de Pagamentos</span>
+              </a>
+            </li>
+          </ul>
+        </div>
       </li>
 
       <!-- Facturação -->
@@ -72,19 +88,13 @@
         <div class="collapse" id="menu-facturas">
           <ul class="nav">
             <li class="nav-item">
-              <a class="nav-link text-dark" href="{% url 'procurement:facturas' %}">
-                <span class="sidenav-mini-icon">L</span>
-                <span class="sidenav-normal ms-2 ps-1">Facturas Emitidas</span>
+              <a class="nav-link {% if 'facturas' == segment %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}" href="{% url 'procurement:facturas' %}">
+                <span class="sidenav-mini-icon">F</span>
+                <span class="sidenav-normal ms-2 ps-1">Facturas</span>
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link text-dark" href="#">
-                <span class="sidenav-mini-icon">E</span>
-                <span class="sidenav-normal ms-2 ps-1">Emitir Factura</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-dark" href="#">
+              <a class="nav-link text-dark" href="{% url 'procurement:recibos' %}">
                 <span class="sidenav-mini-icon">R</span>
                 <span class="sidenav-normal ms-2 ps-1">Recibos</span>
               </a>
@@ -110,12 +120,6 @@
               <a class="nav-link text-dark" href="#">
                 <span class="sidenav-mini-icon">L</span>
                 <span class="sidenav-normal ms-2 ps-1">Lista de Guias</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-dark" href="#">
-                <span class="sidenav-mini-icon">E</span>
-                <span class="sidenav-normal ms-2 ps-1">Emitir Guia</span>
               </a>
             </li>
           </ul>

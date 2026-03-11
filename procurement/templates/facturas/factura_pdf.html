@@ -1,0 +1,288 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<title>Factura {{ factura.numero }}</title>
+<style>
+@page{size:A4 portrait;margin:14mm 16mm 22mm 16mm}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:10.5px;color:#1a1a1a;background:#fff}
+
+/* watermark */
+.wm{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:84px;font-weight:900;color:rgba(46,62,130,0.04);white-space:nowrap;z-index:0;letter-spacing:4px;pointer-events:none}
+
+/* conteúdo principal */
+.pg{position:relative;z-index:1}
+
+/* logo */
+.hdr{margin-bottom:26px}
+.hdr img{height:52px;width:auto}
+
+/* split org / cliente */
+.split{display:flex;justify-content:space-between;gap:28px;margin-bottom:20px}
+.org{flex:1}
+.org .on{font-weight:700;font-size:10.5px;margin-bottom:3px}
+.org .ol{font-size:9.5px;color:#222;margin-bottom:2px;line-height:1.4}
+.cli{width:250px}
+.cli .to{font-size:9px;color:#555;margin-bottom:3px}
+.cli .cn{font-weight:700;font-size:11px;margin-bottom:4px}
+.cli .cl{font-size:9.5px;color:#333;margin-bottom:2px}
+
+/* título */
+.dtitle{font-weight:700;font-size:15px;margin-bottom:8px}
+
+/* separador */
+hr{border:none;border-top:1.5px solid #1a1a1a;margin:0}
+
+/* tabela cabeçalho */
+table.th{width:100%;border-collapse:collapse;margin-bottom:10px}
+table.th th{font-size:9px;font-weight:600;padding:4px 6px;border-bottom:1px solid #ccc;text-align:left;background:transparent}
+table.th td{font-size:9.5px;padding:4px 6px;color:#1a1a1a}
+
+/* tabela itens */
+table.ti{width:100%;border-collapse:collapse;page-break-inside:auto}
+table.ti thead th{font-size:9px;font-weight:600;padding:5px 7px;border-top:1px solid #ccc;border-bottom:1px solid #ccc;text-align:right;background:transparent}
+table.ti thead th.al{text-align:left}
+table.ti thead th.ac{text-align:center}
+table.ti tbody tr{page-break-inside:avoid}
+table.ti tbody td{font-size:9.5px;padding:5px 7px;border-bottom:1px solid #eee;text-align:right;vertical-align:top}
+table.ti tbody td.al{text-align:left}
+table.ti tbody td.ac{text-align:center}
+
+/* secção bottom */
+.bot{border-top:1.5px solid #1a1a1a;padding-top:12px;margin-top:20px;display:flex;justify-content:space-between;gap:20px;page-break-inside:avoid}
+
+/* impostos */
+.imp{flex:1}
+.imp .it{font-weight:700;font-size:9.5px;margin-bottom:7px}
+table.timp{width:100%;border-collapse:collapse}
+table.timp th{font-size:8.5px;font-weight:700;border-bottom:1px solid #ccc;padding:3px 6px;text-align:left;background:transparent}
+table.timp td{font-size:9px;padding:3px 6px;border-bottom:1px solid #eee;text-align:left}
+
+/* dados bancários */
+.db{margin-top:16px;page-break-inside:avoid}
+.db .dt{font-weight:700;font-size:9.5px;margin-bottom:5px}
+table.tdb{border-collapse:collapse}
+table.tdb th{font-size:8px;font-weight:600;padding:3px 14px 3px 0;border-bottom:1px solid #ccc;text-align:left}
+table.tdb td{font-size:9px;padding:3px 14px 3px 0;border-bottom:1px solid #eee;white-space:nowrap}
+table.tdb td:first-child{font-weight:600}
+
+/* sumário */
+.sum{width:230px}
+.sum .st{font-weight:700;font-size:9.5px;margin-bottom:5px}
+table.tsum{width:100%;border-collapse:collapse}
+table.tsum td{font-size:9.5px;padding:2.5px 4px}
+table.tsum td:last-child{text-align:right;font-weight:600}
+table.tsum tr.sf td{font-weight:800;font-size:10.5px;border-top:1.5px solid #1a1a1a;padding-top:5px}
+
+/* condições / termos */
+.cond{margin-top:12px;border-top:1.5px solid #1a1a1a;padding-top:7px;font-size:9.5px;font-weight:700}
+.cond span{font-weight:400;color:#333}
+.cond .cdesc{font-weight:400;font-size:8.5px;color:#555;margin-top:3px;white-space:pre-line;line-height:1.5}
+
+/* rodapé fixo */
+.footer{position:fixed;bottom:0;left:0;right:0;border-top:1px solid #ccc;padding:5px 16mm;display:flex;justify-content:space-between;font-size:8px;color:#999;background:#fff;z-index:10}
+</style>
+</head>
+<body>
+
+<div class="wm">GARMUTTI</div>
+
+<div class="pg">
+
+  <!-- Logo -->
+  <div class="hdr">
+    <img src="{% static 'assets/img/logo-ct-dark.png' %}" alt="Garmutti">
+  </div>
+
+  <!-- Org + Cliente -->
+  <div class="split">
+    <div class="org">
+      {% if organizacao %}
+        <div class="on">{{ organizacao.nome }}</div>
+        {% if organizacao.nuit %}<div class="ol">NUIT: <strong>{{ organizacao.nuit }}</strong></div>{% endif %}
+        {% if organizacao.telefone_1 %}<div class="ol">Tel: <strong>{{ organizacao.telefone_1 }}{% if organizacao.telefone_2 %} / {{ organizacao.telefone_2 }}{% endif %}</strong></div>{% endif %}
+        {% if organizacao.email %}<div class="ol">{{ organizacao.email }}</div>{% endif %}
+        {% if organizacao.cidade %}<div class="ol"><strong>{{ organizacao.cidade }}</strong></div>{% endif %}
+        {% if organizacao.endereco %}<div class="ol">{{ organizacao.endereco }}</div>{% endif %}
+      {% endif %}
+    </div>
+    <div class="cli">
+      <div class="to">Exmo. (s) Sr. (s)</div>
+      <div class="cn">{{ factura.cliente.nome }}</div>
+      {% if factura.cliente.nuit %}<div class="cl" style="margin-top:5px">NUIT: <strong>{{ factura.cliente.nuit }}</strong></div>{% endif %}
+      {% if factura.cliente.endereco %}<div class="cl" style="margin-top:5px">{{ factura.cliente.endereco }}</div>{% endif %}
+      {% if factura.cliente.cidade_distrito %}<div class="cl">{{ factura.cliente.cidade_distrito }}{% if factura.cliente.pais %}, {{ factura.cliente.pais }}{% endif %}</div>{% endif %}
+    </div>
+  </div>
+
+  <!-- Título -->
+  <div style="margin-top:18px"></div>
+  <div class="dtitle">Factura # {{ factura.numero }}&nbsp;&nbsp;<span style="font-weight:400;font-size:11px">(ORIGINAL)</span></div>
+
+  <hr>
+
+  <!-- Cabeçalho: Data / Vencimento / Referência PO -->
+  <table class="th">
+    <thead>
+      <tr>
+        <th style="width:130px">Data de Emissão</th>
+        <th style="width:140px">Vencimento</th>
+        {% if factura.purchase_order %}
+        <th style="width:160px">PO do Cliente</th>
+        {% endif %}
+        <th>Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{ factura.data_emissao|date:"d/m/Y" }}</td>
+        <td>{% if factura.data_vencimento %}{{ factura.data_vencimento|date:"d/m/Y" }}{% else %}—{% endif %}</td>
+        {% if factura.purchase_order %}
+        <td>{{ factura.purchase_order.po_cliente_numero|default:factura.purchase_order.numero }}</td>
+        {% endif %}
+        <td>{{ factura.estado.nome|default:"—" }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Itens -->
+  <div style="min-height:100mm">
+  <table class="ti">
+    <thead>
+      <tr>
+        <th class="al" style="width:34px">#</th>
+        <th class="al">Descrição</th>
+        <th class="ac" style="width:70px">Unid.</th>
+        <th style="width:50px">Qtd</th>
+        <th style="width:110px">Valor Unitário</th>
+        <th style="width:110px">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in factura.itens.all %}
+      <tr>
+        <td class="al">{{ forloop.counter }}</td>
+        <td class="al">{{ item.descricao }}</td>
+        <td class="ac">{{ item.unidade|default:"—" }}</td>
+        <td>{{ item.quantidade|floatformat:"-2" }}</td>
+        <td>{{ item.preco_unit|floatformat:"2" }}{% if factura.moeda %} {{ factura.moeda.simbolo }}{% else %} Mt{% endif %}</td>
+        <td>{{ item.total_linha|floatformat:"2" }}{% if factura.moeda %} {{ factura.moeda.simbolo }}{% else %} Mt{% endif %}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" style="text-align:center;color:#999;padding:14px">Sem itens.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+
+  <div class="bot">
+
+    <div class="imp">
+      <!-- Quadro IVA -->
+      <div class="it">Quadro Resumo de Impostos (IVA incluindo à Taxa)</div>
+      <table class="timp">
+        <thead>
+          <tr>
+            <th>Taxa/Valor</th>
+            <th>Incidência</th>
+            <th>Valor</th>
+            <th>Motivo Isenção</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{{ factura.iva_pct|floatformat:"2" }} %</td>
+            <td>{{ factura.subtotal|floatformat:"2" }}</td>
+            <td>{{ factura.iva_valor|floatformat:"2" }}</td>
+            <td></td>
+          </tr>
+          <tr><td style="height:16px"></td><td></td><td></td><td></td></tr>
+        </tbody>
+      </table>
+
+      <!-- Dados Bancários -->
+      {% if factura.dado_bancario %}
+      {% with b=factura.dado_bancario %}
+      <div class="db">
+        <div class="dt">Dados Bancários para Pagamento</div>
+        <table class="tdb">
+          <thead>
+            <tr><th></th><th>Número de Conta</th><th>NIB</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{{ b.banco|truncatechars:24 }}{% if b.moeda %} - {{ b.moeda }} Acc{% endif %}</td>
+              <td>{{ b.conta|default:"—" }}</td>
+              <td>{{ b.nib|default:"—" }}</td>
+            </tr>
+            {% if b.titular %}
+            <tr>
+              <td><strong>Titular:</strong></td>
+              <td colspan="2">{{ b.titular }}</td>
+            </tr>
+            {% endif %}
+            {% if b.iban %}
+            <tr>
+              <td><strong>IBAN:</strong></td>
+              <td colspan="2">{{ b.iban }}</td>
+            </tr>
+            {% endif %}
+            {% if b.swift %}
+            <tr>
+              <td><strong>SWIFT:</strong></td>
+              <td colspan="2">{{ b.swift }}</td>
+            </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+      {% endwith %}
+      {% endif %}
+    </div>
+
+    <!-- Sumário -->
+    <div class="sum">
+      <div class="st">Sumário</div>
+      <table class="tsum">
+        {% with sym=factura.moeda.simbolo|default:"Mt" %}
+        <tr><td>Subtotal</td>          <td>{{ factura.subtotal|floatformat:"2" }} {{ sym }}</td></tr>
+        {% if factura.desconto and factura.desconto > 0 %}
+        <tr><td>Desconto ({{ factura.desconto_pct|floatformat:"2" }}%)</td><td>-{{ factura.desconto|floatformat:"2" }} {{ sym }}</td></tr>
+        {% else %}
+        <tr><td>Descontos</td>         <td>0.00 {{ sym }}</td></tr>
+        {% endif %}
+        <tr><td>S/IVA</td>             <td>{{ factura.subtotal|floatformat:"2" }} {{ sym }}</td></tr>
+        <tr><td>IVA ({{ factura.iva_pct|floatformat:"0" }}%)</td><td>{{ factura.iva_valor|floatformat:"2" }} {{ sym }}</td></tr>
+        <tr><td>Total</td>             <td>{{ factura.total|floatformat:"2" }} {{ sym }}</td></tr>
+        <tr><td>Valor arredondado</td> <td>0.00 {{ sym }}</td></tr>
+        <tr class="sf"><td>Total a pagar</td><td>{{ factura.total|floatformat:"2" }} {{ sym }}</td></tr>
+        {% endwith %}
+      </table>
+    </div>
+
+  </div>
+
+  <!-- Termos e Condições -->
+  {% if factura.termos %}
+  <div class="cond">
+    Termos e Condições de Pagamento:
+    <div class="cdesc">{{ factura.termos }}</div>
+  </div>
+  {% endif %}
+
+  {% if factura.observacoes %}
+  <div style="margin-top:8px;font-size:9px;color:#555"><strong>Observações:</strong> {{ factura.observacoes }}</div>
+  {% endif %}
+
+</div><!-- /pg -->
+
+<!-- Rodapé fixo -->
+<div class="footer">
+  <span>Documento Processado por Computador{% if factura.criado_por %} &nbsp;|&nbsp; Operador: {{ factura.criado_por.get_full_name|default:factura.criado_por.username|upper }}{% endif %}</span>
+  <span>Factura {{ factura.numero }} &nbsp;·&nbsp; {{ factura.data_emissao|date:"d/m/Y" }}</span>
+</div>
+
+</body>
+</html>
