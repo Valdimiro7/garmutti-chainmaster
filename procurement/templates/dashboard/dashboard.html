@@ -1,735 +1,1034 @@
 {% extends "layouts/pro_base.html" %}
 {% load static %}
 
-
 {% block content %}
+<div class="container-fluid py-3 dbx-page">
 
-    <div class="container-fluid py-2">
-      <div class="row">
-        <div class="ms-3">
-          <h3 class="mb-0 h4 font-weight-bolder">Dashboard</h3>
-          <p class="mb-4">
-            Check the sales, value and bounce rate by country.
-          </p>
-        </div>
-        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
-          <div class="card">
-            <div class="card-header p-2 ps-3">
-              <div class="d-flex justify-content-between">
+  <!-- HERO -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm dbx-hero-card">
+        <div class="card-body p-4 p-lg-5 position-relative overflow-hidden">
+          <div class="row align-items-center g-4">
+            <div class="col-lg-7">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="dbx-hero-icon">
+                  <i class="material-symbols-rounded">monitoring</i>
+                </div>
                 <div>
-                  <p class="text-sm mb-0 text-capitalize">Today's Money</p>
-                  <h4 class="mb-0">$53k</h4>
-                </div>
-                <div class="icon icon-md icon-shape bg-gradient-dark shadow-dark shadow text-center border-radius-lg">
-                  <i class="material-symbols-rounded opacity-10">weekend</i>
-                </div>
-              </div>
-            </div>
-            <hr class="dark horizontal my-0">
-            <div class="card-footer p-2 ps-3">
-              <p class="mb-0 text-sm"><span class="text-success font-weight-bolder">+55% </span>than last week</p>
-            </div>
-          </div>
-        </div>
-        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
-          <div class="card">
-            <div class="card-header p-2 ps-3">
-              <div class="d-flex justify-content-between">
-                <div>
-                  <p class="text-sm mb-0 text-capitalize">Today's Users</p>
-                  <h4 class="mb-0">2300</h4>
-                </div>
-                <div class="icon icon-md icon-shape bg-gradient-dark shadow-dark shadow text-center border-radius-lg">
-                  <i class="material-symbols-rounded opacity-10">person</i>
-                </div>
-              </div>
-            </div>
-            <hr class="dark horizontal my-0">
-            <div class="card-footer p-2 ps-3">
-              <p class="mb-0 text-sm"><span class="text-success font-weight-bolder">+3% </span>than last month</p>
-            </div>
-          </div>
-        </div>
-        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
-          <div class="card">
-            <div class="card-header p-2 ps-3">
-              <div class="d-flex justify-content-between">
-                <div>
-                  <p class="text-sm mb-0 text-capitalize">Ads Views</p>
-                  <h4 class="mb-0">3,462</h4>
-                </div>
-                <div class="icon icon-md icon-shape bg-gradient-dark shadow-dark shadow text-center border-radius-lg">
-                  <i class="material-symbols-rounded opacity-10">leaderboard</i>
-                </div>
-              </div>
-            </div>
-            <hr class="dark horizontal my-0">
-            <div class="card-footer p-2 ps-3">
-              <p class="mb-0 text-sm"><span class="text-danger font-weight-bolder">-2% </span>than yesterday</p>
-            </div>
-          </div>
-        </div>
-        <div class="col-xl-3 col-sm-6">
-          <div class="card">
-            <div class="card-header p-2 ps-3">
-              <div class="d-flex justify-content-between">
-                <div>
-                  <p class="text-sm mb-0 text-capitalize">Sales</p>
-                  <h4 class="mb-0">$103,430</h4>
-                </div>
-                <div class="icon icon-md icon-shape bg-gradient-dark shadow-dark shadow text-center border-radius-lg">
-                  <i class="material-symbols-rounded opacity-10">weekend</i>
-                </div>
-              </div>
-            </div>
-            <hr class="dark horizontal my-0">
-            <div class="card-footer p-2 ps-3">
-              <p class="mb-0 text-sm"><span class="text-success font-weight-bolder">+5% </span>than yesterday</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-lg-4 col-md-6 mt-4 mb-4">
-          <div class="card">
-            <div class="card-body">
-              <h6 class="mb-0 ">Website Views</h6>
-              <p class="text-sm ">Last Campaign Performance</p>
-              <div class="pe-2">
-                <div class="chart">
-                  <canvas id="chart-bars" class="chart-canvas" height="170"></canvas>
-                </div>
-              </div>
-              <hr class="dark horizontal">
-              <div class="d-flex ">
-                <i class="material-symbols-rounded text-sm my-auto me-1">schedule</i>
-                <p class="mb-0 text-sm"> campaign sent 2 days ago </p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-4 col-md-6 mt-4 mb-4">
-          <div class="card ">
-            <div class="card-body">
-              <h6 class="mb-0 "> Daily Sales </h6>
-              <p class="text-sm "> (<span class="font-weight-bolder">+15%</span>) increase in today sales. </p>
-              <div class="pe-2">
-                <div class="chart">
-                  <canvas id="chart-line" class="chart-canvas" height="170"></canvas>
-                </div>
-              </div>
-              <hr class="dark horizontal">
-              <div class="d-flex ">
-                <i class="material-symbols-rounded text-sm my-auto me-1">schedule</i>
-                <p class="mb-0 text-sm"> updated 4 min ago </p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-4 mt-4 mb-3">
-          <div class="card">
-            <div class="card-body">
-              <h6 class="mb-0 ">Completed Tasks</h6>
-              <p class="text-sm ">Last Campaign Performance</p>
-              <div class="pe-2">
-                <div class="chart">
-                  <canvas id="chart-line-tasks" class="chart-canvas" height="170"></canvas>
-                </div>
-              </div>
-              <hr class="dark horizontal">
-              <div class="d-flex ">
-                <i class="material-symbols-rounded text-sm my-auto me-1">schedule</i>
-                <p class="mb-0 text-sm">just updated</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="row mb-4">
-        <div class="col-lg-8 col-md-6 mb-md-0 mb-4">
-          <div class="card">
-            <div class="card-header pb-0">
-              <div class="row">
-                <div class="col-lg-6 col-7">
-                  <h6>Projects</h6>
-                  <p class="text-sm mb-0">
-                    <i class="fa fa-check text-info" aria-hidden="true"></i>
-                    <span class="font-weight-bold ms-1">30 done</span> this month
+                  <div class="dbx-overline">PROCUREMENT</div>
+                  <h2 class="mb-1 fw-bold text-white">Dashboard</h2>
+                  <p class="mb-0 text-white-50">
+                    Visão integrada de procurement, facturação, pagamentos, guias e performance operacional.
                   </p>
                 </div>
-                <div class="col-lg-6 col-5 my-auto text-end">
-                  <div class="dropdown float-lg-end pe-4">
-                    <a class="cursor-pointer" id="dropdownTable" data-bs-toggle="dropdown" aria-expanded="false">
-                      <i class="fa fa-ellipsis-v text-secondary"></i>
-                    </a>
-                    <ul class="dropdown-menu px-2 py-3 ms-sm-n4 ms-n5" aria-labelledby="dropdownTable">
-                      <li><a class="dropdown-item border-radius-md" href="javascript:;">Action</a></li>
-                      <li><a class="dropdown-item border-radius-md" href="javascript:;">Another action</a></li>
-                      <li><a class="dropdown-item border-radius-md" href="javascript:;">Something else here</a></li>
-                    </ul>
-                  </div>
-                </div>
+              </div>
+
+              <div class="d-flex flex-wrap gap-2 mt-3">
+                <span class="badge rounded-pill dbx-hero-badge">RFQ & Quotação</span>
+                <span class="badge rounded-pill dbx-hero-badge">Purchase Orders</span>
+                <span class="badge rounded-pill dbx-hero-badge">Facturação</span>
+                <span class="badge rounded-pill dbx-hero-badge">Pagamentos</span>
+                <span class="badge rounded-pill dbx-hero-badge">Guias de Entrega</span>
               </div>
             </div>
-            <div class="card-body px-0 pb-2">
-              <div class="table-responsive">
-                <table class="table align-items-center mb-0">
-                  <thead>
-                    <tr>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Companies</th>
-                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Members</th>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Budget</th>
-                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Completion</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>
-                        <div class="d-flex px-2 py-1">
-                          <div>
-                            <img src="{% static "assets/img/small-logos/logo-xd.svg" %}" class="avatar avatar-sm me-3" alt="xd">
-                          </div>
-                          <div class="d-flex flex-column justify-content-center">
-                            <h6 class="mb-0 text-sm">Material XD Version</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="avatar-group mt-2">
-                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Ryan Tompson">
-                            <img src="{% static "assets/img/team-1.jpg" %}" alt="team1">
-                          </a>
-                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Romina Hadid">
-                            <img src="{% static "assets/img/team-2.jpg" %}" alt="team2">
-                          </a>
-                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Alexander Smith">
-                            <img src="{% static "assets/img/team-3.jpg" %}" alt="team3">
-                          </a>
-                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Jessica Doe">
-                            <img src="{% static "assets/img/team-4.jpg" %}" alt="team4">
-                          </a>
-                        </div>
-                      </td>
-                      <td class="align-middle text-center text-sm">
-                        <span class="text-xs font-weight-bold"> $14,000 </span>
-                      </td>
-                      <td class="align-middle">
-                        <div class="progress-wrapper w-75 mx-auto">
-                          <div class="progress-info">
-                            <div class="progress-percentage">
-                              <span class="text-xs font-weight-bold">60%</span>
-                            </div>
-                          </div>
-                          <div class="progress">
-                            <div class="progress-bar bg-gradient-info w-60" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="d-flex px-2 py-1">
-                          <div>
-                            <img src="{% static "assets/img/small-logos/logo-atlassian.svg" %}" class="avatar avatar-sm me-3" alt="atlassian">
-                          </div>
-                          <div class="d-flex flex-column justify-content-center">
-                            <h6 class="mb-0 text-sm">Add Progress Track</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="avatar-group mt-2">
-                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Romina Hadid">
-                            <img src="{% static "assets/img/team-2.jpg" %}" alt="team5">
-                          </a>
-                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Jessica Doe">
-                            <img src="{% static "assets/img/team-4.jpg" %}" alt="team6">
-                          </a>
-                        </div>
-                      </td>
-                      <td class="align-middle text-center text-sm">
-                        <span class="text-xs font-weight-bold"> $3,000 </span>
-                      </td>
-                      <td class="align-middle">
-                        <div class="progress-wrapper w-75 mx-auto">
-                          <div class="progress-info">
-                            <div class="progress-percentage">
-                              <span class="text-xs font-weight-bold">10%</span>
-                            </div>
-                          </div>
-                          <div class="progress">
-                            <div class="progress-bar bg-gradient-info w-10" role="progressbar" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="d-flex px-2 py-1">
-                          <div>
-                            <img src="{% static "assets/img/small-logos/logo-slack.svg" %}" class="avatar avatar-sm me-3" alt="team7">
-                          </div>
-                          <div class="d-flex flex-column justify-content-center">
-                            <h6 class="mb-0 text-sm">Fix Platform Errors</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="avatar-group mt-2">
-                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Romina Hadid">
-                            <img src="{% static "assets/img/team-3.jpg" %}" alt="team8">
-                          </a>
-                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Jessica Doe">
-                            <img src="{% static "assets/img/team-1.jpg" %}" alt="team9">
-                          </a>
-                        </div>
-                      </td>
-                      <td class="align-middle text-center text-sm">
-                        <span class="text-xs font-weight-bold"> Not set </span>
-                      </td>
-                      <td class="align-middle">
-                        <div class="progress-wrapper w-75 mx-auto">
-                          <div class="progress-info">
-                            <div class="progress-percentage">
-                              <span class="text-xs font-weight-bold">100%</span>
-                            </div>
-                          </div>
-                          <div class="progress">
-                            <div class="progress-bar bg-gradient-success w-100" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="d-flex px-2 py-1">
-                          <div>
-                            <img src="{% static "assets/img/small-logos/logo-spotify.svg" %}" class="avatar avatar-sm me-3" alt="spotify">
-                          </div>
-                          <div class="d-flex flex-column justify-content-center">
-                            <h6 class="mb-0 text-sm">Launch our Mobile App</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="avatar-group mt-2">
-                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Ryan Tompson">
-                            <img src="{% static "assets/img/team-4.jpg" %}" alt="user1">
-                          </a>
-                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Romina Hadid">
-                            <img src="{% static "assets/img/team-3.jpg" %}" alt="user2">
-                          </a>
-                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Alexander Smith">
-                            <img src="{% static "assets/img/team-4.jpg" %}" alt="user3">
-                          </a>
-                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Jessica Doe">
-                            <img src="{% static "assets/img/team-1.jpg" %}" alt="user4">
-                          </a>
-                        </div>
-                      </td>
-                      <td class="align-middle text-center text-sm">
-                        <span class="text-xs font-weight-bold"> $20,500 </span>
-                      </td>
-                      <td class="align-middle">
-                        <div class="progress-wrapper w-75 mx-auto">
-                          <div class="progress-info">
-                            <div class="progress-percentage">
-                              <span class="text-xs font-weight-bold">100%</span>
-                            </div>
-                          </div>
-                          <div class="progress">
-                            <div class="progress-bar bg-gradient-success w-100" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="d-flex px-2 py-1">
-                          <div>
-                            <img src="{% static "assets/img/small-logos/logo-jira.svg" %}" class="avatar avatar-sm me-3" alt="jira">
-                          </div>
-                          <div class="d-flex flex-column justify-content-center">
-                            <h6 class="mb-0 text-sm">Add the New Pricing Page</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="avatar-group mt-2">
-                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Ryan Tompson">
-                            <img src="{% static "assets/img/team-4.jpg" %}" alt="user5">
-                          </a>
-                        </div>
-                      </td>
-                      <td class="align-middle text-center text-sm">
-                        <span class="text-xs font-weight-bold"> $500 </span>
-                      </td>
-                      <td class="align-middle">
-                        <div class="progress-wrapper w-75 mx-auto">
-                          <div class="progress-info">
-                            <div class="progress-percentage">
-                              <span class="text-xs font-weight-bold">25%</span>
-                            </div>
-                          </div>
-                          <div class="progress">
-                            <div class="progress-bar bg-gradient-info w-25" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="25"></div>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="d-flex px-2 py-1">
-                          <div>
-                            <img src="{% static "assets/img/small-logos/logo-invision.svg" %}" class="avatar avatar-sm me-3" alt="invision">
-                          </div>
-                          <div class="d-flex flex-column justify-content-center">
-                            <h6 class="mb-0 text-sm">Redesign New Online Shop</h6>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="avatar-group mt-2">
-                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Ryan Tompson">
-                            <img src="{% static "assets/img/team-1.jpg" %}" alt="user6">
-                          </a>
-                          <a href="javascript:;" class="avatar avatar-xs rounded-circle" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Jessica Doe">
-                            <img src="{% static "assets/img/team-4.jpg" %}" alt="user7">
-                          </a>
-                        </div>
-                      </td>
-                      <td class="align-middle text-center text-sm">
-                        <span class="text-xs font-weight-bold"> $2,000 </span>
-                      </td>
-                      <td class="align-middle">
-                        <div class="progress-wrapper w-75 mx-auto">
-                          <div class="progress-info">
-                            <div class="progress-percentage">
-                              <span class="text-xs font-weight-bold">40%</span>
-                            </div>
-                          </div>
-                          <div class="progress">
-                            <div class="progress-bar bg-gradient-info w-40" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="40"></div>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+
+            <div class="col-lg-5">
+              <div class="dbx-hero-stats">
+                <div class="dbx-hero-stat">
+                  <span>Total Clientes</span>
+                  <strong>{{ total_clientes }}</strong>
+                </div>
+                <div class="dbx-hero-stat">
+                  <span>Total Fornecedores</span>
+                  <strong>{{ total_fornecedores }}</strong>
+                </div>
+                <div class="dbx-hero-stat">
+                  <span>POs</span>
+                  <strong>{{ total_pos }}</strong>
+                </div>
+                <div class="dbx-hero-stat">
+                  <span>Facturas</span>
+                  <strong>{{ total_facturas }}</strong>
+                </div>
               </div>
             </div>
           </div>
+
+          <div class="dbx-hero-circle dbx-circle-1"></div>
+          <div class="dbx-hero-circle dbx-circle-2"></div>
+          <div class="dbx-hero-grid"></div>
         </div>
-        <div class="col-lg-4 col-md-6">
-          <div class="card h-100">
-            <div class="card-header pb-0">
-              <h6>Orders overview</h6>
-              <p class="text-sm">
-                <i class="fa fa-arrow-up text-success" aria-hidden="true"></i>
-                <span class="font-weight-bold">24%</span> this month
-              </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI STRIP -->
+  <div class="row g-3 mb-4">
+    <div class="col-xl col-md-6">
+      <div class="card border-0 shadow-sm dbx-kpi-card dbx-kpi-rfq">
+        <div class="card-body">
+          <div class="dbx-kpi-top">
+            <div class="dbx-kpi-icon">
+              <i class="material-symbols-rounded">request_quote</i>
             </div>
-            <div class="card-body p-3">
-              <div class="timeline timeline-one-side">
-                <div class="timeline-block mb-3">
-                  <span class="timeline-step">
-                    <i class="material-symbols-rounded text-success text-gradient">notifications</i>
-                  </span>
-                  <div class="timeline-content">
-                    <h6 class="text-dark text-sm font-weight-bold mb-0">$2400, Design changes</h6>
-                    <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">22 DEC 7:20 PM</p>
-                  </div>
-                </div>
-                <div class="timeline-block mb-3">
-                  <span class="timeline-step">
-                    <i class="material-symbols-rounded text-danger text-gradient">code</i>
-                  </span>
-                  <div class="timeline-content">
-                    <h6 class="text-dark text-sm font-weight-bold mb-0">New order #1832412</h6>
-                    <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">21 DEC 11 PM</p>
-                  </div>
-                </div>
-                <div class="timeline-block mb-3">
-                  <span class="timeline-step">
-                    <i class="material-symbols-rounded text-info text-gradient">shopping_cart</i>
-                  </span>
-                  <div class="timeline-content">
-                    <h6 class="text-dark text-sm font-weight-bold mb-0">Server payments for April</h6>
-                    <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">21 DEC 9:34 PM</p>
-                  </div>
-                </div>
-                <div class="timeline-block mb-3">
-                  <span class="timeline-step">
-                    <i class="material-symbols-rounded text-warning text-gradient">credit_card</i>
-                  </span>
-                  <div class="timeline-content">
-                    <h6 class="text-dark text-sm font-weight-bold mb-0">New card added for order #4395133</h6>
-                    <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">20 DEC 2:20 AM</p>
-                  </div>
-                </div>
-                <div class="timeline-block mb-3">
-                  <span class="timeline-step">
-                    <i class="material-symbols-rounded text-primary text-gradient">key</i>
-                  </span>
-                  <div class="timeline-content">
-                    <h6 class="text-dark text-sm font-weight-bold mb-0">Unlock packages for development</h6>
-                    <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">18 DEC 4:54 AM</p>
-                  </div>
-                </div>
-                <div class="timeline-block">
-                  <span class="timeline-step">
-                    <i class="material-symbols-rounded text-dark text-gradient">payments</i>
-                  </span>
-                  <div class="timeline-content">
-                    <h6 class="text-dark text-sm font-weight-bold mb-0">New order #9583120</h6>
-                    <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">17 DEC</p>
-                  </div>
-                </div>
+            <div class="dbx-kpi-tag">RFQ</div>
+          </div>
+          <div class="dbx-kpi-value">{{ total_rfqs }}</div>
+          <div class="dbx-kpi-label">Pedidos de Cotação</div>
+          <div class="dbx-kpi-foot">Novas: {{ rfqs_novas }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl col-md-6">
+      <div class="card border-0 shadow-sm dbx-kpi-card dbx-kpi-quot">
+        <div class="card-body">
+          <div class="dbx-kpi-top">
+            <div class="dbx-kpi-icon">
+              <i class="material-symbols-rounded">description</i>
+            </div>
+            <div class="dbx-kpi-tag">Q</div>
+          </div>
+          <div class="dbx-kpi-value">{{ total_quotacoes }}</div>
+          <div class="dbx-kpi-label">Quotações</div>
+          <div class="dbx-kpi-foot">Pendentes: {{ quotacoes_pendentes }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl col-md-6">
+      <div class="card border-0 shadow-sm dbx-kpi-card dbx-kpi-po">
+        <div class="card-body">
+          <div class="dbx-kpi-top">
+            <div class="dbx-kpi-icon">
+              <i class="material-symbols-rounded">inventory_2</i>
+            </div>
+            <div class="dbx-kpi-tag">PO</div>
+          </div>
+          <div class="dbx-kpi-value">{{ total_pos }}</div>
+          <div class="dbx-kpi-label">Purchase Orders</div>
+          <div class="dbx-kpi-foot">Valor mês: {{ valor_pos_mes|floatformat:2 }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl col-md-6">
+      <div class="card border-0 shadow-sm dbx-kpi-card dbx-kpi-fact">
+        <div class="card-body">
+          <div class="dbx-kpi-top">
+            <div class="dbx-kpi-icon">
+              <i class="material-symbols-rounded">receipt_long</i>
+            </div>
+            <div class="dbx-kpi-tag">F</div>
+          </div>
+          <div class="dbx-kpi-value">{{ total_facturas }}</div>
+          <div class="dbx-kpi-label">Facturas</div>
+          <div class="dbx-kpi-foot">Pendentes: {{ facturas_pendentes }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl col-md-6">
+      <div class="card border-0 shadow-sm dbx-kpi-card dbx-kpi-pay">
+        <div class="card-body">
+          <div class="dbx-kpi-top">
+            <div class="dbx-kpi-icon">
+              <i class="material-symbols-rounded">payments</i>
+            </div>
+            <div class="dbx-kpi-tag">PAY</div>
+          </div>
+          <div class="dbx-kpi-value">{{ total_pagamentos }}</div>
+          <div class="dbx-kpi-label">Pagamentos</div>
+          <div class="dbx-kpi-foot">Pendentes: {{ pagamentos_pendentes }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl col-md-6">
+      <div class="card border-0 shadow-sm dbx-kpi-card dbx-kpi-guide">
+        <div class="card-body">
+          <div class="dbx-kpi-top">
+            <div class="dbx-kpi-icon">
+              <i class="material-symbols-rounded">local_shipping</i>
+            </div>
+            <div class="dbx-kpi-tag">GE</div>
+          </div>
+          <div class="dbx-kpi-value">{{ total_guias }}</div>
+          <div class="dbx-kpi-label">Guias</div>
+          <div class="dbx-kpi-foot">Pendentes: {{ guias_pendentes }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FINANCIAL HIGHLIGHTS -->
+  <div class="row g-3 mb-4">
+    <div class="col-xl-3 col-md-6">
+      <div class="card border-0 shadow-sm dbx-fin-card">
+        <div class="card-body">
+          <div class="dbx-fin-icon">
+            <i class="material-symbols-rounded">trending_up</i>
+          </div>
+          <div class="dbx-fin-label">Facturado no Mês</div>
+          <div class="dbx-fin-value">{{ valor_facturado_mes|floatformat:2 }}</div>
+          <div class="dbx-fin-bar"><span style="width:82%"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+      <div class="card border-0 shadow-sm dbx-fin-card success">
+        <div class="card-body">
+          <div class="dbx-fin-icon">
+            <i class="material-symbols-rounded">paid</i>
+          </div>
+          <div class="dbx-fin-label">Recebido no Mês</div>
+          <div class="dbx-fin-value">{{ valor_recebido_mes|floatformat:2 }}</div>
+          <div class="dbx-fin-bar"><span style="width:74%"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+      <div class="card border-0 shadow-sm dbx-fin-card warning">
+        <div class="card-body">
+          <div class="dbx-fin-icon">
+            <i class="material-symbols-rounded">calendar_month</i>
+          </div>
+          <div class="dbx-fin-label">Recebido Hoje</div>
+          <div class="dbx-fin-value">{{ total_recebido_hoje|floatformat:2 }}</div>
+          <div class="dbx-fin-sub">Semana: {{ total_recebido_semana|floatformat:2 }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+      <div class="card border-0 shadow-sm dbx-fin-card info">
+        <div class="card-body">
+          <div class="dbx-fin-icon">
+            <i class="material-symbols-rounded">assignment_turned_in</i>
+          </div>
+          <div class="dbx-fin-label">Valor Guias no Mês</div>
+          <div class="dbx-fin-value">{{ valor_guias_mes|floatformat:2 }}</div>
+          <div class="dbx-fin-sub">Recibos: {{ total_recibos }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CHART + SIDE STATUS -->
+  <div class="row g-4 mb-4">
+    <div class="col-xxl-8">
+      <div class="card border-0 shadow-sm dbx-panel-card h-100">
+        <div class="card-header border-0 bg-transparent px-4 pt-4 pb-0">
+          <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+            <div>
+              <h5 class="fw-bold mb-1 text-dark">Tendência Operacional</h5>
+              <p class="text-muted small mb-0">Evolução dos principais processos nos últimos 30 dias.</p>
+            </div>
+            <div class="dbx-chip-group">
+              <span class="dbx-chip">RFQ</span>
+              <span class="dbx-chip">Quotação</span>
+              <span class="dbx-chip">PO</span>
+              <span class="dbx-chip">Factura</span>
+              <span class="dbx-chip">Pagamento</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-body pt-3">
+          <canvas id="dbTrendChart" height="120"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xxl-4">
+      <div class="card border-0 shadow-sm dbx-panel-card h-100">
+        <div class="card-header border-0 bg-transparent px-4 pt-4 pb-0">
+          <h5 class="fw-bold mb-1 text-dark">Estado dos Pagamentos</h5>
+          <p class="text-muted small mb-0">Distribuição global por estado.</p>
+        </div>
+        <div class="card-body pt-3">
+          <div class="dbx-donut-wrap">
+            <canvas id="dbPagamentosPie" height="220"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECONDARY CHARTS -->
+  <div class="row g-4 mb-4">
+    <div class="col-xl-6">
+      <div class="card border-0 shadow-sm dbx-panel-card h-100">
+        <div class="card-header border-0 bg-transparent px-4 pt-4 pb-0">
+          <h5 class="fw-bold mb-1 text-dark">Facturas por Estado</h5>
+          <p class="text-muted small mb-0">Mapeamento do estado da facturação.</p>
+        </div>
+        <div class="card-body pt-3">
+          <canvas id="dbFacturasBar" height="190"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-6">
+      <div class="card border-0 shadow-sm dbx-panel-card h-100">
+        <div class="card-header border-0 bg-transparent px-4 pt-4 pb-0">
+          <h5 class="fw-bold mb-1 text-dark">Guias por Estado</h5>
+          <p class="text-muted small mb-0">Situação actual da operação de entregas.</p>
+        </div>
+        <div class="card-body pt-3">
+          <canvas id="dbGuiasBar" height="190"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLES + SCORE -->
+  <div class="row g-4 mb-4">
+    <div class="col-xl-7">
+      <div class="card border-0 shadow-sm dbx-panel-card h-100">
+        <div class="card-header border-0 bg-transparent px-4 pt-4 pb-0">
+          <h5 class="fw-bold mb-1 text-dark">Top Clientes por Facturação</h5>
+          <p class="text-muted small mb-0">Clientes com maior volume económico no sistema.</p>
+        </div>
+        <div class="card-body pt-3">
+          <div class="table-responsive">
+            <table class="table align-items-center mb-0 dbx-table">
+              <thead>
+                <tr>
+                  <th>Cliente</th>
+                  <th class="text-end">Facturas</th>
+                  <th class="text-end">Total Facturado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for c in top_clientes %}
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="dbx-avatar">{{ c.cliente__nome|slice:":1"|upper }}</div>
+                      <span class="fw-semibold">{{ c.cliente__nome|default:"—" }}</span>
+                    </div>
+                  </td>
+                  <td class="text-end">{{ c.total_facturas }}</td>
+                  <td class="text-end fw-bold text-dark">{{ c.total_facturado|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="3" class="text-center text-muted py-4">Sem dados disponíveis.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-5">
+      <div class="card border-0 shadow-sm dbx-panel-card h-100">
+        <div class="card-header border-0 bg-transparent px-4 pt-4 pb-0">
+          <h5 class="fw-bold mb-1 text-dark">Pulse Operacional</h5>
+          <p class="text-muted small mb-0">Leitura rápida dos principais indicadores em aberto.</p>
+        </div>
+        <div class="card-body pt-3">
+          <div class="dbx-pulse-list">
+            <div class="dbx-pulse-item">
+              <div class="dbx-pulse-left">
+                <div class="dbx-pulse-dot primary"></div>
+                <span>RFQs Novas</span>
               </div>
+              <strong>{{ rfqs_novas }}</strong>
+            </div>
+            <div class="dbx-pulse-item">
+              <div class="dbx-pulse-left">
+                <div class="dbx-pulse-dot info"></div>
+                <span>Quotações Pendentes</span>
+              </div>
+              <strong>{{ quotacoes_pendentes }}</strong>
+            </div>
+            <div class="dbx-pulse-item">
+              <div class="dbx-pulse-left">
+                <div class="dbx-pulse-dot warning"></div>
+                <span>Facturas Pendentes</span>
+              </div>
+              <strong>{{ facturas_pendentes }}</strong>
+            </div>
+            <div class="dbx-pulse-item">
+              <div class="dbx-pulse-left">
+                <div class="dbx-pulse-dot amber"></div>
+                <span>Pagamentos Pendentes</span>
+              </div>
+              <strong>{{ pagamentos_pendentes }}</strong>
+            </div>
+            <div class="dbx-pulse-item">
+              <div class="dbx-pulse-left">
+                <div class="dbx-pulse-dot success"></div>
+                <span>Guias Pendentes</span>
+              </div>
+              <strong>{{ guias_pendentes }}</strong>
+            </div>
+            <div class="dbx-pulse-item">
+              <div class="dbx-pulse-left">
+                <div class="dbx-pulse-dot dark"></div>
+                <span>Recibos</span>
+              </div>
+              <strong>{{ total_recibos }}</strong>
             </div>
           </div>
         </div>
       </div>
-      {% include "includes/pro_footer.html" %}
+    </div>
+  </div>
+
+  <!-- RECENT ACTIVITY -->
+  <div class="row g-4">
+    <div class="col-xl-6">
+      <div class="card border-0 shadow-sm dbx-panel-card h-100">
+        <div class="card-header border-0 bg-transparent px-4 pt-4 pb-0">
+          <h5 class="fw-bold mb-1 text-dark">RFQs Recentes</h5>
+        </div>
+        <div class="card-body pt-3">
+          <div class="table-responsive">
+            <table class="table align-items-center mb-0 dbx-table">
+              <thead>
+                <tr>
+                  <th>Número</th>
+                  <th>Cliente</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for rfq in rfqs_recentes %}
+                <tr>
+                  <td class="fw-semibold">{{ rfq.numero }}</td>
+                  <td>{{ rfq.cliente.nome }}</td>
+                  <td><span class="dbx-inline-badge">{{ rfq.estado.nome }}</span></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3" class="text-center text-muted py-4">Sem registos.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
 
-  {% endblock content %}
+    <div class="col-xl-6">
+      <div class="card border-0 shadow-sm dbx-panel-card h-100">
+        <div class="card-header border-0 bg-transparent px-4 pt-4 pb-0">
+          <h5 class="fw-bold mb-1 text-dark">Facturas Recentes</h5>
+        </div>
+        <div class="card-body pt-3">
+          <div class="table-responsive">
+            <table class="table align-items-center mb-0 dbx-table">
+              <thead>
+                <tr>
+                  <th>Número</th>
+                  <th>Cliente</th>
+                  <th class="text-end">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for f in facturas_recentes %}
+                <tr>
+                  <td class="fw-semibold">{{ f.numero }}</td>
+                  <td>{{ f.cliente.nome }}</td>
+                  <td class="text-end fw-bold">{% if f.moeda %}{{ f.moeda.simbolo }} {% endif %}{{ f.total|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3" class="text-center text-muted py-4">Sem registos.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
 
-  {% block extra_js %}
-  
-  <script src="{% static "assets/js/plugins/chartjs.min.js" %}"></script>
-  <script>
-    var ctx = document.getElementById("chart-bars").getContext("2d");
+    <div class="col-xl-6">
+      <div class="card border-0 shadow-sm dbx-panel-card h-100">
+        <div class="card-header border-0 bg-transparent px-4 pt-4 pb-0">
+          <h5 class="fw-bold mb-1 text-dark">Pagamentos Recentes</h5>
+        </div>
+        <div class="card-body pt-3">
+          <div class="table-responsive">
+            <table class="table align-items-center mb-0 dbx-table">
+              <thead>
+                <tr>
+                  <th>Pagamento</th>
+                  <th>Cliente</th>
+                  <th class="text-end">Valor</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for p in pagamentos_recentes %}
+                <tr>
+                  <td class="fw-semibold">{{ p.pagamento.numero }}</td>
+                  <td>{{ p.pagamento.cliente.nome }}</td>
+                  <td class="text-end fw-bold">{% if p.pagamento.moeda %}{{ p.pagamento.moeda.simbolo }} {% endif %}{{ p.valor_pago|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3" class="text-center text-muted py-4">Sem registos.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: ["M", "T", "W", "T", "F", "S", "S"],
-        datasets: [{
-          label: "Views",
-          tension: 0.4,
-          borderWidth: 0,
-          borderRadius: 4,
-          borderSkipped: false,
-          backgroundColor: "#43A047",
-          data: [50, 45, 22, 28, 50, 60, 76],
-          barThickness: 'flex'
-        }, ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: false,
+    <div class="col-xl-6">
+      <div class="card border-0 shadow-sm dbx-panel-card h-100">
+        <div class="card-header border-0 bg-transparent px-4 pt-4 pb-0">
+          <h5 class="fw-bold mb-1 text-dark">Guias Recentes</h5>
+        </div>
+        <div class="card-body pt-3">
+          <div class="table-responsive">
+            <table class="table align-items-center mb-0 dbx-table">
+              <thead>
+                <tr>
+                  <th>Número</th>
+                  <th>Cliente</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for g in guias_recentes %}
+                <tr>
+                  <td class="fw-semibold">{{ g.numero }}</td>
+                  <td>{{ g.cliente.nome }}</td>
+                  <td><span class="dbx-inline-badge">{{ g.estado.nome }}</span></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3" class="text-center text-muted py-4">Sem registos.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% include "includes/pro_footer.html" %}
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<style>
+:root{
+  --dbx:#2E3E82;
+  --dbx-mid:#4256ad;
+  --dbx-light:#eef2ff;
+  --dbx-border:#dbe3ff;
+  --dbx-dark:#172554;
+  --dbx-success:#16a34a;
+  --dbx-info:#0891b2;
+  --dbx-warning:#f59e0b;
+  --dbx-amber:#ea580c;
+  --dbx-danger:#dc2626;
+}
+.dbx-page .card{border-radius:24px}
+.dbx-hero-card{
+  background:linear-gradient(135deg,#1f2f6b 0%, #2E3E82 45%, #4d63c5 100%);
+}
+.dbx-overline{
+  font-size:.72rem;
+  font-weight:800;
+  letter-spacing:.12em;
+  color:rgba(255,255,255,.72);
+  margin-bottom:4px;
+}
+.dbx-hero-icon{
+  width:72px;
+  height:72px;
+  border-radius:22px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(255,255,255,.15);
+  backdrop-filter:blur(10px);
+  color:#fff;
+  box-shadow:0 18px 35px rgba(0,0,0,.18);
+}
+.dbx-hero-icon i{font-size:34px}
+.dbx-hero-badge{
+  background:rgba(255,255,255,.12);
+  color:#fff;
+  border:1px solid rgba(255,255,255,.18);
+  font-weight:700;
+  padding:.52rem .95rem;
+}
+.dbx-hero-stats{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.dbx-hero-stat{
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.14);
+  backdrop-filter:blur(10px);
+  border-radius:18px;
+  padding:16px 18px;
+}
+.dbx-hero-stat span{
+  display:block;
+  color:rgba(255,255,255,.72);
+  font-size:.8rem;
+  margin-bottom:6px;
+}
+.dbx-hero-stat strong{
+  color:#fff;
+  font-size:1.45rem;
+  font-weight:800;
+}
+.dbx-hero-circle{
+  position:absolute;
+  border-radius:50%;
+  pointer-events:none;
+}
+.dbx-circle-1{
+  width:280px;height:280px;
+  background:rgba(255,255,255,.06);
+  right:-80px;top:-90px;
+}
+.dbx-circle-2{
+  width:180px;height:180px;
+  background:rgba(255,255,255,.05);
+  right:120px;bottom:-70px;
+}
+.dbx-hero-grid{
+  position:absolute;inset:0;
+  background-image:linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+  background-size:24px 24px;
+  opacity:.22;
+  pointer-events:none;
+}
+
+.dbx-kpi-card{
+  position:relative;
+  overflow:hidden;
+  transition:transform .2s ease, box-shadow .2s ease;
+}
+.dbx-kpi-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 18px 35px rgba(15,23,42,.10)!important;
+}
+.dbx-kpi-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:16px;
+}
+.dbx-kpi-icon{
+  width:52px;
+  height:52px;
+  border-radius:16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+}
+.dbx-kpi-icon i{font-size:25px}
+.dbx-kpi-tag{
+  font-size:.72rem;
+  font-weight:800;
+  letter-spacing:.08em;
+  color:#6b7280;
+}
+.dbx-kpi-value{
+  font-size:2rem;
+  font-weight:900;
+  color:#111827;
+  line-height:1.05;
+}
+.dbx-kpi-label{
+  color:#6b7280;
+  font-weight:700;
+  margin-top:4px;
+}
+.dbx-kpi-foot{
+  margin-top:12px;
+  font-size:.83rem;
+  color:#6b7280;
+}
+.dbx-kpi-rfq .dbx-kpi-icon{background:linear-gradient(135deg,#2E3E82,#5b6fd1)}
+.dbx-kpi-quot .dbx-kpi-icon{background:linear-gradient(135deg,#0f766e,#14b8a6)}
+.dbx-kpi-po .dbx-kpi-icon{background:linear-gradient(135deg,#7c3aed,#a855f7)}
+.dbx-kpi-fact .dbx-kpi-icon{background:linear-gradient(135deg,#2563eb,#60a5fa)}
+.dbx-kpi-pay .dbx-kpi-icon{background:linear-gradient(135deg,#ea580c,#fb923c)}
+.dbx-kpi-guide .dbx-kpi-icon{background:linear-gradient(135deg,#16a34a,#4ade80)}
+
+.dbx-fin-card{
+  background:linear-gradient(135deg,#ffffff 0%, #f8faff 100%);
+}
+.dbx-fin-card.success{background:linear-gradient(135deg,#ffffff 0%, #f2fff7 100%)}
+.dbx-fin-card.warning{background:linear-gradient(135deg,#ffffff 0%, #fff9f1 100%)}
+.dbx-fin-card.info{background:linear-gradient(135deg,#ffffff 0%, #f3fbff 100%)}
+.dbx-fin-icon{
+  width:46px;
+  height:46px;
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:var(--dbx-light);
+  color:var(--dbx);
+  margin-bottom:12px;
+}
+.dbx-fin-icon i{font-size:24px}
+.dbx-fin-label{
+  font-size:.82rem;
+  color:#6b7280;
+  font-weight:800;
+  margin-bottom:8px;
+}
+.dbx-fin-value{
+  font-size:1.75rem;
+  line-height:1.05;
+  font-weight:900;
+  color:#111827;
+}
+.dbx-fin-sub{
+  margin-top:7px;
+  color:#6b7280;
+  font-size:.82rem;
+}
+.dbx-fin-bar{
+  margin-top:12px;
+  height:8px;
+  border-radius:999px;
+  background:#edf2ff;
+  overflow:hidden;
+}
+.dbx-fin-bar span{
+  display:block;
+  height:100%;
+  border-radius:999px;
+  background:linear-gradient(90deg,var(--dbx),var(--dbx-mid));
+}
+
+.dbx-panel-card{
+  background:linear-gradient(180deg,#ffffff 0%, #fcfdff 100%);
+}
+.dbx-chip-group{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+}
+.dbx-chip{
+  display:inline-flex;
+  align-items:center;
+  padding:6px 10px;
+  border-radius:999px;
+  background:#f3f6ff;
+  color:var(--dbx);
+  font-weight:700;
+  font-size:.75rem;
+  border:1px solid #e1e8ff;
+}
+.dbx-donut-wrap{
+  max-width:320px;
+  margin:0 auto;
+}
+.dbx-table thead th{
+  font-size:.72rem;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  color:#6b7280;
+  font-weight:800;
+  background:#f8f9ff;
+  border-bottom:1px solid #edf1fb;
+  white-space:nowrap;
+}
+.dbx-table tbody td{
+  vertical-align:middle;
+  font-size:.93rem;
+  border-bottom:1px solid #f1f4fb;
+}
+.dbx-avatar{
+  width:34px;
+  height:34px;
+  border-radius:10px;
+  background:linear-gradient(135deg,var(--dbx),var(--dbx-mid));
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:.82rem;
+  font-weight:800;
+}
+.dbx-inline-badge{
+  display:inline-flex;
+  align-items:center;
+  padding:6px 10px;
+  border-radius:999px;
+  background:#f3f6ff;
+  color:var(--dbx);
+  font-size:.76rem;
+  font-weight:700;
+  border:1px solid #e1e8ff;
+}
+.dbx-pulse-list{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.dbx-pulse-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:13px 14px;
+  border-radius:16px;
+  border:1px solid #eef2fb;
+  background:#fff;
+}
+.dbx-pulse-left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.dbx-pulse-left span{
+  color:#374151;
+  font-weight:700;
+}
+.dbx-pulse-item strong{
+  color:#111827;
+  font-size:1rem;
+}
+.dbx-pulse-dot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+}
+.dbx-pulse-dot.primary{background:var(--dbx)}
+.dbx-pulse-dot.info{background:var(--dbx-info)}
+.dbx-pulse-dot.warning{background:var(--dbx-warning)}
+.dbx-pulse-dot.amber{background:var(--dbx-amber)}
+.dbx-pulse-dot.success{background:var(--dbx-success)}
+.dbx-pulse-dot.dark{background:#111827}
+
+@media (max-width:991.98px){
+  .dbx-hero-stats{grid-template-columns:1fr 1fr}
+}
+@media (max-width:767.98px){
+  .dbx-hero-stats{grid-template-columns:1fr}
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const labels = {{ chart_labels|safe }};
+  const rfqSeries = {{ rfq_series|safe }};
+  const quotSeries = {{ quot_series|safe }};
+  const poSeries = {{ po_series|safe }};
+  const facturaSeries = {{ factura_series|safe }};
+  const pagamentoSeries = {{ pagamento_series|safe }};
+
+  const pagamentosEstadoLabels = {{ pagamentos_estado_labels|safe }};
+  const pagamentosEstadoValues = {{ pagamentos_estado_values|safe }};
+
+  const facturasEstadoLabels = {{ facturas_estado_labels|safe }};
+  const facturasEstadoValues = {{ facturas_estado_values|safe }};
+
+  const guiasEstadoLabels = {{ guias_estado_labels|safe }};
+  const guiasEstadoValues = {{ guias_estado_values|safe }};
+
+  const commonGrid = {
+    color: 'rgba(148, 163, 184, 0.15)'
+  };
+
+  const commonTicks = {
+    color: '#64748b',
+    font: { size: 11, weight: '600' }
+  };
+
+  new Chart(document.getElementById('dbTrendChart'), {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'RFQs',
+          data: rfqSeries,
+          borderColor: '#2E3E82',
+          backgroundColor: 'rgba(46,62,130,.08)',
+          tension: 0.38,
+          borderWidth: 3,
+          pointRadius: 2,
+          pointHoverRadius: 4,
+          fill: false
+        },
+        {
+          label: 'Quotações',
+          data: quotSeries,
+          borderColor: '#14b8a6',
+          backgroundColor: 'rgba(20,184,166,.08)',
+          tension: 0.38,
+          borderWidth: 3,
+          pointRadius: 2,
+          pointHoverRadius: 4,
+          fill: false
+        },
+        {
+          label: 'POs',
+          data: poSeries,
+          borderColor: '#a855f7',
+          backgroundColor: 'rgba(168,85,247,.08)',
+          tension: 0.38,
+          borderWidth: 3,
+          pointRadius: 2,
+          pointHoverRadius: 4,
+          fill: false
+        },
+        {
+          label: 'Facturas',
+          data: facturaSeries,
+          borderColor: '#2563eb',
+          backgroundColor: 'rgba(37,99,235,.08)',
+          tension: 0.38,
+          borderWidth: 3,
+          pointRadius: 2,
+          pointHoverRadius: 4,
+          fill: false
+        },
+        {
+          label: 'Pagamentos',
+          data: pagamentoSeries,
+          borderColor: '#f97316',
+          backgroundColor: 'rgba(249,115,22,.08)',
+          tension: 0.38,
+          borderWidth: 3,
+          pointRadius: 2,
+          pointHoverRadius: 4,
+          fill: false
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: {
+            usePointStyle: true,
+            boxWidth: 8,
+            color: '#334155',
+            font: { weight: '700' }
           }
-        },
-        interaction: {
-          intersect: false,
-          mode: 'index',
-        },
-        scales: {
-          y: {
-            grid: {
-              drawBorder: false,
-              display: true,
-              drawOnChartArea: true,
-              drawTicks: false,
-              borderDash: [5, 5],
-              color: '#e5e5e5'
-            },
-            ticks: {
-              suggestedMin: 0,
-              suggestedMax: 500,
-              beginAtZero: true,
-              padding: 10,
-              font: {
-                size: 14,
-                lineHeight: 2
-              },
-              color: "#737373"
-            },
-          },
-          x: {
-            grid: {
-              drawBorder: false,
-              display: false,
-              drawOnChartArea: false,
-              drawTicks: false,
-              borderDash: [5, 5]
-            },
-            ticks: {
-              display: true,
-              color: '#737373',
-              padding: 10,
-              font: {
-                size: 14,
-                lineHeight: 2
-              },
-            }
-          },
-        },
+        }
       },
-    });
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: commonTicks
+        },
+        y: {
+          beginAtZero: true,
+          ticks: { ...commonTicks, precision: 0 },
+          grid: commonGrid
+        }
+      }
+    }
+  });
 
-
-    var ctx2 = document.getElementById("chart-line").getContext("2d");
-
-    new Chart(ctx2, {
-      type: "line",
-      data: {
-        labels: ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"],
-        datasets: [{
-          label: "Sales",
-          tension: 0,
-          borderWidth: 2,
-          pointRadius: 3,
-          pointBackgroundColor: "#43A047",
-          pointBorderColor: "transparent",
-          borderColor: "#43A047",
-          backgroundColor: "transparent",
-          fill: true,
-          data: [120, 230, 130, 440, 250, 360, 270, 180, 90, 300, 310, 220],
-          maxBarThickness: 6
-
-        }],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: false,
-          },
-          tooltip: {
-            callbacks: {
-              title: function(context) {
-                const fullMonths = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-                return fullMonths[context[0].dataIndex];
-              }
-            }
+  new Chart(document.getElementById('dbPagamentosPie'), {
+    type: 'doughnut',
+    data: {
+      labels: pagamentosEstadoLabels,
+      datasets: [{
+        data: pagamentosEstadoValues,
+        backgroundColor: ['#2E3E82', '#16a34a', '#f59e0b', '#ef4444', '#06b6d4', '#a855f7'],
+        borderWidth: 0,
+        hoverOffset: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '68%',
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            usePointStyle: true,
+            boxWidth: 8,
+            color: '#334155',
+            padding: 18,
+            font: { weight: '700' }
           }
-        },
-        interaction: {
-          intersect: false,
-          mode: 'index',
-        },
-        scales: {
-          y: {
-            grid: {
-              drawBorder: false,
-              display: true,
-              drawOnChartArea: true,
-              drawTicks: false,
-              borderDash: [4, 4],
-              color: '#e5e5e5'
-            },
-            ticks: {
-              display: true,
-              color: '#737373',
-              padding: 10,
-              font: {
-                size: 12,
-                lineHeight: 2
-              },
-            }
-          },
-          x: {
-            grid: {
-              drawBorder: false,
-              display: false,
-              drawOnChartArea: false,
-              drawTicks: false,
-              borderDash: [5, 5]
-            },
-            ticks: {
-              display: true,
-              color: '#737373',
-              padding: 10,
-              font: {
-                size: 12,
-                lineHeight: 2
-              },
-            }
-          },
-        },
-      },
-    });
+        }
+      }
+    }
+  });
 
-    var ctx3 = document.getElementById("chart-line-tasks").getContext("2d");
+  new Chart(document.getElementById('dbFacturasBar'), {
+    type: 'bar',
+    data: {
+      labels: facturasEstadoLabels,
+      datasets: [{
+        label: 'Facturas',
+        data: facturasEstadoValues,
+        backgroundColor: ['#2E3E82','#4256ad','#60a5fa','#f59e0b','#ef4444','#14b8a6'],
+        borderRadius: 10,
+        borderSkipped: false,
+        maxBarThickness: 42
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: commonTicks
+        },
+        y: {
+          beginAtZero: true,
+          ticks: { ...commonTicks, precision: 0 },
+          grid: commonGrid
+        }
+      }
+    }
+  });
 
-    new Chart(ctx3, {
-      type: "line",
-      data: {
-        labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-        datasets: [{
-          label: "Tasks",
-          tension: 0,
-          borderWidth: 2,
-          pointRadius: 3,
-          pointBackgroundColor: "#43A047",
-          pointBorderColor: "transparent",
-          borderColor: "#43A047",
-          backgroundColor: "transparent",
-          fill: true,
-          data: [50, 40, 300, 220, 500, 250, 400, 230, 500],
-          maxBarThickness: 6
-
-        }],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: false,
-          }
+  new Chart(document.getElementById('dbGuiasBar'), {
+    type: 'bar',
+    data: {
+      labels: guiasEstadoLabels,
+      datasets: [{
+        label: 'Guias',
+        data: guiasEstadoValues,
+        backgroundColor: ['#16a34a','#2E3E82','#f59e0b','#ef4444','#06b6d4'],
+        borderRadius: 10,
+        borderSkipped: false,
+        maxBarThickness: 42
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: commonTicks
         },
-        interaction: {
-          intersect: false,
-          mode: 'index',
-        },
-        scales: {
-          y: {
-            grid: {
-              drawBorder: false,
-              display: true,
-              drawOnChartArea: true,
-              drawTicks: false,
-              borderDash: [4, 4],
-              color: '#e5e5e5'
-            },
-            ticks: {
-              display: true,
-              padding: 10,
-              color: '#737373',
-              font: {
-                size: 14,
-                lineHeight: 2
-              },
-            }
-          },
-          x: {
-            grid: {
-              drawBorder: false,
-              display: false,
-              drawOnChartArea: false,
-              drawTicks: false,
-              borderDash: [4, 4]
-            },
-            ticks: {
-              display: true,
-              color: '#737373',
-              padding: 10,
-              font: {
-                size: 14,
-                lineHeight: 2
-              },
-            }
-          },
-        },
-      },
-    });
-  </script>
-  
+        y: {
+          beginAtZero: true,
+          ticks: { ...commonTicks, precision: 0 },
+          grid: commonGrid
+        }
+      }
+    }
+  });
+});
+</script>
 {% endblock extra_js %}
