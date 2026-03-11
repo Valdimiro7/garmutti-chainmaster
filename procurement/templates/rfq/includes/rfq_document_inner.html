@@ -1,348 +1,126 @@
 {% load static %}
-
 <style>
-  body, table, td, th, div, p, span {
-    font-family: 'DejaVu Sans', sans-serif;
-    color: #000000;
-    font-size: 12px;
-  }
-
-  .page {
-    width: 100%;
-    background: #ffffff;
-  }
-
-  .header-table,
-  .info-table,
-  .items-table,
-  .mini-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-
-  .header-left {
-    width: 55%;
-    vertical-align: top;
-    padding-right: 20px;
-  }
-
-  .header-right {
-    width: 45%;
-    vertical-align: top;
-  }
-
-  .logo {
-    width: 80px;
-    height: auto;
-  }
-
-  .brand-name {
-    font-size: 28px;
-    font-weight: bold;
-    color: #2E3E82;
-    margin: 0;
-    padding: 0;
-  }
-
-  .brand-subtitle {
-    font-size: 12px;
-    color: #3b82c4;
-    margin-top: 4px;
-  }
-
-  .org-block {
-    margin-top: 14px;
-    line-height: 1.7;
-  }
-
-  .box {
-    border: 1px solid #000000;
-    padding: 0;
-  }
-
-  .box-title {
-    border-bottom: 1px solid #000000;
-    background: #eeeeee;
-    font-weight: bold;
-    font-size: 12px;
-    padding: 8px 10px;
-    text-transform: uppercase;
-  }
-
-  .box-body {
-    padding: 8px 10px;
-  }
-
-  .mini-table td {
-    padding: 6px 0;
-    border-bottom: 1px solid #d9d9d9;
-    vertical-align: top;
-  }
-
-  .mini-table tr:last-child td {
-    border-bottom: none;
-  }
-
-  .mini-label {
-    width: 42%;
-    font-weight: bold;
-    color: #555555;
-  }
-
-  .mini-value {
-    width: 58%;
-    font-weight: bold;
-    color: #000000;
-  }
-
-  .main-title {
-    margin-top: 22px;
-    font-size: 22px;
-    font-weight: bold;
-    color: #000000;
-    border-bottom: 3px solid #000000;
-    padding-bottom: 6px;
-  }
-
-  .subtitle {
-    margin-top: 8px;
-    margin-bottom: 16px;
-    color: #666666;
-  }
-
-  .info-table th {
-    background: #eeeeee;
-    border-bottom: 1px solid #888888;
-    padding: 8px;
-    text-align: left;
-    font-weight: bold;
-  }
-
-  .info-table td {
-    border-bottom: 1px solid #d9d9d9;
-    padding: 8px;
-    vertical-align: top;
-  }
-
-  .section-title {
-    margin-top: 24px;
-    margin-bottom: 8px;
-    font-size: 14px;
-    font-weight: bold;
-    color: #000000;
-  }
-
-  .items-table th {
-    background: #eeeeee;
-    border-top: 2px solid #000000;
-    border-bottom: 1px solid #888888;
-    padding: 8px;
-    text-align: left;
-    font-weight: bold;
-  }
-
-  .items-table td {
-    border-bottom: 1px solid #d9d9d9;
-    padding: 8px;
-    vertical-align: top;
-  }
-
-  .center {
-    text-align: center;
-  }
-
-  .small-muted {
-    color: #666666;
-    margin-top: 4px;
-  }
-
-  .status-text {
-    font-weight: bold;
-    color: #2E3E82;
-  }
-
-  .footer-notes {
-    margin-top: 24px;
-    line-height: 1.7;
-  }
+  .rfq-doc * { box-sizing: border-box; margin: 0; padding: 0; }
+  .rfq-doc { font-family: Arial, Helvetica, sans-serif; font-size: 10.5px; color: #1a1a1a; background: #fff; padding: 32px 40px; position: relative; }
+  .rfq-doc .wm { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%) rotate(-35deg); font-size: 90px; font-weight: 900; color: rgba(46,62,130,0.04); white-space: nowrap; pointer-events: none; z-index: 0; letter-spacing: 4px; user-select: none; }
+  .rfq-doc .z { position: relative; z-index: 1; }
+  .rfq-doc .hdr { margin-bottom: 18px; }
+  .rfq-doc .hdr img { height: 46px; width: auto; }
+  .rfq-doc .split { display: flex; justify-content: space-between; gap: 24px; margin-bottom: 14px; }
+  .rfq-doc .org .on { font-weight: 700; font-size: 10.5px; margin-bottom: 3px; }
+  .rfq-doc .org .ol { font-size: 9.2px; color: #222; margin-bottom: 2px; line-height: 1.35; }
+  .rfq-doc .cli { width: 250px; }
+  .rfq-doc .cli .to { font-size: 8.8px; color: #555; margin-bottom: 3px; }
+  .rfq-doc .cli .cn { font-weight: 700; font-size: 10.8px; margin-bottom: 4px; }
+  .rfq-doc .cli .cl { font-size: 9.2px; color: #333; margin-bottom: 2px; }
+  .rfq-doc .dtitle { font-weight: 700; font-size: 15px; margin-bottom: 6px; margin-top: 10px; }
+  .rfq-doc hr { border: none; border-top: 1.5px solid #1a1a1a; margin: 0; }
+  .rfq-doc table.th { width: 100%; border-collapse: collapse; margin-top: 8px; margin-bottom: 8px; }
+  .rfq-doc table.th th { font-size: 8.8px; font-weight: 600; padding: 4px 6px; border-bottom: 1px solid #ccc; text-align: left; background: transparent; }
+  .rfq-doc table.th td { font-size: 9.3px; padding: 4px 6px; color: #1a1a1a; }
+  .rfq-doc table.ti { width: 100%; border-collapse: collapse; margin-top: 10px; }
+  .rfq-doc table.ti thead th { font-size: 8.8px; font-weight: 600; padding: 5px 7px; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; text-align: right; background: transparent; }
+  .rfq-doc table.ti thead th.al { text-align: left; }
+  .rfq-doc table.ti thead th.ac { text-align: center; }
+  .rfq-doc table.ti tbody td { font-size: 9.3px; padding: 5px 7px; border-bottom: 1px solid #eee; text-align: right; vertical-align: top; }
+  .rfq-doc table.ti tbody td.al { text-align: left; }
+  .rfq-doc table.ti tbody td.ac { text-align: center; }
+  .rfq-doc .ispec { font-size: 8px; color: #666; margin-top: 2px; }
+  .rfq-doc .icom { font-size: 8px; color: #888; font-style: italic; margin-top: 1px; }
+  .rfq-doc .obs { margin-top: 12px; border-top: 1.5px solid #1a1a1a; padding-top: 7px; font-size: 9.2px; }
+  .rfq-doc .footer { margin-top: 16px; border-top: 1px solid #ccc; padding-top: 6px; font-size: 8.5px; color: #888; display: flex; justify-content: space-between; }
 </style>
 
-<div class="page">
+<div class="rfq-doc">
+  <div class="wm">GARMUTTI</div>
 
-  <table class="header-table">
-    <tr>
-      <td class="header-left">
-        <table style="width:100%; border-collapse:collapse;">
-          <tr>
-            <td style="width:95px; vertical-align:top;">
-              <img src="{% static 'assets/img/logo-ct-dark.png' %}" alt="Logo" class="logo">
-            </td>
-            <td style="vertical-align:top;">
-              <div class="brand-name">
-                {% if organizacao and organizacao.nome %}
-                  {{ organizacao.nome|upper }}
-                {% else %}
-                  GARMUTTI
-                {% endif %}
-              </div>
-              <div class="brand-subtitle">
-                {% if organizacao and organizacao.slogan %}
-                  {{ organizacao.slogan }}
-                {% else %}
-                  You Order. We Deliver.
-                {% endif %}
-              </div>
-            </td>
-          </tr>
-        </table>
+  <div class="hdr z">
+    <img src="{% static 'assets/img/logo-ct-dark.png' %}" alt="Garmutti">
+  </div>
 
-        <div class="org-block">
-          <div><strong>FORNECIMENTO DE BENS E SERVIÇOS</strong></div>
-          <div>
-            Endereço:
-            {% if organizacao and organizacao.endereco %}{{ organizacao.endereco }}{% else %}—{% endif %}
-            {% if organizacao and organizacao.cidade %}, {{ organizacao.cidade }}{% endif %}
-            {% if organizacao and organizacao.pais %}, {{ organizacao.pais }}{% endif %}
-          </div>
-          <div>
-            Tel:
-            {% if organizacao and organizacao.telefone_1 %}{{ organizacao.telefone_1 }}{% else %}—{% endif %}
-            {% if organizacao and organizacao.telefone_2 %} / {{ organizacao.telefone_2 }}{% endif %}
-          </div>
-          <div>
-            Email:
-            {% if organizacao and organizacao.email %}{{ organizacao.email }}{% else %}—{% endif %}
-          </div>
-          <div>
-            NUIT:
-            {% if organizacao and organizacao.nuit %}{{ organizacao.nuit }}{% else %}—{% endif %}
-          </div>
-        </div>
-      </td>
+  <div class="split z">
+    <div class="org" style="flex:1">
+      {% if organizacao %}
+        <div class="on">{{ organizacao.nome }}</div>
+        {% if organizacao.nuit %}<div class="ol">NUIT: <strong>{{ organizacao.nuit }}</strong></div>{% endif %}
+        {% if organizacao.telefone_1 %}<div class="ol">Tel: <strong>{{ organizacao.telefone_1 }}{% if organizacao.telefone_2 %} / {{ organizacao.telefone_2 }}{% endif %}</strong></div>{% endif %}
+        {% if organizacao.email %}<div class="ol">{{ organizacao.email }}</div>{% endif %}
+        {% if organizacao.cidade %}<div class="ol"><strong>{{ organizacao.cidade }}</strong></div>{% endif %}
+        {% if organizacao.endereco %}<div class="ol">{{ organizacao.endereco }}</div>{% endif %}
+      {% endif %}
+    </div>
+    <div class="cli">
+      <div class="to">Pedido de Cotação de</div>
+      <div class="cn">{{ rfq.cliente.nome }}</div>
+      {% if rfq.pessoa_contacto %}<div class="cl" style="margin-top:5px">{{ rfq.pessoa_contacto }}</div>{% endif %}
+      {% if rfq.email_cliente %}<div class="cl">{{ rfq.email_cliente }}</div>{% endif %}
+      {% if rfq.telefone_cliente %}<div class="cl">{{ rfq.telefone_cliente }}</div>{% endif %}
+    </div>
+  </div>
 
-      <td class="header-right">
-        <div class="box">
-          <div class="box-title">Documento Interno</div>
-          <div class="box-body">
-            <table class="mini-table">
-              <tr>
-                <td class="mini-label">Nº RFQ</td>
-                <td class="mini-value">{{ rfq.numero }}</td>
-              </tr>
-              <tr>
-                <td class="mini-label">Estado</td>
-                <td class="mini-value">{{ rfq.estado.nome }}</td>
-              </tr>
-              <tr>
-                <td class="mini-label">Origem</td>
-                <td class="mini-value">
-                  {% if rfq.origem == 'api' %}Website{% else %}Manual{% endif %}
-                </td>
-              </tr>
-              <tr>
-                <td class="mini-label">Data</td>
-                <td class="mini-value">{{ rfq.data_rfq|date:"d/m/Y" }}</td>
-              </tr>
-              <tr>
-                <td class="mini-label">Criado por</td>
-                <td class="mini-value">
-                  {% if rfq.criado_por %}
-                    {{ rfq.criado_por.get_full_name|default:rfq.criado_por.username }}
-                  {% else %}
-                    —
-                  {% endif %}
-                </td>
-              </tr>
-              <tr>
-                <td class="mini-label">Cliente</td>
-                <td class="mini-value">{{ rfq.cliente.nome }}</td>
-              </tr>
-            </table>
-          </div>
-        </div>
-      </td>
-    </tr>
-  </table>
+  <div class="dtitle z">Request for Quotation # {{ rfq.numero }}&nbsp;&nbsp;<span style="font-weight:400;font-size:11px">(DOCUMENTO INTERNO)</span></div>
+  <hr class="z">
 
-  <div class="main-title">REQUEST FOR QUOTATION Nº {{ rfq.numero }}</div>
-  <div class="subtitle">Documento interno de registo e controlo de pedido de cotação.</div>
-
-  <table class="info-table">
-    <tr>
-      <th style="width:22%;">Cliente</th>
-      <th style="width:18%;">Data</th>
-      <th style="width:25%;">Prazo de Entrega</th>
-      <th>Local de Entrega</th>
-    </tr>
-    <tr>
-      <td>{{ rfq.cliente.nome }}</td>
-      <td>{{ rfq.data_rfq|date:"d/m/Y" }}</td>
-      <td>{% if rfq.prazo_entrega %}{{ rfq.prazo_entrega|date:"d/m/Y" }}{% else %}—{% endif %}</td>
-      <td>{{ rfq.local_entrega|default:"—" }}</td>
-    </tr>
-    <tr>
-      <th>Pessoa de Contacto</th>
-      <th>Telefone</th>
-      <th>Email</th>
-      <th>Status</th>
-    </tr>
-    <tr>
-      <td>{{ rfq.pessoa_contacto|default:"—" }}</td>
-      <td>{{ rfq.telefone_cliente|default:"—" }}</td>
-      <td>{{ rfq.email_cliente|default:"—" }}</td>
-      <td><span class="status-text">{{ rfq.estado.nome }}</span></td>
-    </tr>
-  </table>
-
-  <div class="section-title">Itens Solicitados</div>
-
-  <table class="items-table">
+  <table class="th z">
     <thead>
       <tr>
-        <th style="width:60px;">Item</th>
-        <th>Descrição</th>
-        <th style="width:100px;">Qtd.</th>
-        <th style="width:120px;">Unidade</th>
-        <th style="width:180px;">Comentários</th>
+        <th style="width:130px">Data do RFQ</th>
+        <th style="width:160px">Prazo de Entrega</th>
+        <th style="width:160px">Local de Entrega</th>
+        <th>Estado</th>
+        <th>Origem</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{ rfq.data_rfq|date:"d/m/Y" }}</td>
+        <td>{% if rfq.prazo_entrega %}{{ rfq.prazo_entrega|date:"d/m/Y" }}{% else %}—{% endif %}</td>
+        <td>{{ rfq.local_entrega|default:"—" }}</td>
+        <td><strong>{{ rfq.estado.nome }}</strong></td>
+        <td>{% if rfq.origem == 'api' %}Website{% else %}Manual{% endif %}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <table class="ti z">
+    <thead>
+      <tr>
+        <th class="al" style="width:34px">#</th>
+        <th class="al">Descrição</th>
+        <th class="ac" style="width:80px">Unidade</th>
+        <th style="width:60px">Qtd.</th>
+        <th class="al" style="width:200px">Comentários</th>
       </tr>
     </thead>
     <tbody>
       {% for item in rfq.itens.all %}
       <tr>
-        <td class="center">{{ forloop.counter }}</td>
-        <td>
+        <td class="al">{{ forloop.counter }}</td>
+        <td class="al">
           {{ item.descricao }}
-          {% if item.especificacoes %}
-            <div class="small-muted">{{ item.especificacoes }}</div>
-          {% endif %}
+          {% if item.especificacoes %}<div class="ispec">{{ item.especificacoes }}</div>{% endif %}
         </td>
-        <td class="center">{{ item.quantidade }}</td>
-        <td>
-          {% if item.unidade %}
-            {% if item.unidade.sigla %}
-              {{ item.unidade.sigla }}
-            {% elif item.unidade.nome %}
-              {{ item.unidade.nome }}
-            {% else %}
-              —
-            {% endif %}
-          {% else %}
-            —
-          {% endif %}
+        <td class="ac">
+          {% if item.unidade %}{{ item.unidade.sigla|default:item.unidade.nome }}{% else %}—{% endif %}
         </td>
-        <td>{{ item.comentarios|default:"—" }}</td>
+        <td>{{ item.quantidade }}</td>
+        <td class="al">{{ item.comentarios|default:"—" }}</td>
       </tr>
       {% empty %}
-      <tr>
-        <td colspan="5" class="center">Sem itens registados.</td>
-      </tr>
+      <tr><td colspan="5" style="text-align:center;color:#999;padding:14px">Sem itens registados.</td></tr>
       {% endfor %}
     </tbody>
   </table>
 
-  <div class="footer-notes">
-    <div><strong>Observações:</strong></div>
-    <div>{{ rfq.observacoes|default:"Sem observações adicionais." }}</div>
+  {% if rfq.observacoes %}
+  <div class="obs z">
+    <strong>Observações:</strong><br>
+    {{ rfq.observacoes }}
   </div>
+  {% endif %}
 
+  <div class="footer z">
+    <span>Documento Processado por Computador{% if rfq.criado_por %} &nbsp;|&nbsp; Operador: {{ rfq.criado_por.get_full_name|default:rfq.criado_por.username|upper }}{% endif %}</span>
+    <span>RFQ {{ rfq.numero }} &nbsp;·&nbsp; {{ rfq.data_rfq|date:"d/m/Y" }}</span>
+  </div>
 </div>

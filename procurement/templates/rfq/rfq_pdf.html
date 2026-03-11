@@ -1,44 +1,156 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-  <meta charset="utf-8">
-  <title>{{ rfq.numero }}</title>
-  <style>
-    @font-face {
-      font-family: 'DejaVu Sans';
-      src: url('file://{{ font_path }}/DejaVuSans.ttf');
-      font-weight: normal;
-      font-style: normal;
-    }
-    @font-face {
-      font-family: 'DejaVu Sans';
-      src: url('file://{{ font_path }}/DejaVuSans-Bold.ttf');
-      font-weight: bold;
-      font-style: normal;
-    }
+<meta charset="utf-8">
+<title>{{ rfq.numero }}</title>
+<style>
+@font-face {
+  font-family: 'DejaVu Sans';
+  src: url('file://{{ font_path }}/DejaVuSans.ttf');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'DejaVu Sans';
+  src: url('file://{{ font_path }}/DejaVuSans-Bold.ttf');
+  font-weight: bold;
+  font-style: normal;
+}
 
-    @page {
-      size: A4;
-      margin: 12mm;
-    }
+@page { size: A4 portrait; margin: 14mm 16mm 18mm 16mm; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DejaVu Sans', sans-serif; font-size: 10.5px; color: #1a1a1a; background: #fff; }
 
-    html, body {
-      margin: 0;
-      padding: 0;
-      background: #ffffff;
-      color: #000000;
-      font-family: 'DejaVu Sans', sans-serif;
-      font-size: 12px;
-    }
-
-    body, table, td, th, div, p, span {
-      font-family: 'DejaVu Sans', sans-serif;
-      color: #000000;
-      font-size: 12px;
-    }
-  </style>
+.wm { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%) rotate(-35deg); font-size: 84px; font-weight: 900; color: rgba(46,62,130,0.04); white-space: nowrap; z-index: 0; letter-spacing: 4px; pointer-events: none; }
+.pg { position: relative; z-index: 1; }
+.hdr { margin-bottom: 18px; }
+.hdr img { height: 46px; width: auto; }
+.split { display: flex; justify-content: space-between; gap: 24px; margin-bottom: 14px; }
+.org { flex: 1; }
+.org .on { font-weight: 700; font-size: 10.5px; margin-bottom: 3px; }
+.org .ol { font-size: 9.2px; color: #222; margin-bottom: 2px; line-height: 1.35; }
+.cli { width: 250px; }
+.cli .to { font-size: 8.8px; color: #555; margin-bottom: 3px; }
+.cli .cn { font-weight: 700; font-size: 10.8px; margin-bottom: 4px; }
+.cli .cl { font-size: 9.2px; color: #333; margin-bottom: 2px; }
+.dtitle { font-weight: 700; font-size: 15px; margin-bottom: 6px; }
+hr { border: none; border-top: 1.5px solid #1a1a1a; margin: 0; }
+table.th { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+table.th th { font-size: 8.8px; font-weight: 600; padding: 4px 6px; border-bottom: 1px solid #ccc; text-align: left; background: transparent; }
+table.th td { font-size: 9.3px; padding: 4px 6px; color: #1a1a1a; }
+table.ti { width: 100%; border-collapse: collapse; page-break-inside: auto; }
+table.ti thead th { font-size: 8.8px; font-weight: 600; padding: 5px 7px; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; text-align: right; background: transparent; }
+table.ti thead th.al { text-align: left; }
+table.ti thead th.ac { text-align: center; }
+table.ti tbody tr { page-break-inside: avoid; }
+table.ti tbody td { font-size: 9.3px; padding: 5px 7px; border-bottom: 1px solid #eee; text-align: right; vertical-align: top; }
+table.ti tbody td.al { text-align: left; }
+table.ti tbody td.ac { text-align: center; }
+.ispec { font-size: 8px; color: #666; margin-top: 2px; }
+.icom { font-size: 8px; color: #888; font-style: italic; margin-top: 1px; }
+.obs { margin-top: 12px; border-top: 1.5px solid #1a1a1a; padding-top: 7px; font-size: 9.2px; }
+.footer { position: fixed; bottom: 0; left: 0; right: 0; border-top: 1px solid #ccc; padding: 5px 16mm; display: flex; justify-content: space-between; font-size: 8px; color: #999; background: #fff; z-index: 10; }
+</style>
 </head>
 <body>
-  {% include "rfq/includes/rfq_document_inner.html" %}
+
+<div class="wm">GARMUTTI</div>
+
+<div class="pg">
+  <div class="hdr">
+    {% load static %}
+    <img src="{% static 'assets/img/logo-ct-dark.png' %}" alt="Garmutti">
+  </div>
+
+  <div class="split">
+    <div class="org">
+      {% if organizacao %}
+        <div class="on">{{ organizacao.nome }}</div>
+        {% if organizacao.nuit %}<div class="ol">NUIT: <strong>{{ organizacao.nuit }}</strong></div>{% endif %}
+        {% if organizacao.telefone_1 %}<div class="ol">Tel: <strong>{{ organizacao.telefone_1 }}{% if organizacao.telefone_2 %} / {{ organizacao.telefone_2 }}{% endif %}</strong></div>{% endif %}
+        {% if organizacao.email %}<div class="ol">{{ organizacao.email }}</div>{% endif %}
+        {% if organizacao.cidade %}<div class="ol"><strong>{{ organizacao.cidade }}</strong></div>{% endif %}
+        {% if organizacao.endereco %}<div class="ol">{{ organizacao.endereco }}</div>{% endif %}
+      {% endif %}
+    </div>
+    <div class="cli">
+      <div class="to">Pedido de Cotação de</div>
+      <div class="cn">{{ rfq.cliente.nome }}</div>
+      {% if rfq.pessoa_contacto %}<div class="cl" style="margin-top:5px">{{ rfq.pessoa_contacto }}</div>{% endif %}
+      {% if rfq.email_cliente %}<div class="cl">{{ rfq.email_cliente }}</div>{% endif %}
+      {% if rfq.telefone_cliente %}<div class="cl">{{ rfq.telefone_cliente }}</div>{% endif %}
+    </div>
+  </div>
+
+  <div style="margin-top:10px"></div>
+  <div class="dtitle">Request for Quotation # {{ rfq.numero }}&nbsp;&nbsp;<span style="font-weight:400;font-size:11px">(DOCUMENTO INTERNO)</span></div>
+  <hr>
+
+  <table class="th" style="margin-top:8px">
+    <thead>
+      <tr>
+        <th style="width:130px">Data do RFQ</th>
+        <th style="width:160px">Prazo de Entrega</th>
+        <th style="width:160px">Local de Entrega</th>
+        <th>Estado</th>
+        <th>Origem</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{ rfq.data_rfq|date:"d/m/Y" }}</td>
+        <td>{% if rfq.prazo_entrega %}{{ rfq.prazo_entrega|date:"d/m/Y" }}{% else %}—{% endif %}</td>
+        <td>{{ rfq.local_entrega|default:"—" }}</td>
+        <td><strong>{{ rfq.estado.nome }}</strong></td>
+        <td>{% if rfq.origem == 'api' %}Website{% else %}Manual{% endif %}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <table class="ti" style="margin-top:10px">
+    <thead>
+      <tr>
+        <th class="al" style="width:34px">#</th>
+        <th class="al">Descrição</th>
+        <th class="ac" style="width:80px">Unidade</th>
+        <th style="width:60px">Qtd.</th>
+        <th class="al" style="width:200px">Comentários</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in rfq.itens.all %}
+      <tr>
+        <td class="al">{{ forloop.counter }}</td>
+        <td class="al">
+          {{ item.descricao }}
+          {% if item.especificacoes %}<div class="ispec">{{ item.especificacoes }}</div>{% endif %}
+        </td>
+        <td class="ac">
+          {% if item.unidade %}
+            {{ item.unidade.sigla|default:item.unidade.nome }}
+          {% else %}—{% endif %}
+        </td>
+        <td>{{ item.quantidade }}</td>
+        <td class="al">{{ item.comentarios|default:"—" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" style="text-align:center;color:#999;padding:14px">Sem itens registados.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if rfq.observacoes %}
+  <div class="obs">
+    <strong>Observações:</strong><br>
+    {{ rfq.observacoes }}
+  </div>
+  {% endif %}
+</div>
+
+<div class="footer">
+  <span>Documento Processado por Computador{% if rfq.criado_por %} &nbsp;|&nbsp; Operador: {{ rfq.criado_por.get_full_name|default:rfq.criado_por.username|upper }}{% endif %}</span>
+  <span>RFQ {{ rfq.numero }} &nbsp;·&nbsp; {{ rfq.data_rfq|date:"d/m/Y" }}</span>
+</div>
+
 </body>
 </html>
