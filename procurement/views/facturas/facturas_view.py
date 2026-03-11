@@ -4,7 +4,7 @@ import os
 
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.db.models import Sum, Count
+from django.db.models import Sum
 from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -19,6 +19,9 @@ from procurement.models import (
     FacturaItem,
     Moeda,
     PurchaseOrder,
+    PurchaseOrderAnexo,
+    Quotacao,
+    QuotacaoItem,
 )
 
 logger = logging.getLogger(__name__)
@@ -107,16 +110,15 @@ def facturas_view(request):
         .order_by('-id')
     )
 
-    clientes       = Cliente.objects.filter(estado=True).order_by('nome')
-    estados        = FacturaEstado.objects.filter(activo=True).order_by('ordem')
-    moedas         = Moeda.objects.filter(estado=True).order_by('codigo')
+    clientes        = Cliente.objects.filter(estado=True).order_by('nome')
+    estados         = FacturaEstado.objects.filter(activo=True).order_by('ordem')
+    moedas          = Moeda.objects.filter(estado=True).order_by('codigo')
     dados_bancarios = DadoBancario.objects.filter(activo=True).order_by('ordem', 'banco')
 
-    # POs confirmadas disponíveis para facturar
-    # (inclui POs sem factura + POs com factura cancelada)
+    # POs confirmadas com select_related para quotacao e seus itens
     pos_confirmadas = (
         PurchaseOrder.objects
-        .select_related('cliente', 'moeda', 'quotacao')
+        .select_related('cliente', 'moeda', 'quotacao', 'quotacao__condicao_pagamento')
         .filter(estado__codigo='confirmada')
         .order_by('-id')
     )
@@ -124,12 +126,12 @@ def facturas_view(request):
     today = timezone.localdate()
 
     total_facturas   = facturas.count()
-    total_emitidas   = facturas.filter(estado__codigo='emitida').count()
+    total_emitidas   = facturas.filter(estado__codigo='pendente').count()
     total_pagas      = facturas.filter(estado__codigo='paga').count()
     total_vencidas   = facturas.filter(estado__codigo='vencida').count()
 
     valor_total_emitido = (
-        facturas.exclude(estado__codigo__in=['cancelada', 'rascunho'])
+        facturas.exclude(estado__codigo='cancelada')
         .aggregate(t=Sum('total')).get('t') or Decimal('0')
     )
     valor_total_pago = (
@@ -180,33 +182,61 @@ def factura_detail_json_view(request, factura_id):
             'total_linha': str(it.total_linha),
         })
 
+    # URLs de download — PO e Quotação
+    po_download_url    = ''
+    quot_download_url  = ''
+    quotacao_numero    = ''
+    po_valor_total     = ''
+    po_cliente_numero  = ''
+    po_numero_interno  = ''
+
+    if factura.purchase_order:
+        po = factura.purchase_order
+        po_numero_interno = po.numero
+        po_cliente_numero = po.po_cliente_numero or ''
+        po_valor_total    = str(po.valor_total or '0')
+
+        # Primeiro anexo de tipo 'po'
+        po_anexo = PurchaseOrderAnexo.objects.filter(
+            purchase_order_id=po.id, tipo_anexo='po'
+        ).first()
+        if po_anexo:
+            po_download_url = reverse('procurement:po_anexo_download', args=[po_anexo.id])
+
+        if po.quotacao:
+            quotacao_numero   = po.quotacao.numero
+            quot_download_url = reverse('procurement:quotacoes_download_pdf', args=[po.quotacao_id])
+
     data = {
-        'id'                  : factura.id,
-        'numero'              : factura.numero,
-        'estado_codigo'       : factura.estado.codigo if factura.estado else '',
-        'estado_nome'         : factura.estado.nome  if factura.estado else '',
-        'estado_cor'          : factura.estado.cor   if factura.estado else '#2E3E82',
-        'cliente_id'          : factura.cliente_id,
-        'cliente_nome'        : factura.cliente.nome if factura.cliente else '',
-        'moeda_id'            : factura.moeda_id or '',
-        'moeda_simbolo'       : factura.moeda.simbolo if factura.moeda else '',
-        'dado_bancario_id'    : factura.dado_bancario_id or '',
-        'purchase_order_id'   : factura.purchase_order_id or '',
-        'purchase_order_numero': factura.purchase_order.numero if factura.purchase_order else '',
-        'po_cliente_numero'   : factura.purchase_order.po_cliente_numero if factura.purchase_order else '',
-        'quotacao_numero'     : factura.purchase_order.quotacao.numero if factura.purchase_order and factura.purchase_order.quotacao else '',
-        'data_emissao'        : factura.data_emissao.isoformat() if factura.data_emissao else '',
-        'data_vencimento'     : factura.data_vencimento.isoformat() if factura.data_vencimento else '',
-        'subtotal'            : str(factura.subtotal),
-        'desconto'            : str(factura.desconto),
-        'desconto_pct'        : str(factura.desconto_pct),
-        'iva_pct'             : str(factura.iva_pct),
-        'iva_valor'           : str(factura.iva_valor),
-        'total'               : str(factura.total),
-        'observacoes'         : factura.observacoes or '',
-        'termos'              : factura.termos or '',
-        'pdf_url'             : reverse('procurement:factura_pdf', args=[factura.id]),
-        'itens'               : itens,
+        'id'                   : factura.id,
+        'numero'               : factura.numero,
+        'estado_codigo'        : factura.estado.codigo if factura.estado else '',
+        'estado_nome'          : factura.estado.nome   if factura.estado else '',
+        'estado_cor'           : factura.estado.cor    if factura.estado else '#2E3E82',
+        'cliente_id'           : factura.cliente_id,
+        'cliente_nome'         : factura.cliente.nome if factura.cliente else '',
+        'moeda_id'             : factura.moeda_id or '',
+        'moeda_simbolo'        : factura.moeda.simbolo if factura.moeda else '',
+        'dado_bancario_id'     : factura.dado_bancario_id or '',
+        'purchase_order_id'    : factura.purchase_order_id or '',
+        'purchase_order_numero': po_numero_interno,
+        'po_cliente_numero'    : po_cliente_numero,
+        'po_valor_total'       : po_valor_total,
+        'quotacao_numero'      : quotacao_numero,
+        'po_download_url'      : po_download_url,
+        'quot_download_url'    : quot_download_url,
+        'data_emissao'         : factura.data_emissao.isoformat() if factura.data_emissao else '',
+        'data_vencimento'      : factura.data_vencimento.isoformat() if factura.data_vencimento else '',
+        'subtotal'             : str(factura.subtotal),
+        'desconto'             : str(factura.desconto),
+        'desconto_pct'         : str(factura.desconto_pct),
+        'iva_pct'              : str(factura.iva_pct),
+        'iva_valor'            : str(factura.iva_valor),
+        'total'                : str(factura.total),
+        'observacoes'          : factura.observacoes or '',
+        'termos'               : factura.termos or '',
+        'pdf_url'              : reverse('procurement:factura_pdf', args=[factura.id]),
+        'itens'                : itens,
     }
     return JsonResponse(data)
 
@@ -623,24 +653,50 @@ def factura_pdf_view(request, factura_id):
 @login_required
 @require_GET
 def po_itens_json_view(request, po_id):
-    """Devolve os itens de uma PO para pré-preencher a factura."""
-    po = get_object_or_404(PurchaseOrder, id=po_id)
+    """
+    Devolve itens e termos da Quotação ligada à PO.
+    Se não existir Quotação, devolve uma linha genérica com o valor da PO.
+    """
+    po = get_object_or_404(
+        PurchaseOrder.objects.select_related(
+            'quotacao', 'quotacao__condicao_pagamento', 'cliente', 'moeda'
+        ),
+        id=po_id,
+    )
 
-    # Tenta buscar itens da PO se o modelo existir
-    itens = []
-    try:
-        from procurement.models import PurchaseOrderItem
-        for it in PurchaseOrderItem.objects.filter(purchase_order_id=po_id).order_by('ordem', 'id'):
+    itens  = []
+    termos = ''
+    quotacao_numero   = ''
+    quot_download_url = ''
+    po_download_url   = ''
+
+    # ── Itens e termos da Quotação ────────────────────────────────────────
+    if po.quotacao:
+        q = po.quotacao
+        quotacao_numero = q.numero
+
+        # URL PDF da quotação (usa weasyprint — rota já existente)
+        try:
+            quot_download_url = reverse('procurement:quotacoes_download_pdf', args=[q.id])
+        except Exception:
+            pass
+
+        # Termos: condição de pagamento da quotação
+        if q.condicao_pagamento and q.condicao_pagamento.descricao:
+            termos = q.condicao_pagamento.descricao
+        elif q.observacoes:
+            termos = q.observacoes
+
+        # Itens da quotação → itens da factura
+        for it in QuotacaoItem.objects.filter(quotacao_id=q.id).order_by('linha'):
             itens.append({
                 'descricao' : it.descricao,
-                'unidade'   : it.unidade or '',
+                'unidade'   : it.unidade.sigla if it.unidade else '',
                 'quantidade': str(it.quantidade),
-                'preco_unit': str(it.preco_unit),
+                'preco_unit': str(it.preco_unitario),
             })
-    except Exception:
-        pass
 
-    # Se não houver itens, devolve linha genérica com valor da PO
+    # ── Fallback: linha genérica com valor da PO ──────────────────────────
     if not itens:
         itens = [{
             'descricao' : f'Fornecimento conforme PO {po.po_cliente_numero or po.numero}',
@@ -649,11 +705,25 @@ def po_itens_json_view(request, po_id):
             'preco_unit': str(po.valor_total or '0'),
         }]
 
+    # ── URL download da PO (primeiro anexo tipo 'po') ─────────────────────
+    po_anexo = PurchaseOrderAnexo.objects.filter(
+        purchase_order_id=po.id, tipo_anexo='po'
+    ).first()
+    if po_anexo:
+        try:
+            po_download_url = reverse('procurement:po_anexo_download', args=[po_anexo.id])
+        except Exception:
+            pass
+
     return JsonResponse({
-        'po_numero'      : po.numero,
+        'po_numero'        : po.numero,
         'po_cliente_numero': po.po_cliente_numero or '',
-        'cliente_id'     : po.cliente_id,
-        'moeda_id'       : po.moeda_id or '',
-        'valor_total'    : str(po.valor_total or '0'),
-        'itens'          : itens,
+        'po_valor_total'   : str(po.valor_total or '0'),
+        'cliente_id'       : po.cliente_id,
+        'moeda_id'         : po.moeda_id or '',
+        'quotacao_numero'  : quotacao_numero,
+        'quot_download_url': quot_download_url,
+        'po_download_url'  : po_download_url,
+        'termos'           : termos,
+        'itens'            : itens,
     })

@@ -37,8 +37,8 @@
             </div>
             <div class="col-lg-5">
               <div class="fc-stats-grid">
-                <div class="mini-stat-card stat-filter" data-filter="emitida">
-                  <span class="mini-stat-label">Emitidas</span>
+                <div class="mini-stat-card stat-filter" data-filter="pendente">
+                  <span class="mini-stat-label">Pendentes</span>
                   <h4 class="mb-0 text-primary">{{ total_emitidas }}</h4>
                 </div>
                 <div class="mini-stat-card stat-filter" data-filter="paga">
@@ -230,7 +230,11 @@
             <select id="fc_po_id" class="form-select modern-input">
               <option value="">— Sem PO —</option>
               {% for po in pos_confirmadas %}
-              <option value="{{ po.id }}" data-cliente="{{ po.cliente_id }}" data-moeda="{{ po.moeda_id|default:'' }}">
+              <option value="{{ po.id }}"
+                      data-cliente="{{ po.cliente_id }}"
+                      data-moeda="{{ po.moeda_id|default:'' }}"
+                      data-quotacao="{% if po.quotacao %}{{ po.quotacao.numero }}{% endif %}"
+                      data-valor="{{ po.valor_total|floatformat:2 }}">
                 {{ po.numero }}{% if po.po_cliente_numero %} / {{ po.po_cliente_numero }}{% endif %} — {{ po.cliente.nome }}
               </option>
               {% endfor %}
@@ -259,6 +263,32 @@
               <option value="{{ db.id }}">{{ db.label_completo }}</option>
               {% endfor %}
             </select>
+          </div>
+        </div>
+
+        <!-- Painel info da PO seleccionada -->
+        <div id="fc_po_info_wrap" class="d-none mb-4">
+          <div class="fc-po-info-card">
+            <div class="row g-3 align-items-center">
+              <div class="col-md-3">
+                <div class="fc-info-label">Valor Total PO</div>
+                <div class="fc-info-value fw-bold text-primary" id="fc_po_valor_display">—</div>
+              </div>
+              <div class="col-md-3">
+                <div class="fc-info-label">Cotação Relacionada</div>
+                <div class="fc-info-value" id="fc_po_quotacao_display">—</div>
+              </div>
+              <div class="col-md-6 d-flex gap-2 justify-content-md-end flex-wrap">
+                <a id="btn_download_po" href="#" target="_blank"
+                   class="btn btn-sm btn-outline-secondary d-none" style="border-radius:10px">
+                  <i class="material-symbols-rounded me-1" style="font-size:14px">picture_as_pdf</i>Baixar PO
+                </a>
+                <a id="btn_download_quot" href="#" target="_blank"
+                   class="btn btn-sm btn-outline-primary d-none" style="border-radius:10px">
+                  <i class="material-symbols-rounded me-1" style="font-size:14px">description</i>Baixar Cotação
+                </a>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -398,6 +428,9 @@
 .modern-input{border-radius:14px!important;border:1px solid #dfe5ef!important;min-height:46px;box-shadow:none!important}
 .modern-input:focus{border-color:var(--fc)!important;box-shadow:0 0 0 .2rem rgba(46,62,130,.10)!important}
 .fc-totais-card{background:linear-gradient(135deg,#f4f6ff,#f8faff);border:1px solid var(--fc-border);border-radius:18px;padding:18px 20px}
+.fc-po-info-card{background:linear-gradient(135deg,#f0f4ff,#f8faff);border:1px solid var(--fc-border);border-radius:16px;padding:16px 20px}
+.fc-info-label{font-size:.74rem;text-transform:uppercase;letter-spacing:.05em;color:#8892a6;font-weight:700;margin-bottom:4px}
+.fc-info-value{font-size:.95rem;color:#1f2937;font-weight:600}
 .fc-item-row td{vertical-align:middle}
 .fc-item-row input{border-radius:10px!important;border:1px solid #dfe5ef!important;padding:5px 8px;font-size:.83rem}
 
@@ -539,6 +572,8 @@ $(function(){
     $('#fc_termos').val('');
     $('#fcItemsBody').empty();
     $('#btnImportarPO').prop('disabled',true);
+    $('#fc_po_info_wrap').addClass('d-none');
+    $('#btn_download_po, #btn_download_quot').addClass('d-none').attr('href','#');
     addItemRow();
     recalcularTotais();
   }
@@ -552,32 +587,60 @@ $(function(){
     $(this).closest('tr').remove(); recalcularTotais();
   });
 
-  // ── Seleccionar PO → activa botão importar e preenche cliente/moeda ───
+  // ── Seleccionar PO → mostra painel info e activa botão importar ──────
   $('#fc_po_id').on('change', function(){
-    const opt = $(this).find('option:selected');
-    const poId = $(this).val();
+    const opt   = $(this).find('option:selected');
+    const poId  = $(this).val();
     if(poId){
-      $('#btnImportarPO').prop('disabled',false);
+      $('#btnImportarPO').prop('disabled', false);
       const cliId   = opt.data('cliente');
       const moedaId = opt.data('moeda');
+      const quotNum = opt.data('quotacao') || '—';
+      const valor   = opt.data('valor') || '0,00';
       if(cliId)   $('#fc_cliente_id').val(cliId);
       if(moedaId) $('#fc_moeda_id').val(moedaId);
+      $('#fc_po_valor_display').text(valor);
+      $('#fc_po_quotacao_display').text(quotNum !== '' ? quotNum : '—');
+      // Reset download buttons — serão preenchidos após importar
+      $('#btn_download_po, #btn_download_quot').addClass('d-none').attr('href','#');
+      $('#fc_po_info_wrap').removeClass('d-none');
     } else {
-      $('#btnImportarPO').prop('disabled',true);
+      $('#btnImportarPO').prop('disabled', true);
+      $('#fc_po_info_wrap').addClass('d-none');
     }
   });
 
-  // ── Importar itens da PO ───────────────────────────────────────────────
+  // ── Importar itens da Quotação (via PO) ───────────────────────────────
   $('#btnImportarPO').on('click', function(){
     const poId = $('#fc_po_id').val();
     if(!poId) return;
     Swal.fire({title:'A importar itens...', allowOutsideClick:false, didOpen:()=>Swal.showLoading()});
     $.get(`/facturas/po/${poId}/itens/`, function(r){
       Swal.close();
+
+      // Preencher itens
       $('#fcItemsBody').empty();
-      r.itens.forEach(it=>addItemRow(it));
+      r.itens.forEach(it => addItemRow(it));
       recalcularTotais();
-      Swal.fire({icon:'success', title:'Itens importados!', timer:1500, showConfirmButton:false});
+
+      // Preencher termos
+      if(r.termos) $('#fc_termos').val(r.termos);
+
+      // Actualizar painel info com dados reais
+      $('#fc_po_valor_display').text(fmt(r.po_valor_total));
+      $('#fc_po_quotacao_display').text(r.quotacao_numero || '—');
+
+      // Botões download
+      if(r.po_download_url){
+        $('#btn_download_po').attr('href', r.po_download_url).removeClass('d-none');
+      }
+      if(r.quot_download_url){
+        $('#btn_download_quot').attr('href', r.quot_download_url).removeClass('d-none');
+      }
+
+      Swal.fire({icon:'success', title:'Itens importados!',
+        text: r.quotacao_numero ? `Da Cotação ${r.quotacao_numero}` : 'Linha genérica criada.',
+        timer:1800, showConfirmButton:false});
     }).fail(()=>Swal.fire({icon:'error',title:'Erro',text:'Não foi possível importar os itens da PO.'}));
   });
 
@@ -611,6 +674,18 @@ $(function(){
       else addItemRow();
       recalcularTotais();
       if(r.purchase_order_id) $('#btnImportarPO').prop('disabled',false);
+
+      // Restaurar painel info da PO
+      if(r.purchase_order_id){
+        $('#fc_po_valor_display').text(fmt(r.po_valor_total));
+        $('#fc_po_quotacao_display').text(r.quotacao_numero || '—');
+        if(r.po_download_url)   $('#btn_download_po').attr('href', r.po_download_url).removeClass('d-none');
+        if(r.quot_download_url) $('#btn_download_quot').attr('href', r.quot_download_url).removeClass('d-none');
+        $('#fc_po_info_wrap').removeClass('d-none');
+      } else {
+        $('#fc_po_info_wrap').addClass('d-none');
+      }
+
       fcModal.show();
     }).fail(()=>Swal.fire({icon:'error',title:'Erro',text:'Não foi possível carregar os dados.'}));
   });
@@ -741,8 +816,10 @@ $(function(){
       `);
 
       $('#fcViewFooter').html(`
+        ${r.po_download_url ? `<a href="${r.po_download_url}" target="_blank" class="btn btn-outline-secondary btn-modern"><i class="material-symbols-rounded me-1">picture_as_pdf</i>Baixar PO</a>` : ''}
+        ${r.quot_download_url ? `<a href="${r.quot_download_url}" target="_blank" class="btn btn-outline-primary btn-modern"><i class="material-symbols-rounded me-1">description</i>Baixar Cotação</a>` : ''}
         <a href="${r.pdf_url}" target="_blank" class="btn btn-danger btn-modern">
-          <i class="material-symbols-rounded me-1">picture_as_pdf</i>Descarregar PDF
+          <i class="material-symbols-rounded me-1">picture_as_pdf</i>Descarregar Factura PDF
         </a>
         <button type="button" class="btn btn-outline-secondary btn-modern" data-bs-dismiss="modal">Fechar</button>
       `);
