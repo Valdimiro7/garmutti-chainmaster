@@ -1,272 +1,343 @@
 {% load static %}
 <style>
-  .doc-wrap{
-    padding: 32px 38px;
-    background: #fff;
-    color: #111;
+  * {
+    box-sizing: border-box;
     font-family: Arial, Helvetica, sans-serif;
+    color: #111111;
   }
 
-  .doc-header{
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 30px;
-    margin-bottom: 26px;
-  }
-
-  .doc-brand{
-    display: flex;
-    gap: 18px;
-    align-items: flex-start;
-  }
-
-  .doc-logo{
-    width: 88px;
-    height: 88px;
-    object-fit: contain;
-    border-radius: 8px;
-    background: #fff;
-  }
-
-  .doc-brand-title{
-    font-size: 36px;
-    font-weight: 800;
-    line-height: 1;
-    color: #2E3E82;
+  html, body {
     margin: 0;
-  }
-
-  .doc-brand-subtitle{
-    font-size: 14px;
-    color: #3b82c4;
-    margin-top: 6px;
-  }
-
-  .doc-org-lines{
-    margin-top: 12px;
+    padding: 0;
+    background: #ffffff;
+    color: #111111;
+    font-family: Arial, Helvetica, sans-serif;
     font-size: 13px;
-    line-height: 1.75;
+    line-height: 1.45;
   }
 
-  .doc-side-card{
-    min-width: 290px;
-    max-width: 320px;
-    border: 2px solid #111;
-    border-radius: 6px;
-    overflow: hidden;
-    background: #fff;
+  .doc-wrap {
+    width: 100%;
+    padding: 18px 20px 10px 20px;
+    background: #ffffff;
   }
 
-  .doc-side-card-head{
-    background: #f2f4f8;
-    border-bottom: 2px solid #111;
-    padding: 10px 12px;
-    font-size: 13px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: .05em;
-  }
-
-  .doc-side-card-body{
-    padding: 10px 12px;
-  }
-
-  .doc-side-grid{
+  .doc-top-table,
+  .doc-meta-table,
+  .doc-items-table,
+  .doc-side-grid {
     width: 100%;
     border-collapse: collapse;
-    font-size: 12.5px;
   }
 
-  .doc-side-grid td{
-    padding: 7px 0;
+  .doc-top-left {
+    width: 52%;
     vertical-align: top;
-    border-bottom: 1px solid #e5e7eb;
+    padding-right: 20px;
   }
 
-  .doc-side-grid tr:last-child td{
+  .doc-top-right {
+    width: 48%;
+    vertical-align: top;
+    text-align: right;
+  }
+
+  .doc-brand-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+  }
+
+  .doc-brand-table td {
+    vertical-align: top;
+  }
+
+  .doc-logo-cell {
+    width: 95px;
+    padding-right: 14px;
+  }
+
+  .doc-logo {
+    width: 82px;
+    height: auto;
+    display: block;
+  }
+
+  .doc-brand-title {
+    font-size: 30px;
+    font-weight: bold;
+    line-height: 1.05;
+    color: #2E3E82;
+    margin: 0 0 6px 0;
+    padding: 0;
+  }
+
+  .doc-brand-subtitle {
+    font-size: 12px;
+    color: #3b82c4;
+    margin: 0;
+    padding: 0;
+  }
+
+  .doc-org-lines {
+    font-size: 12px;
+    line-height: 1.7;
+    color: #111111;
+  }
+
+  .doc-org-lines strong {
+    color: #111111;
+  }
+
+  .doc-side-card {
+    width: 100%;
+    max-width: 330px;
+    margin-left: auto;
+    border: 2px solid #111111;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #ffffff;
+  }
+
+  .doc-side-card-head {
+    background: #eef1f5;
+    border-bottom: 2px solid #111111;
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    text-align: left;
+    color: #111111;
+  }
+
+  .doc-side-card-body {
+    padding: 10px 14px;
+  }
+
+  .doc-side-grid td {
+    padding: 8px 0;
+    border-bottom: 1px solid #d9dee7;
+    vertical-align: top;
+    font-size: 12px;
+    color: #111111;
+  }
+
+  .doc-side-grid tr:last-child td {
     border-bottom: none;
   }
 
-  .doc-side-label{
+  .doc-side-label {
     width: 42%;
-    color: #6b7280;
-    font-weight: 700;
-    padding-right: 10px;
+    font-weight: bold;
+    color: #5f6b7a;
+    padding-right: 8px;
   }
 
-  .doc-side-value{
-    font-weight: 600;
-    color: #111;
+  .doc-side-value {
+    width: 58%;
+    font-weight: bold;
+    color: #111111;
   }
 
-  .doc-title{
-    margin: 18px 0 10px;
-    font-size: 24px;
-    font-weight: 800;
-    color: #111;
-    border-bottom: 4px solid #111;
-    padding-bottom: 6px;
+  .doc-title {
+    margin: 18px 0 8px 0;
+    padding: 0 0 6px 0;
+    font-size: 23px;
+    font-weight: bold;
+    color: #111111;
+    border-bottom: 4px solid #111111;
+    line-height: 1.2;
   }
 
-  .doc-subtitle{
-    font-size: 12.5px;
-    color: #6b7280;
-    margin-bottom: 18px;
+  .doc-subtitle {
+    font-size: 12px;
+    color: #5f6b7a;
+    margin: 0 0 18px 0;
   }
 
-  .doc-meta-table,
-  .doc-items-table{
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
+  .doc-meta-table {
+    margin-bottom: 22px;
+    font-size: 12px;
   }
 
-  .doc-meta-table th{
+  .doc-meta-table th {
     text-align: left;
-    background: #f2f4f8;
-    padding: 8px;
-    border-bottom: 2px solid #888;
+    background: #eef1f5;
+    color: #111111;
+    padding: 9px 10px;
+    font-weight: bold;
+    border-bottom: 2px solid #8a8f98;
   }
 
-  .doc-meta-table td{
-    padding: 8px;
+  .doc-meta-table td {
+    padding: 9px 10px;
+    color: #111111;
     border-bottom: 1px solid #d9dee7;
-  }
-
-  .doc-section-title{
-    font-weight: 800;
-    font-size: 14px;
-    margin: 22px 0 8px;
-    color: #111;
-  }
-
-  .doc-items-table thead th{
-    text-align: left;
-    padding: 9px 8px;
-    background: #f2f4f8;
-    border-top: 3px solid #111;
-    border-bottom: 2px solid #888;
-  }
-
-  .doc-items-table tbody td{
-    padding: 10px 8px;
-    border-bottom: 1px solid #e3e7ef;
     vertical-align: top;
   }
 
-  .doc-footer-note{
-    margin-top: 28px;
-    font-size: 13px;
+  .doc-section-title {
+    margin: 10px 0 8px 0;
+    font-size: 14px;
+    font-weight: bold;
+    color: #111111;
+  }
+
+  .doc-items-table {
+    font-size: 12px;
+  }
+
+  .doc-items-table thead th {
+    text-align: left;
+    padding: 9px 10px;
+    background: #eef1f5;
+    color: #111111;
+    font-weight: bold;
+    border-top: 3px solid #111111;
+    border-bottom: 2px solid #8a8f98;
+  }
+
+  .doc-items-table tbody td {
+    padding: 10px 10px;
+    border-bottom: 1px solid #dfe4ec;
+    vertical-align: top;
+    color: #111111;
+  }
+
+  .doc-footer-note {
+    margin-top: 24px;
+    font-size: 12px;
+    color: #111111;
     line-height: 1.7;
   }
 
-  .text-center{ text-align: center; }
-  .text-right{ text-align: right; }
-  .muted{ color: #6b7280; }
+  .muted {
+    color: #5f6b7a;
+  }
 
-  .doc-tag{
+  .text-center {
+    text-align: center;
+  }
+
+  .doc-tag {
     display: inline-block;
     padding: 4px 10px;
-    border-radius: 999px;
     font-size: 11px;
-    font-weight: 700;
-    background: #eef2ff;
+    font-weight: bold;
     color: #2E3E82;
-    border: 1px solid #dbe3ff;
+    background: #eef2ff;
+    border: 1px solid #cad5ff;
+    border-radius: 12px;
   }
 </style>
 
 <div class="doc-wrap">
-  <div class="doc-header">
-    <div style="flex:1;">
-      <div class="doc-brand">
-        <img src="{% static 'assets/img/logo-ct-dark.png' %}" alt="Garmutti Logo" class="doc-logo">
 
-        <div>
-          <h1 class="doc-brand-title">
-            {% if organizacao %}{{ organizacao.nome|upper }}{% else %}GARMUTTI{% endif %}
-          </h1>
-          <div class="doc-brand-subtitle">
-            {% if organizacao and organizacao.slogan %}{{ organizacao.slogan }}{% else %}You Order. We Deliver.{% endif %}
-          </div>
-        </div>
-      </div>
-
-      <div class="doc-org-lines">
-        <div><strong>FORNECIMENTO DE BENS E SERVIÇOS</strong></div>
-        <div>
-          Endereço:
-          {% if organizacao and organizacao.endereco %}{{ organizacao.endereco }}{% endif %}
-          {% if organizacao and organizacao.cidade %}, {{ organizacao.cidade }}{% endif %}
-          {% if organizacao and organizacao.pais %}, {{ organizacao.pais }}{% endif %}
-        </div>
-        <div>
-          Tel:
-          {% if organizacao and organizacao.telefone_1 %}{{ organizacao.telefone_1 }}{% endif %}
-          {% if organizacao and organizacao.telefone_2 %} / {{ organizacao.telefone_2 }}{% endif %}
-        </div>
-        <div>
-          Email:
-          {% if organizacao and organizacao.email %}{{ organizacao.email }}{% endif %}
-        </div>
-        <div>
-          NUIT:
-          {% if organizacao and organizacao.nuit %}{{ organizacao.nuit }}{% endif %}
-        </div>
-      </div>
-    </div>
-
-    <div class="doc-side-card">
-      <div class="doc-side-card-head">Documento Interno</div>
-      <div class="doc-side-card-body">
-        <table class="doc-side-grid">
+  <table class="doc-top-table">
+    <tr>
+      <td class="doc-top-left">
+        <table class="doc-brand-table">
           <tr>
-            <td class="doc-side-label">Nº RFQ</td>
-            <td class="doc-side-value">{{ rfq.numero }}</td>
-          </tr>
-          <tr>
-            <td class="doc-side-label">Estado</td>
-            <td class="doc-side-value">{{ rfq.estado.nome }}</td>
-          </tr>
-          <tr>
-            <td class="doc-side-label">Origem</td>
-            <td class="doc-side-value">Manual</td>
-          </tr>
-          <tr>
-            <td class="doc-side-label">Data</td>
-            <td class="doc-side-value">{{ rfq.data_rfq|date:"d/m/Y" }}</td>
-          </tr>
-          <tr>
-            <td class="doc-side-label">Criado por</td>
-            <td class="doc-side-value">
-              {% if rfq.criado_por %}
-                {{ rfq.criado_por.get_full_name|default:rfq.criado_por.username }}
-              {% else %}
-                —
-              {% endif %}
+            <td class="doc-logo-cell">
+              <img src="{% static 'assets/img/logo-ct-dark.png' %}" alt="Garmutti Logo" class="doc-logo">
+            </td>
+            <td>
+              <div class="doc-brand-title">
+                {% if organizacao and organizacao.nome %}
+                  {{ organizacao.nome|upper }}
+                {% else %}
+                  GARMUTTI
+                {% endif %}
+              </div>
+              <div class="doc-brand-subtitle">
+                {% if organizacao and organizacao.slogan %}
+                  {{ organizacao.slogan }}
+                {% else %}
+                  You Order. We Deliver.
+                {% endif %}
+              </div>
             </td>
           </tr>
-          <tr>
-            <td class="doc-side-label">Cliente</td>
-            <td class="doc-side-value">{{ rfq.cliente.nome }}</td>
-          </tr>
         </table>
-      </div>
-    </div>
-  </div>
+
+        <div class="doc-org-lines">
+          <div><strong>FORNECIMENTO DE BENS E SERVIÇOS</strong></div>
+          <div>
+            Endereço:
+            {% if organizacao and organizacao.endereco %}{{ organizacao.endereco }}{% else %}—{% endif %}
+            {% if organizacao and organizacao.cidade %}, {{ organizacao.cidade }}{% endif %}
+            {% if organizacao and organizacao.pais %}, {{ organizacao.pais }}{% endif %}
+          </div>
+          <div>
+            Tel:
+            {% if organizacao and organizacao.telefone_1 %}{{ organizacao.telefone_1 }}{% else %}—{% endif %}
+            {% if organizacao and organizacao.telefone_2 %} / {{ organizacao.telefone_2 }}{% endif %}
+          </div>
+          <div>
+            Email:
+            {% if organizacao and organizacao.email %}{{ organizacao.email }}{% else %}—{% endif %}
+          </div>
+          <div>
+            NUIT:
+            {% if organizacao and organizacao.nuit %}{{ organizacao.nuit }}{% else %}—{% endif %}
+          </div>
+        </div>
+      </td>
+
+      <td class="doc-top-right">
+        <div class="doc-side-card">
+          <div class="doc-side-card-head">Documento Interno</div>
+          <div class="doc-side-card-body">
+            <table class="doc-side-grid">
+              <tr>
+                <td class="doc-side-label">Nº RFQ</td>
+                <td class="doc-side-value">{{ rfq.numero }}</td>
+              </tr>
+              <tr>
+                <td class="doc-side-label">Estado</td>
+                <td class="doc-side-value">{{ rfq.estado.nome }}</td>
+              </tr>
+              <tr>
+                <td class="doc-side-label">Origem</td>
+                <td class="doc-side-value">
+                  {% if rfq.origem == 'api' %}Website{% else %}Manual{% endif %}
+                </td>
+              </tr>
+              <tr>
+                <td class="doc-side-label">Data</td>
+                <td class="doc-side-value">{{ rfq.data_rfq|date:"d/m/Y" }}</td>
+              </tr>
+              <tr>
+                <td class="doc-side-label">Criado por</td>
+                <td class="doc-side-value">
+                  {% if rfq.criado_por %}
+                    {{ rfq.criado_por.get_full_name|default:rfq.criado_por.username }}
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+              </tr>
+              <tr>
+                <td class="doc-side-label">Cliente</td>
+                <td class="doc-side-value">{{ rfq.cliente.nome }}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </td>
+    </tr>
+  </table>
 
   <div class="doc-title">REQUEST FOR QUOTATION Nº {{ rfq.numero }}</div>
-  <div class="doc-subtitle">
-    Documento interno de registo e controlo de pedido de cotação.
-  </div>
+  <div class="doc-subtitle">Documento interno de registo e controlo de pedido de cotação.</div>
 
   <table class="doc-meta-table">
     <tr>
       <th style="width:22%;">Cliente</th>
       <th style="width:18%;">Data</th>
       <th style="width:25%;">Prazo de Entrega</th>
-      <th>Local de Entrega</th>
+      <th style="width:35%;">Local de Entrega</th>
     </tr>
     <tr>
       <td>{{ rfq.cliente.nome }}</td>
@@ -295,8 +366,8 @@
       <tr>
         <th style="width:60px;">Item</th>
         <th>Descrição</th>
-        <th style="width:110px;">Qtd.</th>
-        <th style="width:130px;">Unidade</th>
+        <th style="width:95px;">Qtd.</th>
+        <th style="width:120px;">Unidade</th>
         <th style="width:180px;">Comentários</th>
       </tr>
     </thead>
@@ -307,7 +378,7 @@
         <td>
           <div>{{ item.descricao }}</div>
           {% if item.especificacoes %}
-            <div class="muted" style="margin-top:6px;">{{ item.especificacoes }}</div>
+            <div class="muted" style="margin-top:5px;">{{ item.especificacoes }}</div>
           {% endif %}
         </td>
         <td class="text-center">{{ item.quantidade }}</td>
@@ -326,6 +397,10 @@
         </td>
         <td>{{ item.comentarios|default:"—" }}</td>
       </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5" class="text-center muted">Sem itens registados.</td>
+      </tr>
       {% endfor %}
     </tbody>
   </table>
@@ -334,4 +409,5 @@
     <div><strong>Observações:</strong></div>
     <div>{{ rfq.observacoes|default:"Sem observações adicionais." }}</div>
   </div>
+
 </div>
