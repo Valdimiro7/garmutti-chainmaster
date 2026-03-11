@@ -1,6 +1,7 @@
 from datetime import date
+import os
 from decimal import Decimal, InvalidOperation
-
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
@@ -266,9 +267,16 @@ def quotacao_download_pdf_view(request, quotacao_id):
         id=quotacao_id,
     )
     organizacao = _get_organizacao()
+    font_path = os.path.join(settings.STATIC_ROOT, 'assets', 'fonts').replace('\\', '/')
+
     html_string = render_to_string(
         'quotacoes/quotacao_pdf.html',
-        {'quotacao': q, 'organizacao': organizacao, 'preview_mode': False},
+        {
+            'quotacao': q,
+            'organizacao': organizacao,
+            'preview_mode': False,
+            'font_path': font_path,
+        },
         request=request,
     )
     pdf_file = HTML(
@@ -279,8 +287,6 @@ def quotacao_download_pdf_view(request, quotacao_id):
     response = HttpResponse(pdf_file, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="{q.numero.replace("/", "-")}.pdf"'
     return response
-
-
 # ─── create ───────────────────────────────────────────────────────────────────
 
 @login_required
