@@ -5,60 +5,205 @@
 <meta charset="UTF-8">
 <title>Recibo {{ recibo.numero }}</title>
 <style>
-@page{size:A4 portrait;margin:14mm 16mm 22mm 16mm}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:10.5px;color:#1a1a1a;background:#fff}
+@page {
+    size: A4 portrait;
+    margin: 14mm 16mm 22mm 16mm;
+}
 
-.wm{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:84px;font-weight:900;color:rgba(46,62,130,0.04);white-space:nowrap;z-index:0;letter-spacing:4px;pointer-events:none}
-.pg{position:relative;z-index:1}
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
-.hdr{margin-bottom:26px}
-.hdr img{height:52px;width:auto}
+body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 10.5px;
+    color: #1a1a1a;
+    background: #fff;
+}
 
-.split{display:flex;justify-content:space-between;gap:28px;margin-bottom:20px}
-.org{flex:1}
-.org .on{font-weight:700;font-size:10.5px;margin-bottom:3px}
-.org .ol{font-size:9.5px;color:#222;margin-bottom:2px;line-height:1.4}
-.cli{width:250px}
-.cli .to{font-size:9px;color:#555;margin-bottom:3px}
-.cli .cn{font-weight:700;font-size:11px;margin-bottom:4px}
-.cli .cl{font-size:9.5px;color:#333;margin-bottom:2px}
+.wm {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-35deg);
+    font-size: 84px;
+    font-weight: 900;
+    color: rgba(46,62,130,0.04);
+    white-space: nowrap;
+    z-index: 0;
+    letter-spacing: 4px;
+    pointer-events: none;
+}
 
-.dtitle{font-weight:700;font-size:15px;margin-bottom:8px}
-hr{border:none;border-top:1.5px solid #1a1a1a;margin:0}
+.pg {
+    position: relative;
+    z-index: 1;
+}
+
+.hdr {
+    margin-bottom: 26px;
+}
+.hdr img {
+    height: 52px;
+    width: auto;
+}
+
+.split {
+    display: flex;
+    justify-content: space-between;
+    gap: 28px;
+    margin-bottom: 22px;
+}
+
+.org {
+    flex: 1;
+}
+.org .on {
+    font-weight: 700;
+    font-size: 10.5px;
+    margin-bottom: 3px;
+}
+.org .ol {
+    font-size: 9.5px;
+    color: #222;
+    margin-bottom: 2px;
+    line-height: 1.4;
+}
+
+.cli {
+    width: 260px;
+}
+.cli .to {
+    font-size: 9px;
+    color: #555;
+    margin-bottom: 3px;
+}
+.cli .cn {
+    font-weight: 700;
+    font-size: 11px;
+    margin-bottom: 4px;
+}
+.cli .cl {
+    font-size: 9.5px;
+    color: #333;
+    margin-bottom: 2px;
+}
+
+.dtitle {
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 8px;
+}
+
+hr {
+    border: none;
+    border-top: 1.5px solid #1a1a1a;
+    margin: 0;
+}
 
 /* tabela de cabeçalho */
-table.th{width:100%;border-collapse:collapse;margin-bottom:16px}
-table.th th{font-size:9px;font-weight:600;padding:4px 6px;border-bottom:1px solid #ccc;text-align:left;background:transparent}
-table.th td{font-size:9.5px;padding:4px 6px;color:#1a1a1a}
+table.th {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    margin-bottom: 18px;
+}
+table.th th {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 5px 6px;
+    border-bottom: 1px solid #ccc;
+    text-align: left;
+    background: transparent;
+    color: #444;
+}
+table.th td {
+    font-size: 9.8px;
+    padding: 6px 6px;
+    color: #1a1a1a;
+    vertical-align: top;
+}
 
-/* bloco central do valor */
-.valor-wrap{margin:24px 0;display:flex;justify-content:center}
-.valor-box{border:2px solid #1a1a1a;border-radius:4px;padding:28px 60px;text-align:center;min-width:340px}
-.valor-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#555;margin-bottom:8px}
-.valor-amount{font-size:32px;font-weight:900;color:#1a1a1a;letter-spacing:.02em}
-.valor-moeda{font-size:13px;font-weight:600;color:#555;margin-top:4px}
+/* secção de detalhes */
+.section-title {
+    font-weight: 700;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #2E3E82;
+    margin-bottom: 8px;
+    margin-top: 8px;
+}
 
-/* detalhes de pagamento */
-.det{margin:0 0 20px}
-.det .dt{font-weight:700;font-size:9.5px;margin-bottom:7px}
-table.tdet{width:100%;border-collapse:collapse}
-table.tdet tr td{font-size:9.5px;padding:4px 8px;border-bottom:1px solid #eee}
-table.tdet tr td:first-child{font-weight:600;width:200px;color:#444}
+table.tdet {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 18px;
+}
+table.tdet tr td {
+    font-size: 9.7px;
+    padding: 6px 8px;
+    border-bottom: 1px solid #eee;
+    vertical-align: top;
+}
+table.tdet tr td:first-child {
+    font-weight: 700;
+    width: 220px;
+    color: #444;
+    background: #fafbff;
+}
 
 /* declaração */
-.decl{border-top:1.5px solid #1a1a1a;padding-top:10px;margin-top:20px;font-size:9.5px;color:#444;line-height:1.6}
+.decl {
+    border-top: 1.5px solid #1a1a1a;
+    padding-top: 10px;
+    margin-top: 20px;
+    font-size: 9.7px;
+    color: #444;
+    line-height: 1.7;
+}
 
-/* anulado stamp */
-.anulado-stamp{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-size:72px;font-weight:900;color:rgba(220,53,69,0.12);white-space:nowrap;z-index:0;border:8px solid rgba(220,53,69,0.12);padding:10px 30px;border-radius:8px;pointer-events:none}
+/* anulado */
+.anulado-stamp {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%) rotate(-30deg);
+    font-size: 72px;
+    font-weight: 900;
+    color: rgba(220,53,69,0.12);
+    white-space: nowrap;
+    z-index: 0;
+    border: 8px solid rgba(220,53,69,0.12);
+    padding: 10px 30px;
+    border-radius: 8px;
+    pointer-events: none;
+}
 
-.footer{position:fixed;bottom:0;left:0;right:0;border-top:1px solid #ccc;padding:5px 16mm;display:flex;justify-content:space-between;font-size:8px;color:#999;background:#fff;z-index:10}
+.footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-top: 1px solid #ccc;
+    padding: 5px 16mm;
+    display: flex;
+    justify-content: space-between;
+    font-size: 8px;
+    color: #999;
+    background: #fff;
+    z-index: 10;
+}
 </style>
 </head>
 <body>
 
 <div class="wm">GARMUTTI</div>
-{% if recibo.anulado %}<div class="anulado-stamp">ANULADO</div>{% endif %}
+{% if recibo.anulado %}
+<div class="anulado-stamp">ANULADO</div>
+{% endif %}
 
 <div class="pg">
 
@@ -67,7 +212,7 @@ table.tdet tr td:first-child{font-weight:600;width:200px;color:#444}
     <img src="{% static 'assets/img/logo-ct-dark.png' %}" alt="Garmutti">
   </div>
 
-  <!-- Org + Cliente -->
+  <!-- Organização + Cliente -->
   <div class="split">
     <div class="org">
       {% if organizacao %}
@@ -79,27 +224,40 @@ table.tdet tr td:first-child{font-weight:600;width:200px;color:#444}
         {% if organizacao.endereco %}<div class="ol">{{ organizacao.endereco }}</div>{% endif %}
       {% endif %}
     </div>
+
     <div class="cli">
       <div class="to">Recibo emitido a</div>
       <div class="cn">{{ recibo.cliente.nome }}</div>
-      {% if recibo.cliente.nuit %}<div class="cl" style="margin-top:5px">NUIT: <strong>{{ recibo.cliente.nuit }}</strong></div>{% endif %}
-      {% if recibo.cliente.endereco %}<div class="cl" style="margin-top:5px">{{ recibo.cliente.endereco }}</div>{% endif %}
-      {% if recibo.cliente.cidade_distrito %}<div class="cl">{{ recibo.cliente.cidade_distrito }}{% if recibo.cliente.pais %}, {{ recibo.cliente.pais }}{% endif %}</div>{% endif %}
+      {% if recibo.cliente.nuit %}
+        <div class="cl" style="margin-top:5px">NUIT: <strong>{{ recibo.cliente.nuit }}</strong></div>
+      {% endif %}
+      {% if recibo.cliente.endereco %}
+        <div class="cl" style="margin-top:5px">{{ recibo.cliente.endereco }}</div>
+      {% endif %}
+      {% if recibo.cliente.cidade_distrito %}
+        <div class="cl">{{ recibo.cliente.cidade_distrito }}{% if recibo.cliente.pais %}, {{ recibo.cliente.pais }}{% endif %}</div>
+      {% endif %}
     </div>
   </div>
 
   <!-- Título -->
   <div style="margin-top:18px"></div>
-  <div class="dtitle">Recibo # {{ recibo.numero }}&nbsp;&nbsp;<span style="font-weight:400;font-size:11px">{% if recibo.anulado %}(ANULADO){% else %}(ORIGINAL){% endif %}</span></div>
+  <div class="dtitle">
+    Recibo # {{ recibo.numero }}
+    &nbsp;&nbsp;
+    <span style="font-weight:400;font-size:11px">
+      {% if recibo.anulado %}(ANULADO){% else %}(ORIGINAL){% endif %}
+    </span>
+  </div>
 
   <hr>
 
-  <!-- Cabeçalho: datas e referências -->
+  <!-- Cabeçalho principal -->
   <table class="th">
     <thead>
       <tr>
-        <th style="width:130px">Data do Recibo</th>
-        <th style="width:170px">Referência Factura</th>
+        <th style="width:140px">Data do Recibo</th>
+        <th style="width:170px">Factura</th>
         {% if recibo.factura.purchase_order and recibo.factura.purchase_order.po_cliente_numero %}
         <th style="width:170px">PO do Cliente</th>
         {% endif %}
@@ -108,7 +266,7 @@ table.tdet tr td:first-child{font-weight:600;width:200px;color:#444}
     </thead>
     <tbody>
       <tr>
-        <td>{{ recibo.data_recibo|date:"d/m/Y" }}</td>
+        <td><strong>{{ recibo.data_recibo|date:"d/m/Y" }}</strong></td>
         <td><strong>{{ recibo.factura.numero }}</strong></td>
         {% if recibo.factura.purchase_order and recibo.factura.purchase_order.po_cliente_numero %}
         <td>{{ recibo.factura.purchase_order.po_cliente_numero }}</td>
@@ -118,60 +276,90 @@ table.tdet tr td:first-child{font-weight:600;width:200px;color:#444}
     </tbody>
   </table>
 
-  <!-- Valor em destaque -->
-  <div class="valor-wrap">
-    <div class="valor-box">
-      <div class="valor-label">Valor Recebido</div>
-      <div class="valor-amount">{{ recibo.valor_recebido|floatformat:"2" }}</div>
-      <div class="valor-moeda">{{ recibo.moeda.simbolo|default:"Mt" }} — {{ recibo.moeda.nome|default:"Metical" }}</div>
-    </div>
-  </div>
-
-  <!-- Detalhes do pagamento -->
-  <div class="det">
-    <div class="dt">Detalhes do Pagamento</div>
-    <table class="tdet">
-      <tr>
-        <td>Factura</td>
-        <td>{{ recibo.factura.numero }} — Total {{ recibo.factura.total|floatformat:"2" }} {{ recibo.moeda.simbolo|default:"Mt" }}</td>
-      </tr>
-      {% if recibo.referencia %}
-      <tr>
-        <td>Referência / Nº Transacção</td>
-        <td>{{ recibo.referencia }}</td>
-      </tr>
-      {% endif %}
-      {% if recibo.factura.purchase_order %}
-      <tr>
-        <td>PO Interna</td>
-        <td>{{ recibo.factura.purchase_order.numero }}{% if recibo.factura.purchase_order.po_cliente_numero %} ({{ recibo.factura.purchase_order.po_cliente_numero }}){% endif %}</td>
-      </tr>
-      {% endif %}
-      {% if recibo.observacoes %}
-      <tr>
-        <td>Observações</td>
-        <td>{{ recibo.observacoes }}</td>
-      </tr>
-      {% endif %}
-    </table>
-  </div>
+  <!-- Detalhes do recibo -->
+  <div class="section-title">Detalhes do Recibo</div>
+  <table class="tdet">
+    <tr>
+      <td>Número do Recibo</td>
+      <td>{{ recibo.numero }}</td>
+    </tr>
+    <tr>
+      <td>Data do Recibo</td>
+      <td>{{ recibo.data_recibo|date:"d/m/Y" }}</td>
+    </tr>
+    <tr>
+      <td>Cliente</td>
+      <td>{{ recibo.cliente.nome }}</td>
+    </tr>
+    <tr>
+      <td>Factura</td>
+      <td>{{ recibo.factura.numero }}</td>
+    </tr>
+    <tr>
+      <td>Valor Recebido</td>
+      <td>
+        <strong>{{ recibo.valor_recebido|floatformat:"2" }} {{ recibo.moeda.simbolo|default:"Mt" }}</strong>
+        {% if recibo.moeda and recibo.moeda.nome %}
+          — {{ recibo.moeda.nome }}
+        {% endif %}
+      </td>
+    </tr>
+    {% if recibo.factura.total %}
+    <tr>
+      <td>Total da Factura</td>
+      <td>{{ recibo.factura.total|floatformat:"2" }} {{ recibo.moeda.simbolo|default:"Mt" }}</td>
+    </tr>
+    {% endif %}
+    {% if recibo.referencia %}
+    <tr>
+      <td>Referência / Nº Transacção</td>
+      <td>{{ recibo.referencia }}</td>
+    </tr>
+    {% endif %}
+    {% if recibo.factura.purchase_order %}
+    <tr>
+      <td>PO Interna</td>
+      <td>
+        {{ recibo.factura.purchase_order.numero }}
+        {% if recibo.factura.purchase_order.po_cliente_numero %}
+          ({{ recibo.factura.purchase_order.po_cliente_numero }})
+        {% endif %}
+      </td>
+    </tr>
+    {% endif %}
+    {% if recibo.observacoes %}
+    <tr>
+      <td>Observações</td>
+      <td>{{ recibo.observacoes }}</td>
+    </tr>
+    {% endif %}
+    {% if recibo.anulado and recibo.motivo_anulacao %}
+    <tr>
+      <td>Motivo de Anulação</td>
+      <td>{{ recibo.motivo_anulacao }}</td>
+    </tr>
+    {% endif %}
+  </table>
 
   <!-- Declaração -->
   <div class="decl">
     Pela presente, confirmamos o recebimento da quantia de
-    <strong>{{ recibo.valor_recebido|floatformat:"2" }} {{ recibo.moeda.simbolo|default:"Mt" }}</strong>
+    <strong>{{ recibo.valor_recebido|floatformat:"2" }} {{ recibo.moeda.simbolo|default:"Mt" }}</strong>,
     referente à Factura <strong>{{ recibo.factura.numero }}</strong>,
-    emitida a <strong>{{ recibo.cliente.nome }}</strong>.
-    {% if recibo.motivo_anulacao %}
-    <br><br><strong>Motivo de Anulação:</strong> {{ recibo.motivo_anulacao }}
-    {% endif %}
+    emitida a <strong>{{ recibo.cliente.nome }}</strong>,
+    com data de recibo <strong>{{ recibo.data_recibo|date:"d/m/Y" }}</strong>.
   </div>
 
-</div><!-- /pg -->
+</div>
 
-<!-- Rodapé fixo -->
+<!-- Rodapé -->
 <div class="footer">
-  <span>Documento Processado por Computador{% if recibo.criado_por %} &nbsp;|&nbsp; Operador: {{ recibo.criado_por.get_full_name|default:recibo.criado_por.username|upper }}{% endif %}</span>
+  <span>
+    Documento Processado por Computador
+    {% if recibo.criado_por %}
+      &nbsp;|&nbsp; Operador: {{ recibo.criado_por.get_full_name|default:recibo.criado_por.username|upper }}
+    {% endif %}
+  </span>
   <span>Recibo {{ recibo.numero }} &nbsp;·&nbsp; {{ recibo.data_recibo|date:"d/m/Y" }}</span>
 </div>
 
