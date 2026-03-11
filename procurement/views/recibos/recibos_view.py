@@ -1,11 +1,13 @@
 from decimal import Decimal, InvalidOperation
-
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.db.models import Sum, Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
+from weasyprint import HTML
+import os
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
@@ -404,8 +406,6 @@ def recibo_anular_view(request, recibo_id):
 @login_required
 @require_GET
 def recibo_pdf_view(request, recibo_id):
-    from weasyprint import HTML
-
     recibo = get_object_or_404(
         Recibo.objects.select_related(
             'factura', 'factura__purchase_order',
@@ -417,10 +417,15 @@ def recibo_pdf_view(request, recibo_id):
     )
 
     organizacao = _get_organizacao()
+    font_path = os.path.join(settings.STATIC_ROOT, 'assets', 'fonts').replace('\\', '/')
 
     html_string = render_to_string(
         'recibos/recibo_pdf.html',
-        {'recibo': recibo, 'organizacao': organizacao},
+        {
+            'recibo': recibo,
+            'organizacao': organizacao,
+            'font_path': font_path,
+        },
         request=request,
     )
 

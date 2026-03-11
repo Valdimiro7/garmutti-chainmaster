@@ -1,7 +1,8 @@
 from decimal import Decimal, InvalidOperation
 import json
 import logging
-
+import os
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.db.models import Sum, Q
@@ -433,12 +434,8 @@ def po_itens_para_guia_json_view(request, po_id):
 def guia_entrega_pdf_view(request, guia_id):
     guia = get_object_or_404(
         GuiaEntrega.objects.select_related(
-            'cliente',
-            'moeda',
-            'estado',
-            'purchase_order',
-            'factura',
-            'criado_por',
+            'cliente', 'moeda', 'estado',
+            'purchase_order', 'factura', 'criado_por',
         ).prefetch_related('itens'),
         id=guia_id,
     )
@@ -449,9 +446,15 @@ def guia_entrega_pdf_view(request, guia_id):
     except Exception:
         organizacao = None
 
+    font_path = os.path.join(settings.STATIC_ROOT, 'assets', 'fonts').replace('\\', '/')
+
     html_string = render_to_string(
         'guiaentregas/guia_entrega_pdf.html',
-        {'guia': guia, 'organizacao': organizacao},
+        {
+            'guia': guia,
+            'organizacao': organizacao,
+            'font_path': font_path,
+        },
         request=request,
     )
 
@@ -463,7 +466,6 @@ def guia_entrega_pdf_view(request, guia_id):
     response = HttpResponse(pdf_file, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="Guia_Entrega_{guia.numero.replace("/", "-")}.pdf"'
     return response
-
 
 @login_required
 @require_POST

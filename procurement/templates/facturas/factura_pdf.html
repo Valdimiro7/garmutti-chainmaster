@@ -5,33 +5,27 @@
 <meta charset="UTF-8">
 <title>Factura {{ factura.numero }}</title>
 <style>
-@page{size:A4 portrait;margin:14mm 16mm 18mm 16mm}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:10.5px;color:#1a1a1a;background:#fff}
-
-/* watermark */
-.wm{
-  position:fixed;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%) rotate(-35deg);
-  font-size:84px;
-  font-weight:900;
-  color:rgba(46,62,130,0.04);
-  white-space:nowrap;
-  z-index:0;
-  letter-spacing:4px;
-  pointer-events:none
+@font-face {
+  font-family: 'DejaVu Sans';
+  src: url('file://{{ font_path }}/DejaVuSans.ttf');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'DejaVu Sans';
+  src: url('file://{{ font_path }}/DejaVuSans-Bold.ttf');
+  font-weight: bold;
+  font-style: normal;
 }
 
-/* conteúdo principal */
-.pg{position:relative;z-index:1}
+@page{size:A4 portrait;margin:14mm 16mm 18mm 16mm}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DejaVu Sans',sans-serif;font-size:10.5px;color:#1a1a1a;background:#fff}
 
-/* logo */
+.wm{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:84px;font-weight:900;color:rgba(46,62,130,0.04);white-space:nowrap;z-index:0;letter-spacing:4px;pointer-events:none}
+.pg{position:relative;z-index:1}
 .hdr{margin-bottom:18px}
 .hdr img{height:46px;width:auto}
-
-/* split org / cliente */
 .split{display:flex;justify-content:space-between;gap:24px;margin-bottom:14px}
 .org{flex:1}
 .org .on{font-weight:700;font-size:10.5px;margin-bottom:3px}
@@ -40,191 +34,45 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:10.5px;co
 .cli .to{font-size:8.8px;color:#555;margin-bottom:3px}
 .cli .cn{font-weight:700;font-size:10.8px;margin-bottom:4px}
 .cli .cl{font-size:9.2px;color:#333;margin-bottom:2px}
-
-/* título */
 .dtitle{font-weight:700;font-size:15px;margin-bottom:6px}
-
-/* separador */
 hr{border:none;border-top:1.5px solid #1a1a1a;margin:0}
-
-/* tabela cabeçalho */
 table.th{width:100%;border-collapse:collapse;margin-bottom:8px}
-table.th th{
-  font-size:8.8px;
-  font-weight:600;
-  padding:4px 6px;
-  border-bottom:1px solid #ccc;
-  text-align:left;
-  background:transparent
-}
-table.th td{
-  font-size:9.3px;
-  padding:4px 6px;
-  color:#1a1a1a
-}
-
-/* tabela itens */
+table.th th{font-size:8.8px;font-weight:600;padding:4px 6px;border-bottom:1px solid #ccc;text-align:left;background:transparent}
+table.th td{font-size:9.3px;padding:4px 6px;color:#1a1a1a}
 table.ti{width:100%;border-collapse:collapse;page-break-inside:auto}
-table.ti thead th{
-  font-size:8.8px;
-  font-weight:600;
-  padding:5px 7px;
-  border-top:1px solid #ccc;
-  border-bottom:1px solid #ccc;
-  text-align:right;
-  background:transparent
-}
+table.ti thead th{font-size:8.8px;font-weight:600;padding:5px 7px;border-top:1px solid #ccc;border-bottom:1px solid #ccc;text-align:right;background:transparent}
 table.ti thead th.al{text-align:left}
 table.ti thead th.ac{text-align:center}
 table.ti tbody tr{page-break-inside:avoid}
-table.ti tbody td{
-  font-size:9.3px;
-  padding:5px 7px;
-  border-bottom:1px solid #eee;
-  text-align:right;
-  vertical-align:top
-}
+table.ti tbody td{font-size:9.3px;padding:5px 7px;border-bottom:1px solid #eee;text-align:right;vertical-align:top}
 table.ti tbody td.al{text-align:left}
 table.ti tbody td.ac{text-align:center}
-
-/* secção final */
-.bot{
-  border-top:1.5px solid #1a1a1a;
-  padding-top:10px;
-  margin-top:12px;
-  display:flex;
-  justify-content:space-between;
-  gap:18px;
-  align-items:flex-start;
-  page-break-inside:avoid;
-  break-inside:avoid;
-}
-
-/* impostos */
+.bot{border-top:1.5px solid #1a1a1a;padding-top:10px;margin-top:12px;display:flex;justify-content:space-between;gap:18px;align-items:flex-start;page-break-inside:avoid;break-inside:avoid}
 .imp{flex:1;min-width:0}
 .imp .it{font-weight:700;font-size:9.3px;margin-bottom:6px}
 table.timp{width:100%;border-collapse:collapse}
-table.timp th{
-  font-size:8.3px;
-  font-weight:700;
-  border-bottom:1px solid #ccc;
-  padding:3px 6px;
-  text-align:left;
-  background:transparent
-}
-table.timp td{
-  font-size:8.8px;
-  padding:3px 6px;
-  border-bottom:1px solid #eee;
-  text-align:left
-}
-
-/* dados bancários */
-.db{
-  margin-top:12px;
-  page-break-inside:avoid;
-  break-inside:avoid;
-}
-.db .dt{
-  font-weight:700;
-  font-size:9.3px;
-  margin-bottom:5px;
-}
-
-table.tdb-list{
-  width:100%;
-  border-collapse:collapse;
-  table-layout:fixed;
-}
-
-table.tdb-list th{
-  font-size:8.4px;
-  font-weight:700;
-  padding:4px 6px;
-  text-align:left;
-  border-bottom:1px solid #ccc;
-  background:transparent;
-  white-space:nowrap;
-}
-
-table.tdb-list td{
-  font-size:8.5px;
-  padding:4px 6px;
-  border-bottom:1px solid #eee;
-  vertical-align:top;
-  overflow-wrap:anywhere;
-  word-break:break-word;
-}
-
-table.tdb-list th:nth-child(1),
-table.tdb-list td:nth-child(1){width:24%}
-
-table.tdb-list th:nth-child(2),
-table.tdb-list td:nth-child(2){width:22%}
-
-table.tdb-list th:nth-child(3),
-table.tdb-list td:nth-child(3){width:18%}
-
-table.tdb-list th:nth-child(4),
-table.tdb-list td:nth-child(4){width:26%}
-
-table.tdb-list th:nth-child(5),
-table.tdb-list td:nth-child(5){
-  width:10%;
-  white-space:nowrap;
-  text-align:left;
-}
-
-/* sumário */
-.sum{
-  width:250px;
-  flex:0 0 250px;
-}
+table.timp th{font-size:8.3px;font-weight:700;border-bottom:1px solid #ccc;padding:3px 6px;text-align:left;background:transparent}
+table.timp td{font-size:8.8px;padding:3px 6px;border-bottom:1px solid #eee;text-align:left}
+.db{margin-top:12px;page-break-inside:avoid;break-inside:avoid}
+.db .dt{font-weight:700;font-size:9.3px;margin-bottom:5px}
+table.tdb-list{width:100%;border-collapse:collapse;table-layout:fixed}
+table.tdb-list th{font-size:8.4px;font-weight:700;padding:4px 6px;text-align:left;border-bottom:1px solid #ccc;background:transparent;white-space:nowrap}
+table.tdb-list td{font-size:8.5px;padding:4px 6px;border-bottom:1px solid #eee;vertical-align:top;overflow-wrap:anywhere;word-break:break-word}
+table.tdb-list th:nth-child(1),table.tdb-list td:nth-child(1){width:24%}
+table.tdb-list th:nth-child(2),table.tdb-list td:nth-child(2){width:22%}
+table.tdb-list th:nth-child(3),table.tdb-list td:nth-child(3){width:18%}
+table.tdb-list th:nth-child(4),table.tdb-list td:nth-child(4){width:26%}
+table.tdb-list th:nth-child(5),table.tdb-list td:nth-child(5){width:10%;white-space:nowrap;text-align:left}
+.sum{width:250px;flex:0 0 250px}
 .sum .st{font-weight:700;font-size:9.3px;margin-bottom:5px}
 table.tsum{width:100%;border-collapse:collapse}
 table.tsum td{font-size:9.2px;padding:2px 4px}
 table.tsum td:last-child{text-align:right;font-weight:600}
-table.tsum tr.sf td{
-  font-weight:800;
-  font-size:10.3px;
-  border-top:1.5px solid #1a1a1a;
-  padding-top:5px
-}
-
-/* condições / termos */
-.cond{
-  margin-top:10px;
-  border-top:1.5px solid #1a1a1a;
-  padding-top:6px;
-  font-size:9.3px;
-  font-weight:700;
-  page-break-inside:avoid;
-}
+table.tsum tr.sf td{font-weight:800;font-size:10.3px;border-top:1.5px solid #1a1a1a;padding-top:5px}
+.cond{margin-top:10px;border-top:1.5px solid #1a1a1a;padding-top:6px;font-size:9.3px;font-weight:700;page-break-inside:avoid}
 .cond span{font-weight:400;color:#333}
-.cond .cdesc{
-  font-weight:400;
-  font-size:8.5px;
-  color:#555;
-  margin-top:3px;
-  white-space:pre-line;
-  line-height:1.45
-}
-
-/* rodapé fixo */
-.footer{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  border-top:1px solid #ccc;
-  padding:5px 16mm;
-  display:flex;
-  justify-content:space-between;
-  font-size:8px;
-  color:#999;
-  background:#fff;
-  z-index:10
-}
+.cond .cdesc{font-weight:400;font-size:8.5px;color:#555;margin-top:3px;white-space:pre-line;line-height:1.45}
+.footer{position:fixed;bottom:0;left:0;right:0;border-top:1px solid #ccc;padding:5px 16mm;display:flex;justify-content:space-between;font-size:8px;color:#999;background:#fff;z-index:10}
 </style>
 </head>
 <body>
@@ -233,12 +81,10 @@ table.tsum tr.sf td{
 
 <div class="pg">
 
-  <!-- Logo -->
   <div class="hdr">
     <img src="{% static 'assets/img/logo-ct-dark.png' %}" alt="Garmutti">
   </div>
 
-  <!-- Org + Cliente -->
   <div class="split">
     <div class="org">
       {% if organizacao %}
@@ -259,13 +105,10 @@ table.tsum tr.sf td{
     </div>
   </div>
 
-  <!-- Título -->
   <div style="margin-top:10px"></div>
   <div class="dtitle">Factura # {{ factura.numero }}&nbsp;&nbsp;<span style="font-weight:400;font-size:11px">(ORIGINAL)</span></div>
-
   <hr>
 
-  <!-- Cabeçalho -->
   <table class="th">
     <thead>
       <tr>
@@ -289,7 +132,6 @@ table.tsum tr.sf td{
     </tbody>
   </table>
 
-  <!-- Itens -->
   <table class="ti">
     <thead>
       <tr>
@@ -347,11 +189,7 @@ table.tsum tr.sf td{
           <table class="tdb-list">
             <thead>
               <tr>
-                <th>Banco</th>
-                <th>Titular</th>
-                <th>Conta</th>
-                <th>NIB</th>
-                <th>Moeda</th>
+                <th>Banco</th><th>Titular</th><th>Conta</th><th>NIB</th><th>Moeda</th>
               </tr>
             </thead>
             <tbody>
@@ -363,17 +201,7 @@ table.tsum tr.sf td{
                     <td>{{ b.titular|default:"—" }}</td>
                     <td>{{ b.conta|default:"—" }}</td>
                     <td>{{ b.nib|default:"—" }}</td>
-                    <td>
-                      {% if b.moeda %}
-                        {% if b.moeda.codigo %}
-                          {{ b.moeda.codigo }}
-                        {% else %}
-                          {{ b.moeda }}
-                        {% endif %}
-                      {% else %}
-                        —
-                      {% endif %}
-                    </td>
+                    <td>{% if b.moeda %}{% if b.moeda.codigo %}{{ b.moeda.codigo }}{% else %}{{ b.moeda }}{% endif %}{% else %}—{% endif %}</td>
                   </tr>
                   {% endif %}
                 {% endwith %}
@@ -389,11 +217,7 @@ table.tsum tr.sf td{
             <table class="tdb-list">
               <thead>
                 <tr>
-                  <th>Banco</th>
-                  <th>Titular</th>
-                  <th>Conta</th>
-                  <th>NIB</th>
-                  <th>Moeda</th>
+                  <th>Banco</th><th>Titular</th><th>Conta</th><th>NIB</th><th>Moeda</th>
                 </tr>
               </thead>
               <tbody>
@@ -402,17 +226,7 @@ table.tsum tr.sf td{
                   <td>{{ b.titular|default:"—" }}</td>
                   <td>{{ b.conta|default:"—" }}</td>
                   <td>{{ b.nib|default:"—" }}</td>
-                  <td>
-                    {% if b.moeda %}
-                      {% if b.moeda.codigo %}
-                        {{ b.moeda.codigo }}
-                      {% else %}
-                        {{ b.moeda }}
-                      {% endif %}
-                    {% else %}
-                      —
-                    {% endif %}
-                  </td>
+                  <td>{% if b.moeda %}{% if b.moeda.codigo %}{{ b.moeda.codigo }}{% else %}{{ b.moeda }}{% endif %}{% else %}—{% endif %}</td>
                 </tr>
               </tbody>
             </table>

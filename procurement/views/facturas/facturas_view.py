@@ -1,7 +1,7 @@
 from decimal import Decimal, InvalidOperation
 import logging
 import os
-
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.db.models import Sum, Q, Value, DecimalField, F
@@ -11,6 +11,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
+from django.template.loader import render_to_string
+from django.http import HttpResponse
+from weasyprint import HTML
 
 from procurement.models import (
     Cliente,
@@ -508,10 +511,6 @@ def factura_change_estado_view(request, factura_id):
 @login_required
 @require_GET
 def factura_pdf_view(request, factura_id):
-    from django.template.loader import render_to_string
-    from django.http import HttpResponse
-    from weasyprint import HTML
-
     factura = get_object_or_404(
         Factura.objects.select_related(
             'cliente', 'moeda', 'estado', 'dado_bancario',
@@ -530,9 +529,15 @@ def factura_pdf_view(request, factura_id):
     except Exception:
         organizacao = None
 
+    font_path = os.path.join(settings.STATIC_ROOT, 'assets', 'fonts').replace('\\', '/')
+
     html_string = render_to_string(
         'facturas/factura_pdf.html',
-        {'factura': factura, 'organizacao': organizacao},
+        {
+            'factura': factura,
+            'organizacao': organizacao,
+            'font_path': font_path,
+        },
         request=request,
     )
 
