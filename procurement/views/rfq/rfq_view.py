@@ -361,11 +361,14 @@ def rfq_download_pdf_view(request, rfq_id):
     )
     organizacao = _get_organizacao()
 
+    font_path = os.path.join(settings.STATIC_ROOT, 'assets', 'fonts').replace('\\', '/')
+
     html_string = render_to_string(
         'rfq/rfq_pdf.html',
         {
             'rfq': rfq,
             'organizacao': organizacao,
+            'font_path': font_path,
         }
     )
 
