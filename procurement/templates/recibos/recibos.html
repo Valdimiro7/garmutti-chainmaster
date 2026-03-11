@@ -354,19 +354,20 @@ tr.recibo-anulado td {
           <div class="col-md-8">
             <label class="form-label">Factura <span class="text-danger">*</span></label>
             <select id="rc_factura_id" class="form-select modern-input">
-              <option value="">— Seleccionar Factura —</option>
-              {% for f in facturas %}
-              <option value="{{ f.id }}"
-                      data-cliente="{{ f.cliente_id }}"
-                      data-moeda="{{ f.moeda_id|default:'' }}"
-                      data-total="{{ f.total|floatformat:2 }}"
-                      data-po="{{ f.purchase_order.po_cliente_numero|default:'' }}">
+                <option value="">— Seleccionar Factura —</option>
+                {% for f in facturas %}
+                <option value="{{ f.id }}"
+                        data-cliente="{{ f.cliente_id }}"
+                        data-moeda="{{ f.moeda_id|default:'' }}"
+                        data-total="{{ f.total|floatformat:2 }}"
+                        data-po="{{ f.purchase_order.po_cliente_numero|default:'' }}"
+                        data-disponivel="{{ f.valor_disponivel_para_recibo|floatformat:2 }}">
                 {{ f.numero }} — {{ f.cliente.nome }} — {{ f.total|floatformat:2 }} {{ f.moeda.simbolo|default:"Mt" }}
-                ({{ f.estado.nome }})
-              </option>
-              {% endfor %}
+                ({{ f.estado.nome }}) — Disponível: {{ f.valor_disponivel_para_recibo|floatformat:2 }}
+                </option>
+                {% endfor %}
             </select>
-          </div>
+            </div>
           <div class="col-md-4">
             <label class="form-label">Moeda</label>
             <select id="rc_moeda_id" class="form-select modern-input">
@@ -380,21 +381,37 @@ tr.recibo-anulado td {
 
         <!-- Painel info da factura -->
         <div id="rc_factura_info" class="rc-info-card d-none mb-3">
-          <div class="row g-3">
-            <div class="col-md-4">
-              <div class="rc-info-label">Total da Factura</div>
-              <div class="rc-info-value" id="rc_info_total">—</div>
+            <div class="row g-3">
+                <div class="col-md-3">
+                <div class="rc-info-label">Total da Factura</div>
+                <div class="rc-info-value" id="rc_info_total">—</div>
+                </div>
+                <div class="col-md-3">
+                <div class="rc-info-label">Pago no Histórico</div>
+                <div class="rc-info-value" id="rc_info_pago_historico">—</div>
+                </div>
+                <div class="col-md-3">
+                <div class="rc-info-label">Já Recibado</div>
+                <div class="rc-info-value" id="rc_info_recebido">—</div>
+                </div>
+                <div class="col-md-3">
+                <div class="rc-info-label">Disponível p/ Recibo</div>
+                <div class="rc-info-value rc-saldo-ok" id="rc_info_disponivel">—</div>
+                </div>
+                <div class="col-md-4">
+                <div class="rc-info-label">Saldo da Factura</div>
+                <div class="rc-info-value" id="rc_info_saldo">—</div>
+                </div>
+                <div class="col-md-4">
+                <div class="rc-info-label">Estado da Factura</div>
+                <div class="rc-info-value" id="rc_info_estado">—</div>
+                </div>
+                <div class="col-md-4">
+                <div class="rc-info-label">PO Cliente</div>
+                <div class="rc-info-value" id="rc_info_po">—</div>
+                </div>
             </div>
-            <div class="col-md-4">
-              <div class="rc-info-label">Já Recebido</div>
-              <div class="rc-info-value" id="rc_info_recebido">—</div>
             </div>
-            <div class="col-md-4">
-              <div class="rc-info-label">Saldo Pendente</div>
-              <div class="rc-info-value rc-saldo-ok" id="rc_info_saldo">—</div>
-            </div>
-          </div>
-        </div>
 
         <!-- Dados do recibo -->
         <div class="modal-section-title mb-3 mt-2">
@@ -500,7 +517,6 @@ $(function(){
   const viewModal  = new bootstrap.Modal('#rcViewModal');
   const anularModal= new bootstrap.Modal('#rcAnularModal');
 
-  // ── DataTable manual ──────────────────────────────────────────────────
   const $table = $('#rcTable');
   const $tbody = $table.find('tbody');
   const allRows = $tbody.find('tr[data-estado]').toArray();
@@ -509,13 +525,18 @@ $(function(){
   const perPage   = 15;
   let activeFilter = '';
 
-  function fmt(v){ return parseFloat(v||0).toLocaleString('pt-MZ',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  function fmt(v){
+    return parseFloat(v || 0).toLocaleString('pt-MZ', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
 
   function applyFilter(){
     const q = $('#rcSearch').val().toLowerCase();
     filtered = allRows.filter(row => {
-      const txt  = row.innerText.toLowerCase();
-      const est  = row.dataset.estado || '';
+      const txt = row.innerText.toLowerCase();
+      const est = row.dataset.estado || '';
       const matchFilter = !activeFilter || est === activeFilter;
       const matchSearch = !q || txt.includes(q);
       return matchFilter && matchSearch;
@@ -560,17 +581,21 @@ $(function(){
 
   $('#rcSearch').on('input', applyFilter);
 
-  // Filtro por clique nos stats
   $('.stat-filter').on('click', function(){
     const f = $(this).data('filter');
-    if(activeFilter===f){ activeFilter=''; $(this).removeClass('active'); }
-    else { activeFilter=f; $('.stat-filter').removeClass('active'); $(this).addClass('active'); }
+    if(activeFilter===f){
+      activeFilter='';
+      $(this).removeClass('active');
+    } else {
+      activeFilter=f;
+      $('.stat-filter').removeClass('active');
+      $(this).addClass('active');
+    }
     applyFilter();
   });
 
   applyFilter();
 
-  // ── Abrir modal criar ─────────────────────────────────────────────────
   $('#btnNovoRecibo').on('click', function(){
     resetModal();
     rcModal.show();
@@ -587,40 +612,89 @@ $(function(){
     $('#rc_factura_info').addClass('d-none');
   }
 
-  // ── Seleccionar Factura → busca info ──────────────────────────────────
   $('#rc_factura_id').on('change', function(){
     const fid = $(this).val();
     const opt = $(this).find('option:selected');
-    if(!fid){ $('#rc_factura_info').addClass('d-none'); return; }
 
-    // Pre-preencher moeda
+    if(!fid){
+      $('#rc_factura_info').addClass('d-none');
+      return;
+    }
+
     const moedaId = opt.data('moeda');
     if(moedaId) $('#rc_moeda_id').val(moedaId);
 
-    // Buscar saldo
     $.get(`/recibos/factura/${fid}/info/`, function(r){
+      if(!r.tem_historico_pagamento){
+        $('#rc_factura_info').addClass('d-none');
+        $('#rc_valor').val('');
+        return Swal.fire({
+          icon:'warning',
+          title:'Sem histórico de pagamento',
+          text:'Não é permitido emitir recibo para uma factura sem histórico de pagamento da PO.'
+        });
+      }
+
       $('#rc_info_total').text(fmt(r.factura_total));
+      $('#rc_info_pago_historico').text(fmt(r.total_historico_pagamento));
       $('#rc_info_recebido').text(fmt(r.valor_ja_recebido));
-      const saldo = parseFloat(r.saldo_pendente||0);
-      $('#rc_info_saldo').text(fmt(saldo))
+      $('#rc_info_disponivel').text(fmt(r.valor_disponivel_para_recibo));
+      $('#rc_info_saldo').text(fmt(r.saldo_pendente));
+      $('#rc_info_estado').text(r.estado_nome || '—');
+      $('#rc_info_po').text(r.po_cliente_numero || '—');
+
+      const disponivel = parseFloat(r.valor_disponivel_para_recibo || 0);
+      const saldoFactura = parseFloat(r.saldo_pendente || 0);
+
+      $('#rc_info_disponivel')
         .removeClass('rc-saldo-ok rc-saldo-warn')
-        .addClass(saldo<=0?'rc-saldo-warn':'rc-saldo-ok');
-      // Sugerir valor = saldo
-      if(saldo>0) $('#rc_valor').val(saldo.toFixed(2));
+        .addClass(disponivel > 0 ? 'rc-saldo-ok' : 'rc-saldo-warn');
+
+      $('#rc_info_saldo')
+        .removeClass('rc-saldo-ok rc-saldo-warn')
+        .addClass(saldoFactura > 0 ? 'rc-saldo-warn' : 'rc-saldo-ok');
+
+      if(disponivel > 0){
+        $('#rc_valor').val(disponivel.toFixed(2));
+      } else {
+        $('#rc_valor').val('');
+        Swal.fire({
+          icon:'warning',
+          title:'Sem valor disponível',
+          text:'O histórico de pagamento já foi totalmente coberto por recibos.'
+        });
+      }
+
       $('#rc_factura_info').removeClass('d-none');
+    }).fail(function(xhr){
+      let msg = 'Não foi possível carregar os dados da factura.';
+      if(xhr.responseJSON && xhr.responseJSON.message){
+        msg = xhr.responseJSON.message;
+      }
+      Swal.fire({icon:'error', title:'Erro', text: msg});
     });
   });
 
-  // ── Salvar recibo ─────────────────────────────────────────────────────
   $('#btnSalvarRecibo').on('click', function(){
     const fid   = $('#rc_factura_id').val();
     const valor = $('#rc_valor').val();
     const data  = $('#rc_data').val();
-    if(!fid)   return Swal.fire({icon:'warning',title:'Seleccione a factura',timer:2000,showConfirmButton:false});
-    if(!valor||parseFloat(valor)<=0) return Swal.fire({icon:'warning',title:'Indique o valor recebido',timer:2000,showConfirmButton:false});
-    if(!data)  return Swal.fire({icon:'warning',title:'Indique a data do recibo',timer:2000,showConfirmButton:false});
 
-    Swal.fire({title:'A emitir recibo...', allowOutsideClick:false, didOpen:()=>Swal.showLoading()});
+    if(!fid){
+      return Swal.fire({icon:'warning',title:'Seleccione a factura',timer:2000,showConfirmButton:false});
+    }
+    if(!valor || parseFloat(valor) <= 0){
+      return Swal.fire({icon:'warning',title:'Indique o valor recebido',timer:2000,showConfirmButton:false});
+    }
+    if(!data){
+      return Swal.fire({icon:'warning',title:'Indique a data do recibo',timer:2000,showConfirmButton:false});
+    }
+
+    Swal.fire({
+      title:'A emitir recibo...',
+      allowOutsideClick:false,
+      didOpen:()=>Swal.showLoading()
+    });
 
     $.post('/recibos/create/', {
       csrfmiddlewaretoken : csrf,
@@ -635,7 +709,8 @@ $(function(){
       if(r.success){
         rcModal.hide();
         Swal.fire({
-          icon:'success', title:'Recibo emitido!',
+          icon:'success',
+          title:'Recibo emitido!',
           text: r.numero,
           showCancelButton: true,
           confirmButtonText: '<i class="material-symbols-rounded me-1" style="font-size:14px">picture_as_pdf</i>Descarregar PDF',
@@ -647,10 +722,15 @@ $(function(){
       } else {
         Swal.fire({icon:'error', title:'Erro', text:r.message});
       }
-    }).fail(()=>Swal.fire({icon:'error',title:'Erro de comunicação'}));
+    }).fail(function(xhr){
+      let msg = 'Erro de comunicação';
+      if(xhr.responseJSON && xhr.responseJSON.message){
+        msg = xhr.responseJSON.message;
+      }
+      Swal.fire({icon:'error', title:'Erro', text: msg});
+    });
   });
 
-  // ── Ver recibo ────────────────────────────────────────────────────────
   $tbody.on('click', '.btn-view-recibo', function(){
     const id = $(this).data('id');
     $('#rcViewBody').html('<div class="text-center py-4"><div class="spinner-border text-primary"></div></div>');
@@ -718,7 +798,6 @@ $(function(){
     });
   });
 
-  // ── Anular ────────────────────────────────────────────────────────────
   let anularId = null;
   $tbody.on('click', '.btn-anular-recibo', function(){
     anularId = $(this).data('id');
