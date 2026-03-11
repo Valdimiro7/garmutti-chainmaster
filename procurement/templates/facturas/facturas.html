@@ -904,15 +904,15 @@ $(function(){
         return;
       }
 
-      // Sem históricos disponíveis → confirma directamente via SweetAlert
-      if(!r.historicos_disponiveis||!r.historicos_disponiveis.length){
+      // Sem históricos disponíveis → apenas informar utilizador
+      if(!r.historicos_disponiveis || !r.historicos_disponiveis.length){
         Swal.fire({
-          title:`Alterar para "${_pendingEstadoLabel}"?`,
-          html:'<p class="text-muted mb-0 small">Não foram encontrados históricos de pagamento para associar.</p>',
-          icon:'question',showCancelButton:true,
-          confirmButtonText:'Sim, alterar mesmo assim',cancelButtonText:'Cancelar',
-          confirmButtonColor:'#2E3E82',cancelButtonColor:'#6c757d',reverseButtons:true,
-        }).then(res=>{ if(res.isConfirmed) _confirmarMudancaEstado(); });
+          icon: 'warning',
+          title: 'Pagamento não encontrado',
+          text: 'Registe o Pagamento primeiro da secção de Pagamentos.',
+          confirmButtonText: 'Ok',
+          confirmButtonColor: '#2E3E82'
+        });
         return;
       }
 
