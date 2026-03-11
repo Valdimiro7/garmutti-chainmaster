@@ -366,9 +366,7 @@ def rfq_download_pdf_view(request, rfq_id):
         {
             'rfq': rfq,
             'organizacao': organizacao,
-            'preview_mode': False,
-        },
-        request=request
+        }
     )
 
     pdf_file = HTML(

@@ -1,256 +1,191 @@
 {% load static %}
+
 <style>
-  * {
-    box-sizing: border-box;
+  body, table, td, th, div, p, span {
     font-family: Arial, Helvetica, sans-serif;
-    color: #111111;
+    color: #000000;
+    font-size: 12px;
   }
 
-  html, body {
-    margin: 0;
-    padding: 0;
-    background: #ffffff;
-    color: #111111;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 13px;
-    line-height: 1.45;
-  }
-
-  .doc-wrap {
+  .page {
     width: 100%;
-    padding: 18px 20px 10px 20px;
     background: #ffffff;
   }
 
-  .doc-top-table,
-  .doc-meta-table,
-  .doc-items-table,
-  .doc-side-grid {
+  .header-table,
+  .info-table,
+  .items-table,
+  .mini-table {
     width: 100%;
     border-collapse: collapse;
   }
 
-  .doc-top-left {
-    width: 52%;
+  .header-left {
+    width: 55%;
     vertical-align: top;
     padding-right: 20px;
   }
 
-  .doc-top-right {
-    width: 48%;
-    vertical-align: top;
-    text-align: right;
-  }
-
-  .doc-brand-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 16px;
-  }
-
-  .doc-brand-table td {
+  .header-right {
+    width: 45%;
     vertical-align: top;
   }
 
-  .doc-logo-cell {
-    width: 95px;
-    padding-right: 14px;
-  }
-
-  .doc-logo {
-    width: 82px;
+  .logo {
+    width: 80px;
     height: auto;
-    display: block;
   }
 
-  .doc-brand-title {
-    font-size: 30px;
+  .brand-name {
+    font-size: 28px;
     font-weight: bold;
-    line-height: 1.05;
     color: #2E3E82;
-    margin: 0 0 6px 0;
-    padding: 0;
-  }
-
-  .doc-brand-subtitle {
-    font-size: 12px;
-    color: #3b82c4;
     margin: 0;
     padding: 0;
   }
 
-  .doc-org-lines {
+  .brand-subtitle {
     font-size: 12px;
+    color: #3b82c4;
+    margin-top: 4px;
+  }
+
+  .org-block {
+    margin-top: 14px;
     line-height: 1.7;
-    color: #111111;
   }
 
-  .doc-org-lines strong {
-    color: #111111;
+  .box {
+    border: 1px solid #000000;
+    padding: 0;
   }
 
-  .doc-side-card {
-    width: 100%;
-    max-width: 330px;
-    margin-left: auto;
-    border: 2px solid #111111;
-    border-radius: 6px;
-    overflow: hidden;
-    background: #ffffff;
-  }
-
-  .doc-side-card-head {
-    background: #eef1f5;
-    border-bottom: 2px solid #111111;
-    padding: 10px 14px;
-    font-size: 12px;
+  .box-title {
+    border-bottom: 1px solid #000000;
+    background: #eeeeee;
     font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    text-align: left;
-    color: #111111;
-  }
-
-  .doc-side-card-body {
-    padding: 10px 14px;
-  }
-
-  .doc-side-grid td {
-    padding: 8px 0;
-    border-bottom: 1px solid #d9dee7;
-    vertical-align: top;
     font-size: 12px;
-    color: #111111;
+    padding: 8px 10px;
+    text-transform: uppercase;
   }
 
-  .doc-side-grid tr:last-child td {
+  .box-body {
+    padding: 8px 10px;
+  }
+
+  .mini-table td {
+    padding: 6px 0;
+    border-bottom: 1px solid #d9d9d9;
+    vertical-align: top;
+  }
+
+  .mini-table tr:last-child td {
     border-bottom: none;
   }
 
-  .doc-side-label {
+  .mini-label {
     width: 42%;
     font-weight: bold;
-    color: #5f6b7a;
-    padding-right: 8px;
+    color: #555555;
   }
 
-  .doc-side-value {
+  .mini-value {
     width: 58%;
     font-weight: bold;
-    color: #111111;
+    color: #000000;
   }
 
-  .doc-title {
-    margin: 18px 0 8px 0;
-    padding: 0 0 6px 0;
-    font-size: 23px;
+  .main-title {
+    margin-top: 22px;
+    font-size: 22px;
     font-weight: bold;
-    color: #111111;
-    border-bottom: 4px solid #111111;
-    line-height: 1.2;
+    color: #000000;
+    border-bottom: 3px solid #000000;
+    padding-bottom: 6px;
   }
 
-  .doc-subtitle {
-    font-size: 12px;
-    color: #5f6b7a;
-    margin: 0 0 18px 0;
+  .subtitle {
+    margin-top: 8px;
+    margin-bottom: 16px;
+    color: #666666;
   }
 
-  .doc-meta-table {
-    margin-bottom: 22px;
-    font-size: 12px;
-  }
-
-  .doc-meta-table th {
+  .info-table th {
+    background: #eeeeee;
+    border-bottom: 1px solid #888888;
+    padding: 8px;
     text-align: left;
-    background: #eef1f5;
-    color: #111111;
-    padding: 9px 10px;
     font-weight: bold;
-    border-bottom: 2px solid #8a8f98;
   }
 
-  .doc-meta-table td {
-    padding: 9px 10px;
-    color: #111111;
-    border-bottom: 1px solid #d9dee7;
+  .info-table td {
+    border-bottom: 1px solid #d9d9d9;
+    padding: 8px;
     vertical-align: top;
   }
 
-  .doc-section-title {
-    margin: 10px 0 8px 0;
+  .section-title {
+    margin-top: 24px;
+    margin-bottom: 8px;
     font-size: 14px;
     font-weight: bold;
-    color: #111111;
+    color: #000000;
   }
 
-  .doc-items-table {
-    font-size: 12px;
-  }
-
-  .doc-items-table thead th {
+  .items-table th {
+    background: #eeeeee;
+    border-top: 2px solid #000000;
+    border-bottom: 1px solid #888888;
+    padding: 8px;
     text-align: left;
-    padding: 9px 10px;
-    background: #eef1f5;
-    color: #111111;
     font-weight: bold;
-    border-top: 3px solid #111111;
-    border-bottom: 2px solid #8a8f98;
   }
 
-  .doc-items-table tbody td {
-    padding: 10px 10px;
-    border-bottom: 1px solid #dfe4ec;
+  .items-table td {
+    border-bottom: 1px solid #d9d9d9;
+    padding: 8px;
     vertical-align: top;
-    color: #111111;
   }
 
-  .doc-footer-note {
-    margin-top: 24px;
-    font-size: 12px;
-    color: #111111;
-    line-height: 1.7;
-  }
-
-  .muted {
-    color: #5f6b7a;
-  }
-
-  .text-center {
+  .center {
     text-align: center;
   }
 
-  .doc-tag {
-    display: inline-block;
-    padding: 4px 10px;
-    font-size: 11px;
+  .small-muted {
+    color: #666666;
+    margin-top: 4px;
+  }
+
+  .status-text {
     font-weight: bold;
     color: #2E3E82;
-    background: #eef2ff;
-    border: 1px solid #cad5ff;
-    border-radius: 12px;
+  }
+
+  .footer-notes {
+    margin-top: 24px;
+    line-height: 1.7;
   }
 </style>
 
-<div class="doc-wrap">
+<div class="page">
 
-  <table class="doc-top-table">
+  <table class="header-table">
     <tr>
-      <td class="doc-top-left">
-        <table class="doc-brand-table">
+      <td class="header-left">
+        <table style="width:100%; border-collapse:collapse;">
           <tr>
-            <td class="doc-logo-cell">
-              <img src="{% static 'assets/img/logo-ct-dark.png' %}" alt="Garmutti Logo" class="doc-logo">
+            <td style="width:95px; vertical-align:top;">
+              <img src="{% static 'assets/img/logo-ct-dark.png' %}" alt="Logo" class="logo">
             </td>
-            <td>
-              <div class="doc-brand-title">
+            <td style="vertical-align:top;">
+              <div class="brand-name">
                 {% if organizacao and organizacao.nome %}
                   {{ organizacao.nome|upper }}
                 {% else %}
                   GARMUTTI
                 {% endif %}
               </div>
-              <div class="doc-brand-subtitle">
+              <div class="brand-subtitle">
                 {% if organizacao and organizacao.slogan %}
                   {{ organizacao.slogan }}
                 {% else %}
@@ -261,7 +196,7 @@
           </tr>
         </table>
 
-        <div class="doc-org-lines">
+        <div class="org-block">
           <div><strong>FORNECIMENTO DE BENS E SERVIÇOS</strong></div>
           <div>
             Endereço:
@@ -285,32 +220,32 @@
         </div>
       </td>
 
-      <td class="doc-top-right">
-        <div class="doc-side-card">
-          <div class="doc-side-card-head">Documento Interno</div>
-          <div class="doc-side-card-body">
-            <table class="doc-side-grid">
+      <td class="header-right">
+        <div class="box">
+          <div class="box-title">Documento Interno</div>
+          <div class="box-body">
+            <table class="mini-table">
               <tr>
-                <td class="doc-side-label">Nº RFQ</td>
-                <td class="doc-side-value">{{ rfq.numero }}</td>
+                <td class="mini-label">Nº RFQ</td>
+                <td class="mini-value">{{ rfq.numero }}</td>
               </tr>
               <tr>
-                <td class="doc-side-label">Estado</td>
-                <td class="doc-side-value">{{ rfq.estado.nome }}</td>
+                <td class="mini-label">Estado</td>
+                <td class="mini-value">{{ rfq.estado.nome }}</td>
               </tr>
               <tr>
-                <td class="doc-side-label">Origem</td>
-                <td class="doc-side-value">
+                <td class="mini-label">Origem</td>
+                <td class="mini-value">
                   {% if rfq.origem == 'api' %}Website{% else %}Manual{% endif %}
                 </td>
               </tr>
               <tr>
-                <td class="doc-side-label">Data</td>
-                <td class="doc-side-value">{{ rfq.data_rfq|date:"d/m/Y" }}</td>
+                <td class="mini-label">Data</td>
+                <td class="mini-value">{{ rfq.data_rfq|date:"d/m/Y" }}</td>
               </tr>
               <tr>
-                <td class="doc-side-label">Criado por</td>
-                <td class="doc-side-value">
+                <td class="mini-label">Criado por</td>
+                <td class="mini-value">
                   {% if rfq.criado_por %}
                     {{ rfq.criado_por.get_full_name|default:rfq.criado_por.username }}
                   {% else %}
@@ -319,8 +254,8 @@
                 </td>
               </tr>
               <tr>
-                <td class="doc-side-label">Cliente</td>
-                <td class="doc-side-value">{{ rfq.cliente.nome }}</td>
+                <td class="mini-label">Cliente</td>
+                <td class="mini-value">{{ rfq.cliente.nome }}</td>
               </tr>
             </table>
           </div>
@@ -329,15 +264,15 @@
     </tr>
   </table>
 
-  <div class="doc-title">REQUEST FOR QUOTATION Nº {{ rfq.numero }}</div>
-  <div class="doc-subtitle">Documento interno de registo e controlo de pedido de cotação.</div>
+  <div class="main-title">REQUEST FOR QUOTATION Nº {{ rfq.numero }}</div>
+  <div class="subtitle">Documento interno de registo e controlo de pedido de cotação.</div>
 
-  <table class="doc-meta-table">
+  <table class="info-table">
     <tr>
       <th style="width:22%;">Cliente</th>
       <th style="width:18%;">Data</th>
       <th style="width:25%;">Prazo de Entrega</th>
-      <th style="width:35%;">Local de Entrega</th>
+      <th>Local de Entrega</th>
     </tr>
     <tr>
       <td>{{ rfq.cliente.nome }}</td>
@@ -355,18 +290,18 @@
       <td>{{ rfq.pessoa_contacto|default:"—" }}</td>
       <td>{{ rfq.telefone_cliente|default:"—" }}</td>
       <td>{{ rfq.email_cliente|default:"—" }}</td>
-      <td><span class="doc-tag">{{ rfq.estado.nome }}</span></td>
+      <td><span class="status-text">{{ rfq.estado.nome }}</span></td>
     </tr>
   </table>
 
-  <div class="doc-section-title">Itens Solicitados</div>
+  <div class="section-title">Itens Solicitados</div>
 
-  <table class="doc-items-table">
+  <table class="items-table">
     <thead>
       <tr>
         <th style="width:60px;">Item</th>
         <th>Descrição</th>
-        <th style="width:95px;">Qtd.</th>
+        <th style="width:100px;">Qtd.</th>
         <th style="width:120px;">Unidade</th>
         <th style="width:180px;">Comentários</th>
       </tr>
@@ -374,14 +309,14 @@
     <tbody>
       {% for item in rfq.itens.all %}
       <tr>
-        <td class="text-center">{{ forloop.counter }}</td>
+        <td class="center">{{ forloop.counter }}</td>
         <td>
-          <div>{{ item.descricao }}</div>
+          {{ item.descricao }}
           {% if item.especificacoes %}
-            <div class="muted" style="margin-top:5px;">{{ item.especificacoes }}</div>
+            <div class="small-muted">{{ item.especificacoes }}</div>
           {% endif %}
         </td>
-        <td class="text-center">{{ item.quantidade }}</td>
+        <td class="center">{{ item.quantidade }}</td>
         <td>
           {% if item.unidade %}
             {% if item.unidade.sigla %}
@@ -399,13 +334,13 @@
       </tr>
       {% empty %}
       <tr>
-        <td colspan="5" class="text-center muted">Sem itens registados.</td>
+        <td colspan="5" class="center">Sem itens registados.</td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
 
-  <div class="doc-footer-note">
+  <div class="footer-notes">
     <div><strong>Observações:</strong></div>
     <div>{{ rfq.observacoes|default:"Sem observações adicionais." }}</div>
   </div>
