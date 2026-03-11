@@ -1,0 +1,784 @@
+{% extends "layouts/pro_base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-3">
+
+  {% if messages %}
+  <div id="django-messages" style="display:none;">
+    {% for message in messages %}
+      <span data-tags="{{ message.tags }}">{{ message }}</span>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- ── Hero ───────────────────────────────────────────────────────── -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm fc-hero-card">
+        <div class="card-body p-4 p-md-5">
+          <div class="row align-items-center g-4">
+            <div class="col-lg-7">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="fc-hero-icon">
+                  <i class="material-symbols-rounded">description</i>
+                </div>
+                <div>
+                  <h3 class="mb-1 fw-bold text-dark">Facturação</h3>
+                  <p class="text-muted mb-0">Emissão e gestão de facturas com IVA, itens e PDF automático.</p>
+                </div>
+              </div>
+              <div class="d-flex flex-wrap gap-2">
+                <span class="badge rounded-pill fc-soft-badge">IVA 16%</span>
+                <span class="badge rounded-pill fc-soft-badge">PDF Automático</span>
+                <span class="badge rounded-pill fc-soft-badge">Itens da PO</span>
+                <span class="badge rounded-pill fc-soft-badge">Dados Bancários</span>
+              </div>
+            </div>
+            <div class="col-lg-5">
+              <div class="fc-stats-grid">
+                <div class="mini-stat-card stat-filter" data-filter="emitida">
+                  <span class="mini-stat-label">Emitidas</span>
+                  <h4 class="mb-0 text-primary">{{ total_emitidas }}</h4>
+                </div>
+                <div class="mini-stat-card stat-filter" data-filter="paga">
+                  <span class="mini-stat-label">Pagas</span>
+                  <h4 class="mb-0 text-success">{{ total_pagas }}</h4>
+                </div>
+                <div class="mini-stat-card stat-filter" data-filter="vencida">
+                  <span class="mini-stat-label">Vencidas</span>
+                  <h4 class="mb-0 text-danger">{{ total_vencidas }}</h4>
+                </div>
+                <div class="mini-stat-card stat-no-filter">
+                  <span class="mini-stat-label">Total Facturas</span>
+                  <h4 class="mb-0">{{ total_facturas }}</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row mt-3 g-3">
+            <div class="col-md-6">
+              <div class="fc-value-card">
+                <div class="fc-value-label">Valor Total Facturado</div>
+                <div class="fc-value-amount">{{ valor_total_emitido|floatformat:2 }}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="fc-value-card">
+                <div class="fc-value-label">Valor Total Recebido</div>
+                <div class="fc-value-amount text-success">{{ valor_total_pago|floatformat:2 }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="fc-hero-accent"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Tabela ─────────────────────────────────────────────────────── -->
+  <div class="card border-0 shadow-sm fc-main-card">
+    <div class="card-body p-0">
+      <div class="fc-topbar px-4 pt-4 pb-3">
+        <div class="row align-items-center g-3">
+          <div class="col-lg-8">
+            <h5 class="mb-1 fw-bold text-dark">Lista de Facturas</h5>
+            <p class="text-muted mb-0">Todas as facturas emitidas.</p>
+          </div>
+          <div class="col-lg-4 d-flex justify-content-lg-end">
+            <button type="button" class="btn btn-primary btn-modern btn-fc" id="btnNovaFactura">
+              <i class="material-symbols-rounded me-1">add</i>Nova Factura
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="px-4 pb-4">
+        <div class="table-responsive mt-3">
+          <table id="fcTable" class="table align-items-center mb-0 fc-table w-100">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Número</th>
+                <th>Cliente</th>
+                <th>PO</th>
+                <th>Data Emissão</th>
+                <th>Vencimento</th>
+                <th>Total</th>
+                <th>Estado</th>
+                <th class="text-center">Acções</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for f in facturas %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td><span class="fw-semibold text-dark">{{ f.numero }}</span></td>
+                <td>{{ f.cliente.nome }}</td>
+                <td>
+                  {% if f.purchase_order %}
+                    <span class="fc-ref-pill">{{ f.purchase_order.numero }}</span>
+                  {% else %}—{% endif %}
+                </td>
+                <td>{{ f.data_emissao|date:"d/m/Y" }}</td>
+                <td>{% if f.data_vencimento %}{{ f.data_vencimento|date:"d/m/Y" }}{% else %}—{% endif %}</td>
+                <td>{% if f.moeda %}{{ f.moeda.simbolo }} {% endif %}{{ f.total|floatformat:2 }}</td>
+                <td>
+                  <span class="estado-codigo d-none">{{ f.estado.codigo }}</span>
+                  <span class="status-pill"
+                        style="background-color:{{ f.estado.cor }}18;color:{{ f.estado.cor }};border:1px solid {{ f.estado.cor }}40;">
+                    {{ f.estado.nome }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <div class="d-flex justify-content-center gap-1 flex-wrap">
+                    <button type="button" class="btn btn-sm btn-outline-info btn-view-fc" data-id="{{ f.id }}" title="Visualizar">
+                      <i class="material-symbols-rounded" style="font-size:15px">visibility</i>
+                    </button>
+                    {% if f.estado.codigo != 'cancelada' and f.estado.codigo != 'paga' %}
+                    <button type="button" class="btn btn-sm btn-outline-primary btn-edit-fc" data-id="{{ f.id }}" title="Editar">
+                      <i class="material-symbols-rounded" style="font-size:15px">edit</i>
+                    </button>
+                    {% endif %}
+                    <a href="{% url 'procurement:factura_pdf' f.id %}" target="_blank"
+                       class="btn btn-sm btn-outline-danger" title="PDF">
+                      <i class="material-symbols-rounded" style="font-size:15px">picture_as_pdf</i>
+                    </a>
+                    {% if f.estado.codigo != 'cancelada' and f.estado.codigo != 'paga' %}
+                    <div class="dropdown">
+                      <button class="btn btn-sm btn-outline-secondary" type="button"
+                              data-bs-toggle="dropdown" aria-expanded="false" title="Alterar estado">
+                        <i class="material-symbols-rounded" style="font-size:15px">swap_horiz</i>
+                      </button>
+                      <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm">
+                        {% for est in estados %}
+                          {% if est.id != f.estado_id %}
+                          <li>
+                            <a class="dropdown-item btn-change-estado-fc" href="#"
+                               data-id="{{ f.id }}" data-estado-id="{{ est.id }}" data-label="{{ est.nome }}">
+                              <i class="material-symbols-rounded me-2 align-middle" style="font-size:15px">circle</i>{{ est.nome }}
+                            </a>
+                          </li>
+                          {% endif %}
+                        {% endfor %}
+                      </ul>
+                    </div>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% include "includes/pro_footer.html" %}
+</div>
+
+<!-- ===================== MODAL CRIAR / EDITAR ===================== -->
+<div class="modal fade" id="fcModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-lg modal-modern">
+      <div class="modal-header border-0 pb-0">
+        <div>
+          <h5 class="modal-title fw-bold" id="fcModalTitle">Nova Factura</h5>
+          <p class="text-muted mb-0 small" id="fcModalSub">Preencha os dados da factura.</p>
+        </div>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body pt-3" style="max-height:80vh;overflow-y:auto;">
+
+        <!-- Secção: Dados gerais -->
+        <div class="modal-section-title mb-3">
+          <i class="material-symbols-rounded me-2">receipt_long</i>Dados Gerais
+        </div>
+        <div class="row g-3 mb-4">
+          <div class="col-md-3">
+            <label class="form-label">Número</label>
+            <input type="text" id="fc_numero" class="form-control modern-input" disabled value="{{ default_numero }}">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Estado</label>
+            <select id="fc_estado_id" class="form-select modern-input">
+              {% for est in estados %}
+              <option value="{{ est.id }}" data-codigo="{{ est.codigo }}">{{ est.nome }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Data de Emissão <span class="text-danger">*</span></label>
+            <input type="date" id="fc_data_emissao" class="form-control modern-input" value="{{ today }}">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Data de Vencimento</label>
+            <input type="date" id="fc_data_vencimento" class="form-control modern-input">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Cliente <span class="text-danger">*</span></label>
+            <select id="fc_cliente_id" class="form-select modern-input">
+              <option value="">— Seleccionar —</option>
+              {% for c in clientes %}
+              <option value="{{ c.id }}">{{ c.nome }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">PO Associada</label>
+            <select id="fc_po_id" class="form-select modern-input">
+              <option value="">— Sem PO —</option>
+              {% for po in pos_confirmadas %}
+              <option value="{{ po.id }}" data-cliente="{{ po.cliente_id }}" data-moeda="{{ po.moeda_id|default:'' }}">
+                {{ po.numero }}{% if po.po_cliente_numero %} / {{ po.po_cliente_numero }}{% endif %} — {{ po.cliente.nome }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">&nbsp;</label>
+            <button type="button" id="btnImportarPO" class="btn btn-outline-secondary w-100 modern-input" style="min-height:46px;" disabled>
+              <i class="material-symbols-rounded me-1" style="font-size:15px">download</i>Importar itens
+            </button>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Moeda</label>
+            <select id="fc_moeda_id" class="form-select modern-input">
+              <option value="">—</option>
+              {% for m in moedas %}
+              <option value="{{ m.id }}">{{ m.codigo }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Conta Bancária para Pagamento</label>
+            <select id="fc_dado_bancario_id" class="form-select modern-input">
+              <option value="">— Seleccionar conta —</option>
+              {% for db in dados_bancarios %}
+              <option value="{{ db.id }}">{{ db.label_completo }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <!-- Secção: Itens -->
+        <div class="modal-section-title mb-3">
+          <i class="material-symbols-rounded me-2">list_alt</i>Itens da Factura
+          <button type="button" id="btnAddItem" class="btn btn-sm btn-outline-primary ms-auto" style="border-radius:10px">
+            <i class="material-symbols-rounded me-1" style="font-size:14px">add</i>Linha
+          </button>
+        </div>
+
+        <div class="table-responsive mb-3">
+          <table class="table table-sm align-middle" id="fcItemsTable" style="font-size:.85rem;min-width:600px">
+            <thead class="table-light">
+              <tr>
+                <th style="width:38%">Descrição <span class="text-danger">*</span></th>
+                <th style="width:9%">Unidade</th>
+                <th style="width:10%">Qtd.</th>
+                <th style="width:15%">Preço Unit.</th>
+                <th style="width:15%">Total</th>
+                <th style="width:5%"></th>
+              </tr>
+            </thead>
+            <tbody id="fcItemsBody">
+              <!-- linhas injectadas via JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Secção: Totais -->
+        <div class="row g-3 mb-4 justify-content-end">
+          <div class="col-md-5">
+            <div class="fc-totais-card">
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted small">Subtotal</span>
+                <span class="fw-semibold" id="fc_disp_subtotal">0,00</span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-muted small">Desconto (valor)</span>
+                <input type="number" id="fc_desconto" class="form-control form-control-sm modern-input text-end"
+                       style="width:120px;min-height:34px" min="0" step="0.01" value="0">
+              </div>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-muted small">IVA (%)</span>
+                <input type="number" id="fc_iva_pct" class="form-control form-control-sm modern-input text-end"
+                       style="width:80px;min-height:34px" min="0" max="100" step="0.01" value="{{ iva_padrao }}">
+              </div>
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted small">Valor IVA</span>
+                <span class="fw-semibold" id="fc_disp_iva">0,00</span>
+              </div>
+              <hr class="my-2">
+              <div class="d-flex justify-content-between">
+                <span class="fw-bold">TOTAL</span>
+                <span class="fw-bold fs-5 text-primary" id="fc_disp_total">0,00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Secção: Obs / Termos -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Observações</label>
+            <textarea id="fc_observacoes" rows="3" class="form-control modern-input"></textarea>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Termos e Condições</label>
+            <textarea id="fc_termos" rows="3" class="form-control modern-input"></textarea>
+          </div>
+        </div>
+
+      </div><!-- /modal-body -->
+
+      <div class="modal-footer border-0 pt-0 gap-2">
+        <button type="button" class="btn btn-outline-secondary btn-modern" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" id="btnGuardarFactura" class="btn btn-primary btn-modern btn-fc">
+          <i class="material-symbols-rounded me-1">save</i>Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL VISUALIZAR ===================== -->
+<div class="modal fade" id="fcViewModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-lg modal-modern">
+      <div class="modal-header border-0">
+        <div>
+          <h5 class="modal-title fw-bold">Visualizar Factura</h5>
+          <p class="text-muted mb-0 small">Detalhes completos da factura.</p>
+        </div>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body bg-light">
+        <div id="fcViewContent"></div>
+      </div>
+      <div class="modal-footer border-0" id="fcViewFooter"></div>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+{% block extra_js %}
+<link href="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.8/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/datatables.net-responsive-bs5@2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/datatables.net-buttons-bs5@2.4.2/css/buttons.bootstrap5.min.css" rel="stylesheet">
+
+<style>
+:root{--fc:#2E3E82;--fc-mid:#4256ad;--fc-light:#eef2ff;--fc-border:#dae3ff}
+
+.fc-hero-card{position:relative;overflow:hidden;border-radius:22px;background:linear-gradient(135deg,#fff 0%,#f4f6ff 100%)}
+.fc-hero-accent{position:absolute;right:-60px;top:-60px;width:220px;height:220px;background:radial-gradient(circle,rgba(46,62,130,.15) 0%,rgba(46,62,130,0) 70%);pointer-events:none}
+.fc-hero-icon{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--fc) 0%,var(--fc-mid) 100%);color:#fff;box-shadow:0 12px 30px rgba(46,62,130,.22)}
+.fc-hero-icon i{font-size:30px}
+.fc-soft-badge{background:var(--fc-light);color:var(--fc);border:1px solid var(--fc-border);font-weight:600;padding:.5rem .9rem}
+.fc-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.mini-stat-card{background:#fff;border:1px solid #edf0f7;border-radius:18px;padding:18px 16px;box-shadow:0 8px 22px rgba(15,23,42,.04)}
+.mini-stat-label{display:block;font-size:.78rem;color:#6c757d;margin-bottom:6px}
+.stat-filter{cursor:pointer;transition:all .2s}
+.stat-filter:hover{border-color:var(--fc)!important}
+.stat-filter.stat-active{border-color:var(--fc)!important;background:var(--fc-light)!important}
+.fc-value-card{background:#fff;border:1px solid #e8edf8;border-radius:18px;padding:18px 20px}
+.fc-value-label{font-size:.82rem;color:#6c757d;margin-bottom:6px;font-weight:600}
+.fc-value-amount{font-size:1.45rem;font-weight:800;color:var(--fc)}
+.fc-main-card{border-radius:22px;overflow:hidden}
+.fc-topbar{border-bottom:1px solid #edf0f7;background:linear-gradient(180deg,#fff 0%,#f8f9ff 100%)}
+.fc-table thead th{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#6c757d;font-weight:700;background:#f8f9ff}
+.fc-ref-pill{display:inline-flex;align-items:center;background:var(--fc-light);color:var(--fc);border:1px solid var(--fc-border);border-radius:8px;padding:3px 10px;font-size:.78rem;font-weight:700}
+.status-pill{display:inline-flex;align-items:center;padding:.42rem .80rem;border-radius:999px;font-size:.74rem;font-weight:700}
+.btn-modern{border-radius:14px!important;padding:.6rem 1.1rem!important;font-weight:600!important}
+.btn-fc{background:linear-gradient(135deg,var(--fc) 0%,var(--fc-mid) 100%)!important;border:none!important;color:#fff!important}
+.modal-modern{border-radius:22px}
+.modal-section-title{display:flex;align-items:center;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--fc);border-bottom:1px solid var(--fc-border);padding-bottom:8px;margin-bottom:12px}
+.modern-input{border-radius:14px!important;border:1px solid #dfe5ef!important;min-height:46px;box-shadow:none!important}
+.modern-input:focus{border-color:var(--fc)!important;box-shadow:0 0 0 .2rem rgba(46,62,130,.10)!important}
+.fc-totais-card{background:linear-gradient(135deg,#f4f6ff,#f8faff);border:1px solid var(--fc-border);border-radius:18px;padding:18px 20px}
+.fc-item-row td{vertical-align:middle}
+.fc-item-row input{border-radius:10px!important;border:1px solid #dfe5ef!important;padding:5px 8px;font-size:.83rem}
+
+/* Pagination igual ao PO template */
+.dataTables_wrapper .dataTables_paginate .pagination{display:flex!important;gap:4px!important;flex-wrap:wrap!important}
+.dataTables_wrapper .dataTables_paginate .pagination .page-item .page-link{all:unset!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:36px!important;height:36px!important;padding:0 10px!important;border-radius:10px!important;border:1px solid #e7ebf3!important;background:#fff!important;color:#495057!important;font-size:.85rem!important;font-weight:600!important;cursor:pointer!important;transition:all .2s!important}
+.dataTables_wrapper .dataTables_paginate .pagination .page-item.active .page-link{background:linear-gradient(135deg,var(--fc) 0%,var(--fc-mid) 100%)!important;border-color:var(--fc)!important;color:#fff!important}
+div.dataTables_wrapper div.dataTables_filter input,
+div.dataTables_wrapper div.dataTables_length select{border-radius:12px!important;border:1px solid #dfe5ef!important;min-height:38px;box-shadow:none!important}
+.dt-buttons{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.dt-buttons .btn{border-radius:12px!important;padding:.45rem .90rem!important;font-size:.82rem!important;font-weight:600!important;display:inline-flex!important;align-items:center!important;gap:4px!important}
+.dt-button-background{display:none!important}
+.dataTables_wrapper .dataTables_info{font-size:.82rem;color:#6c757d}
+
+/* View modal */
+.view-label{font-size:.74rem;text-transform:uppercase;letter-spacing:.05em;color:#8892a6;font-weight:700;margin-bottom:4px}
+.view-value{font-size:.95rem;color:#1f2937;font-weight:600;word-break:break-word;min-height:22px}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net@1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-responsive@2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-responsive-bs5@2.5.0/js/responsive.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-buttons@2.4.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-buttons-bs5@2.4.2/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-buttons@2.4.2/js/buttons.html5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-buttons@2.4.2/js/buttons.print.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+$(function(){
+  const fcModal     = new bootstrap.Modal(document.getElementById('fcModal'));
+  const fcViewModal = new bootstrap.Modal(document.getElementById('fcViewModal'));
+  const CSRF        = $('[name=csrfmiddlewaretoken]').first().val() || getCookie('csrftoken');
+  let   editingId   = null;
+
+  function getCookie(name){
+    const v = document.cookie.match('(^|;) ?'+name+'=([^;]*)(;|$)');
+    return v ? v[2] : null;
+  }
+
+  // ── DataTable ──────────────────────────────────────────────────────────
+  const table = $('#fcTable').DataTable({
+    responsive: true, autoWidth: false, pageLength: 10,
+    dom: '<"dt-buttons-row d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3"Bf>rtip',
+    buttons:[
+      {extend:'excelHtml5', text:'Excel',    className:'btn btn-outline-success',   title:'Facturas'},
+      {extend:'csvHtml5',   text:'CSV',      className:'btn btn-outline-secondary', title:'Facturas'},
+      {extend:'pdfHtml5',   text:'PDF',      className:'btn btn-outline-danger',    title:'Facturas', orientation:'landscape'},
+      {extend:'print',      text:'Imprimir', className:'btn btn-outline-primary',   title:'Facturas'},
+    ],
+    language:{
+      search:'Pesquisar:', lengthMenu:'Mostrar _MENU_ registos',
+      info:'Mostrando _START_ a _END_ de _TOTAL_ registos',
+      zeroRecords:'Nenhum registo encontrado', emptyTable:'Sem dados disponíveis',
+      paginate:{first:'Primeiro',last:'Último',next:'Seguinte',previous:'Anterior'},
+    },
+    columnDefs:[
+      {orderable:false, targets:[8]},
+      {targets:7, render:function(data,type){
+        if(type==='filter'||type==='sort'){
+          const tmp=document.createElement('div'); tmp.innerHTML=data;
+          const s=tmp.querySelector('.estado-codigo'); return s?s.textContent.trim():data;
+        }
+        return data;
+      }},
+    ],
+  });
+
+  let activeFilter = '';
+  $('.stat-filter').on('click', function(){
+    const f=$(this).data('filter');
+    if(activeFilter===f){activeFilter='';table.column(7).search('').draw();$('.stat-filter').removeClass('stat-active');}
+    else{activeFilter=f;table.column(7).search(f).draw();$('.stat-filter').removeClass('stat-active');$(this).addClass('stat-active');}
+  });
+
+  // ── Helpers ────────────────────────────────────────────────────────────
+  function fmt(v){return parseFloat(v||0).toLocaleString('pt-MZ',{minimumFractionDigits:2,maximumFractionDigits:2});}
+
+  function recalcularTotais(){
+    let subtotal=0;
+    $('#fcItemsBody tr.fc-item-row').each(function(){
+      const qty  = parseFloat($(this).find('.item-qty').val())||0;
+      const pu   = parseFloat($(this).find('.item-pu').val())||0;
+      const line = (qty*pu);
+      $(this).find('.item-total').val(fmt(line));
+      subtotal += line;
+    });
+    const desconto = parseFloat($('#fc_desconto').val())||0;
+    const ivaPct   = parseFloat($('#fc_iva_pct').val())||0;
+    const base     = Math.max(subtotal-desconto,0);
+    const iva      = base*ivaPct/100;
+    const total    = base+iva;
+    $('#fc_disp_subtotal').text(fmt(subtotal));
+    $('#fc_disp_iva').text(fmt(iva));
+    $('#fc_disp_total').text(fmt(total));
+  }
+
+  function addItemRow(data){
+    data = data || {};
+    const row = `
+      <tr class="fc-item-row">
+        <td><input type="text"   class="form-control item-desc" value="${esc(data.descricao||'')}" placeholder="Descrição do item"></td>
+        <td><input type="text"   class="form-control item-unid" value="${esc(data.unidade||'')}" placeholder="un"></td>
+        <td><input type="number" class="form-control item-qty"  value="${data.quantidade||1}" min="0" step="0.0001"></td>
+        <td><input type="number" class="form-control item-pu"   value="${data.preco_unit||0}" min="0" step="0.01"></td>
+        <td><input type="text"   class="form-control item-total" value="${fmt(data.total_linha||0)}" disabled></td>
+        <td>
+          <button type="button" class="btn btn-sm btn-outline-danger btn-remove-item" style="border-radius:8px;padding:4px 8px">
+            <i class="material-symbols-rounded" style="font-size:14px">delete</i>
+          </button>
+        </td>
+      </tr>`;
+    $('#fcItemsBody').append(row);
+    recalcularTotais();
+  }
+
+  function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+  function resetModal(){
+    editingId=null;
+    $('#fcModalTitle').text('Nova Factura');
+    $('#fcModalSub').text('Preencha os dados da factura.');
+    $('#fc_numero').val('{{ default_numero }}');
+    $('#fc_estado_id option[data-codigo="rascunho"]').prop('selected',true);
+    $('#fc_data_emissao').val('{{ today }}');
+    $('#fc_data_vencimento').val('');
+    $('#fc_cliente_id').val('');
+    $('#fc_po_id').val('');
+    $('#fc_moeda_id').val('');
+    $('#fc_dado_bancario_id').val('');
+    $('#fc_desconto').val('0');
+    $('#fc_iva_pct').val('{{ iva_padrao }}');
+    $('#fc_observacoes').val('');
+    $('#fc_termos').val('');
+    $('#fcItemsBody').empty();
+    $('#btnImportarPO').prop('disabled',true);
+    addItemRow();
+    recalcularTotais();
+  }
+
+  // ── Eventos de itens ───────────────────────────────────────────────────
+  $('#btnAddItem').on('click', ()=>addItemRow());
+
+  $(document).on('input', '.item-qty, .item-pu', recalcularTotais);
+  $(document).on('input', '#fc_desconto, #fc_iva_pct', recalcularTotais);
+  $(document).on('click', '.btn-remove-item', function(){
+    $(this).closest('tr').remove(); recalcularTotais();
+  });
+
+  // ── Seleccionar PO → activa botão importar e preenche cliente/moeda ───
+  $('#fc_po_id').on('change', function(){
+    const opt = $(this).find('option:selected');
+    const poId = $(this).val();
+    if(poId){
+      $('#btnImportarPO').prop('disabled',false);
+      const cliId   = opt.data('cliente');
+      const moedaId = opt.data('moeda');
+      if(cliId)   $('#fc_cliente_id').val(cliId);
+      if(moedaId) $('#fc_moeda_id').val(moedaId);
+    } else {
+      $('#btnImportarPO').prop('disabled',true);
+    }
+  });
+
+  // ── Importar itens da PO ───────────────────────────────────────────────
+  $('#btnImportarPO').on('click', function(){
+    const poId = $('#fc_po_id').val();
+    if(!poId) return;
+    Swal.fire({title:'A importar itens...', allowOutsideClick:false, didOpen:()=>Swal.showLoading()});
+    $.get(`/facturas/po/${poId}/itens/`, function(r){
+      Swal.close();
+      $('#fcItemsBody').empty();
+      r.itens.forEach(it=>addItemRow(it));
+      recalcularTotais();
+      Swal.fire({icon:'success', title:'Itens importados!', timer:1500, showConfirmButton:false});
+    }).fail(()=>Swal.fire({icon:'error',title:'Erro',text:'Não foi possível importar os itens da PO.'}));
+  });
+
+  // ── Abrir modal Nova Factura ───────────────────────────────────────────
+  $('#btnNovaFactura').on('click', ()=>{ resetModal(); fcModal.show(); });
+
+  // ── Abrir modal Editar ────────────────────────────────────────────────
+  $(document).on('click', '.btn-edit-fc', function(){
+    const id=$(this).data('id');
+    Swal.fire({title:'A carregar...', allowOutsideClick:false, didOpen:()=>Swal.showLoading()});
+    $.get(`/facturas/${id}/json/`, function(r){
+      Swal.close();
+      editingId=r.id;
+      $('#fcModalTitle').text('Editar Factura');
+      $('#fcModalSub').text(`Factura: ${r.numero}`);
+      $('#fc_numero').val(r.numero);
+      $('#fc_estado_id').val(r.estado_id || $(`#fc_estado_id option[data-codigo="${r.estado_codigo}"]`).val());
+      $(`#fc_estado_id option`).each(function(){if($(this).data('codigo')===r.estado_codigo)$(this).prop('selected',true);});
+      $('#fc_data_emissao').val(r.data_emissao);
+      $('#fc_data_vencimento').val(r.data_vencimento);
+      $('#fc_cliente_id').val(r.cliente_id);
+      $('#fc_po_id').val(r.purchase_order_id||'');
+      $('#fc_moeda_id').val(r.moeda_id||'');
+      $('#fc_dado_bancario_id').val(r.dado_bancario_id||'');
+      $('#fc_desconto').val(r.desconto);
+      $('#fc_iva_pct').val(r.iva_pct);
+      $('#fc_observacoes').val(r.observacoes);
+      $('#fc_termos').val(r.termos);
+      $('#fcItemsBody').empty();
+      if(r.itens && r.itens.length) r.itens.forEach(it=>addItemRow(it));
+      else addItemRow();
+      recalcularTotais();
+      if(r.purchase_order_id) $('#btnImportarPO').prop('disabled',false);
+      fcModal.show();
+    }).fail(()=>Swal.fire({icon:'error',title:'Erro',text:'Não foi possível carregar os dados.'}));
+  });
+
+  // ── Guardar factura ───────────────────────────────────────────────────
+  $('#btnGuardarFactura').on('click', function(){
+    const cliente = $('#fc_cliente_id').val();
+    const dataEm  = $('#fc_data_emissao').val();
+    if(!cliente || !dataEm){
+      Swal.fire({icon:'warning', title:'Campos obrigatórios', text:'Preencha o cliente e a data de emissão.'});
+      return;
+    }
+
+    // Montar itens
+    const itens=[];
+    $('#fcItemsBody tr.fc-item-row').each(function(){
+      const desc=$(this).find('.item-desc').val().trim();
+      if(!desc) return;
+      itens.push({
+        descricao  : desc,
+        unidade    : $(this).find('.item-unid').val().trim(),
+        quantidade : $(this).find('.item-qty').val(),
+        preco_unit : $(this).find('.item-pu').val(),
+      });
+    });
+
+    if(!itens.length){
+      Swal.fire({icon:'warning', title:'Sem itens', text:'Adicione pelo menos um item à factura.'});
+      return;
+    }
+
+    const payload = new FormData();
+    payload.append('csrfmiddlewaretoken', CSRF);
+    payload.append('cliente_id',       cliente);
+    payload.append('purchase_order_id',$('#fc_po_id').val());
+    payload.append('moeda_id',         $('#fc_moeda_id').val());
+    payload.append('dado_bancario_id', $('#fc_dado_bancario_id').val());
+    payload.append('estado_id',        $('#fc_estado_id').val());
+    payload.append('data_emissao',     dataEm);
+    payload.append('data_vencimento',  $('#fc_data_vencimento').val());
+    payload.append('desconto',         $('#fc_desconto').val());
+    payload.append('iva_pct',          $('#fc_iva_pct').val());
+    payload.append('observacoes',      $('#fc_observacoes').val());
+    payload.append('termos',           $('#fc_termos').val());
+    payload.append('itens_json',       JSON.stringify(itens));
+
+    const url = editingId ? `/facturas/${editingId}/update/` : '/facturas/create/';
+
+    Swal.fire({title:'A processar...', allowOutsideClick:false, allowEscapeKey:false, didOpen:()=>Swal.showLoading()});
+
+    $.ajax({
+      url, method:'POST', data:payload, processData:false, contentType:false,
+      headers:{'X-CSRFToken':CSRF},
+    }).done(function(r){
+      Swal.fire({icon:'success', title:'Guardado!', text:r.message, timer:2200, showConfirmButton:false, timerProgressBar:true})
+        .then(()=>{ fcModal.hide(); location.reload(); });
+    }).fail(function(xhr){
+      const msg = xhr.responseJSON ? xhr.responseJSON.message : 'Erro inesperado.';
+      Swal.fire({icon:'error', title:'Erro', text:msg});
+    });
+  });
+
+  // ── Visualizar factura ────────────────────────────────────────────────
+  $(document).on('click', '.btn-view-fc', function(){
+    const id=$(this).data('id');
+    Swal.fire({title:'A carregar...', allowOutsideClick:false, didOpen:()=>Swal.showLoading()});
+    $.get(`/facturas/${id}/json/`, function(r){
+      Swal.close();
+      const sym = r.moeda_simbolo ? r.moeda_simbolo+' ' : '';
+
+      let itensHtml='';
+      if(r.itens && r.itens.length){
+        itensHtml = r.itens.map((it,i)=>`
+          <tr>
+            <td>${i+1}</td>
+            <td>${esc(it.descricao)}</td>
+            <td>${esc(it.unidade||'—')}</td>
+            <td class="text-end">${parseFloat(it.quantidade).toLocaleString('pt-MZ',{maximumFractionDigits:4})}</td>
+            <td class="text-end">${sym}${fmt(it.preco_unit)}</td>
+            <td class="text-end fw-semibold">${sym}${fmt(it.total_linha)}</td>
+          </tr>`).join('');
+      } else {
+        itensHtml='<tr><td colspan="6" class="text-center text-muted py-3">Sem itens.</td></tr>';
+      }
+
+      $('#fcViewContent').html(`
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-4">
+            <div class="row g-3 mb-4">
+              <div class="col-md-3"><div class="view-label">Número</div><div class="view-value">${r.numero||'—'}</div></div>
+              <div class="col-md-3"><div class="view-label">Estado</div>
+                <div class="view-value">
+                  <span class="status-pill" style="background-color:${r.estado_cor}18;color:${r.estado_cor};border:1px solid ${r.estado_cor}40">${r.estado_nome||'—'}</span>
+                </div></div>
+              <div class="col-md-3"><div class="view-label">Data Emissão</div><div class="view-value">${r.data_emissao||'—'}</div></div>
+              <div class="col-md-3"><div class="view-label">Vencimento</div><div class="view-value">${r.data_vencimento||'—'}</div></div>
+              <div class="col-md-4"><div class="view-label">Cliente</div><div class="view-value">${r.cliente_nome||'—'}</div></div>
+              <div class="col-md-4"><div class="view-label">PO Interna</div><div class="view-value">${r.purchase_order_numero||'—'}</div></div>
+              <div class="col-md-4"><div class="view-label">PO Cliente</div><div class="view-value">${r.po_cliente_numero||'—'}</div></div>
+            </div>
+
+            <div class="modal-section-title mb-3"><i class="material-symbols-rounded me-2">list_alt</i>Itens</div>
+            <div class="table-responsive mb-4">
+              <table class="table table-sm table-bordered align-middle" style="font-size:.84rem">
+                <thead class="table-light">
+                  <tr><th>#</th><th>Descrição</th><th>Unid.</th><th class="text-end">Qtd.</th><th class="text-end">Preço Unit.</th><th class="text-end">Total</th></tr>
+                </thead>
+                <tbody>${itensHtml}</tbody>
+              </table>
+            </div>
+
+            <div class="row justify-content-end">
+              <div class="col-md-5">
+                <div class="fc-totais-card">
+                  <div class="d-flex justify-content-between mb-2"><span class="text-muted small">Subtotal</span><span class="fw-semibold">${sym}${fmt(r.subtotal)}</span></div>
+                  <div class="d-flex justify-content-between mb-2"><span class="text-muted small">Desconto (${r.desconto_pct}%)</span><span class="fw-semibold">- ${sym}${fmt(r.desconto)}</span></div>
+                  <div class="d-flex justify-content-between mb-2"><span class="text-muted small">IVA (${r.iva_pct}%)</span><span class="fw-semibold">${sym}${fmt(r.iva_valor)}</span></div>
+                  <hr class="my-2">
+                  <div class="d-flex justify-content-between"><span class="fw-bold">TOTAL</span><span class="fw-bold fs-5 text-primary">${sym}${fmt(r.total)}</span></div>
+                </div>
+              </div>
+            </div>
+
+            ${r.observacoes ? `<div class="mt-4"><div class="view-label">Observações</div><div class="view-value">${esc(r.observacoes)}</div></div>` : ''}
+            ${r.termos ? `<div class="mt-3"><div class="view-label">Termos e Condições</div><div class="view-value small">${esc(r.termos)}</div></div>` : ''}
+          </div>
+        </div>
+      `);
+
+      $('#fcViewFooter').html(`
+        <a href="${r.pdf_url}" target="_blank" class="btn btn-danger btn-modern">
+          <i class="material-symbols-rounded me-1">picture_as_pdf</i>Descarregar PDF
+        </a>
+        <button type="button" class="btn btn-outline-secondary btn-modern" data-bs-dismiss="modal">Fechar</button>
+      `);
+
+      fcViewModal.show();
+    }).fail(()=>Swal.fire({icon:'error',title:'Erro',text:'Não foi possível carregar os dados.'}));
+  });
+
+  // ── Alterar estado ────────────────────────────────────────────────────
+  $(document).on('click', '.btn-change-estado-fc', function(e){
+    e.preventDefault();
+    const id=$(this).data('id'), estadoId=$(this).data('estado-id'), label=$(this).data('label');
+    Swal.fire({
+      title:`Alterar para "${label}"?`, icon:'question',
+      showCancelButton:true, confirmButtonText:'Sim, alterar', cancelButtonText:'Cancelar',
+      confirmButtonColor:'#2E3E82', cancelButtonColor:'#6c757d', reverseButtons:true,
+    }).then(result=>{
+      if(!result.isConfirmed) return;
+      Swal.fire({title:'A processar...', allowOutsideClick:false, didOpen:()=>Swal.showLoading()});
+      $.post(`/facturas/${id}/estado/`, {csrfmiddlewaretoken:CSRF, estado_id:estadoId})
+        .done(r=>{
+          Swal.fire({icon:'success', title:'Estado alterado!', text:r.message, timer:2000, showConfirmButton:false, timerProgressBar:true})
+            .then(()=>location.reload());
+        })
+        .fail(()=>Swal.fire({icon:'error',title:'Erro',text:'Não foi possível alterar o estado.'}));
+    });
+  });
+
+  // ── Mensagens Django (fallback) ───────────────────────────────────────
+  const mc=document.getElementById('django-messages');
+  if(mc) mc.querySelectorAll('span').forEach(span=>{
+    const isErr=span.dataset.tags.includes('error');
+    Swal.fire({icon:isErr?'error':'success',title:isErr?'Erro':'Sucesso',text:span.textContent,timer:3000,showConfirmButton:false});
+  });
+
+  function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+});
+</script>
+{% endblock extra_js %}

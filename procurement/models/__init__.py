@@ -20,6 +20,10 @@ from .purchaseorderanexo import PurchaseOrderAnexo
 from .pagamento import Pagamento
 from .pagamentoanexo import PagamentoAnexo
 from .pagamentoestado import PagamentoEstado
+from .pagamentohistorico import PagamentoHistorico
+from .factura import Factura
+from .facturaestado import FacturaEstado
+from .facturaitem import FacturaItem
 
 
 __all__ = [
@@ -45,4 +49,8 @@ __all__ = [
     'Pagamento',
     'PagamentoAnexo',
     'PagamentoEstado',
+    'PagamentoHistorico',
+    'Factura',
+    'FacturaEstado',
+    'FacturaItem',
 ]
