@@ -1,0 +1,597 @@
+{% extends "layouts/pro_base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-3">
+
+  {% if messages %}
+  <div id="django-messages" style="display:none;">
+    {% for message in messages %}
+      <span data-tags="{{ message.tags }}">{{ message }}</span>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Hero -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm ph-hero-card">
+        <div class="card-body p-4 p-md-5">
+          <div class="row align-items-center g-4">
+            <div class="col-lg-7">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="ph-hero-icon">
+                  <i class="material-symbols-rounded">history</i>
+                </div>
+                <div>
+                  <h3 class="mb-1 fw-bold text-dark">Histórico de Pagamentos</h3>
+                  <p class="text-muted mb-0">Todos os registos históricos de pagamentos recebidos.</p>
+                </div>
+              </div>
+
+              <div class="d-flex flex-wrap gap-2">
+                <span class="badge rounded-pill ph-soft-badge">Pagamentos Registados</span>
+                <span class="badge rounded-pill ph-soft-badge">Com Factura</span>
+                <span class="badge rounded-pill ph-soft-badge">Sem Factura</span>
+                <span class="badge rounded-pill ph-soft-badge">PO / Sem PO</span>
+              </div>
+            </div>
+
+            <div class="col-lg-5">
+              <div class="ph-stats-grid">
+                <div class="mini-stat-card stat-no-filter">
+                  <span class="mini-stat-label">Registos</span>
+                  <h4 class="mb-0 text-dark">{{ total_registos }}</h4>
+                </div>
+                <div class="mini-stat-card stat-no-filter">
+                  <span class="mini-stat-label">Clientes Únicos</span>
+                  <h4 class="mb-0 text-dark">{{ clientes_unicos }}</h4>
+                </div>
+                <div class="mini-stat-card stat-filter" data-filter="com_factura">
+                  <span class="mini-stat-label">Com Factura</span>
+                  <h4 class="mb-0 text-success">{{ total_com_factura }}</h4>
+                </div>
+                <div class="mini-stat-card stat-filter" data-filter="sem_factura">
+                  <span class="mini-stat-label">Sem Factura</span>
+                  <h4 class="mb-0 text-warning">{{ total_sem_factura }}</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mt-3 g-3">
+            <div class="col-md-3">
+              <div class="ph-value-card">
+                <div class="ph-value-label">Valor Total</div>
+                <div class="ph-value-amount">{{ total_valor|floatformat:2 }}</div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="ph-value-card">
+                <div class="ph-value-label">Hoje</div>
+                <div class="ph-value-amount">{{ total_hoje|floatformat:2 }}</div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="ph-value-card">
+                <div class="ph-value-label">Esta Semana</div>
+                <div class="ph-value-amount">{{ total_semana|floatformat:2 }}</div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="ph-value-card">
+                <div class="ph-value-label">Este Mês</div>
+                <div class="ph-value-amount">{{ total_mes|floatformat:2 }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mt-3 g-3">
+            <div class="col-md-6">
+              <div class="ph-value-card">
+                <div class="ph-value-label">Históricos com PO</div>
+                <div class="ph-value-amount">{{ total_com_po }}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="ph-value-card">
+                <div class="ph-value-label">Históricos sem PO</div>
+                <div class="ph-value-amount">{{ total_sem_po }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="ph-hero-accent"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabela -->
+  <div class="card border-0 shadow-sm ph-main-card">
+    <div class="card-body p-0">
+      <div class="ph-topbar px-4 pt-4 pb-3">
+        <div class="row align-items-center g-3">
+          <div class="col-lg-8">
+            <h5 class="mb-1 fw-bold text-dark">Lista de Histórico de Pagamentos</h5>
+            <p class="text-muted mb-0">Todos os registos de pagamento já efectuados.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-4 pb-4">
+        <div class="table-responsive mt-3">
+          <table id="phTable" class="table align-items-center mb-0 ph-table w-100">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Pagamento</th>
+                <th>Cliente</th>
+                <th>PO</th>
+                <th>Factura</th>
+                <th>Conta Destino</th>
+                <th>Valor Pago</th>
+                <th>Data</th>
+                <th>Registado Por</th>
+                <th class="text-center">Acções</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for h in historicos %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>
+                  <span class="fw-semibold">{{ h.pagamento.numero }}</span>
+                  {% if h.pagamento.estado %}
+                    <div class="small text-muted">{{ h.pagamento.estado.nome }}</div>
+                  {% endif %}
+                </td>
+                <td>{{ h.pagamento.cliente.nome }}</td>
+                <td>
+                  <span class="po-codigo d-none">{% if h.pagamento.purchase_order %}com_po{% else %}sem_po{% endif %}</span>
+                  {% if h.pagamento.purchase_order %}
+                    {{ h.pagamento.purchase_order.numero }}
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+                <td>
+                  <span class="factura-codigo d-none">{% if h.factura %}com_factura{% else %}sem_factura{% endif %}</span>
+                  {% if h.factura %}
+                    {{ h.factura.numero }}
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+                <td>
+                  {% if h.dado_bancario %}
+                    {{ h.dado_bancario.banco }}{% if h.dado_bancario.moeda %} ({{ h.dado_bancario.moeda }}){% endif %}
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+                <td>
+                  {% if h.pagamento.moeda %}{{ h.pagamento.moeda.simbolo }} {% endif %}
+                  {{ h.valor_pago|floatformat:2 }}
+                </td>
+                <td>{{ h.data_pagamento|date:"d/m/Y" }}</td>
+                <td>
+                  {% if h.registado_por %}
+                    {{ h.registado_por.get_full_name|default:h.registado_por.username }}
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+                <td class="text-center">
+                  <button type="button"
+                          class="btn btn-sm btn-outline-info btn-view-ph"
+                          data-id="{{ h.id }}"
+                          title="Visualizar">
+                    <i class="material-symbols-rounded me-1" style="font-size:16px">visibility</i>Ver
+                  </button>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% include "includes/pro_footer.html" %}
+</div>
+
+<!-- MODAL VISUALIZAR -->
+<div class="modal fade" id="phViewModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-lg modal-modern">
+      <div class="modal-header border-0">
+        <div>
+          <h5 class="modal-title fw-bold">Detalhes do Histórico de Pagamento</h5>
+          <p class="text-muted mb-0 small">Informações completas do registo seleccionado.</p>
+        </div>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body bg-light">
+        <div id="phViewContent"></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<link href="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.8/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/datatables.net-responsive-bs5@2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/datatables.net-buttons-bs5@2.4.2/css/buttons.bootstrap5.min.css" rel="stylesheet">
+
+<style>
+:root{
+  --ph:#2E3E82;
+  --ph-mid:#4256ad;
+  --ph-light:#eef2ff;
+  --ph-border:#dae3ff;
+}
+.ph-hero-card{position:relative;overflow:hidden;border-radius:22px;background:linear-gradient(135deg,#fff 0%,#f4f6ff 100%)}
+.ph-hero-accent{position:absolute;right:-60px;top:-60px;width:220px;height:220px;background:radial-gradient(circle,rgba(46,62,130,.15) 0%,rgba(46,62,130,0) 70%)}
+.ph-hero-icon{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--ph) 0%,var(--ph-mid) 100%);color:#fff}
+.ph-hero-icon i{font-size:30px}
+.ph-soft-badge{background:var(--ph-light);color:var(--ph);border:1px solid var(--ph-border);font-weight:600;padding:.50rem .90rem}
+.ph-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.mini-stat-card{background:#fff;border:1px solid #edf0f7;border-radius:18px;padding:18px 16px;transition:all .2s}
+.mini-stat-label{display:block;font-size:.78rem;color:#6c757d;margin-bottom:6px}
+.stat-filter{cursor:pointer}
+.stat-filter.stat-active{border-color:var(--ph)!important;background:var(--ph-light)!important}
+.ph-value-card{background:#fff;border:1px solid #e8edf8;border-radius:18px;padding:18px 20px}
+.ph-value-label{font-size:.82rem;color:#6c757d;margin-bottom:6px;font-weight:600}
+.ph-value-amount{font-size:1.45rem;font-weight:800;color:var(--ph)}
+.ph-main-card{border-radius:22px;overflow:hidden}
+.ph-topbar{border-bottom:1px solid #edf0f7;background:linear-gradient(180deg,#fff 0%,#f8f9ff 100%)}
+.ph-table thead th{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#6c757d;font-weight:700;background:#f8f9ff}
+.btn-modern{border-radius:14px!important;padding:.6rem 1.1rem!important;font-weight:600!important;text-transform:none!important}
+.modal-modern{border-radius:22px}
+.status-pill{display:inline-flex;align-items:center;padding:.42rem .80rem;border-radius:999px;font-size:.74rem;font-weight:700}
+.view-card{border-radius:20px;overflow:hidden}
+.view-label{font-size:.74rem;text-transform:uppercase;letter-spacing:.05em;color:#8892a6;font-weight:800;margin-bottom:4px}
+.view-value{font-size:.95rem;color:#1f2937;font-weight:700;word-break:break-word;min-height:22px}
+.view-soft-card{background:linear-gradient(135deg,#fff,#f8faff);border:1px solid #e9edf7;border-radius:18px;padding:18px}
+.dt-section-title{display:flex;align-items:center;font-size:.80rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--ph);border-bottom:1px solid var(--ph-border);padding-bottom:8px;margin-bottom:12px}
+
+/* DataTables */
+.dataTables_wrapper .dataTables_paginate .pagination{display:flex!important;gap:4px!important;flex-wrap:wrap!important}
+.dataTables_wrapper .dataTables_paginate .pagination .page-item .page-link{all:unset!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:36px!important;height:36px!important;padding:0 10px!important;border-radius:10px!important;border:1px solid #e7ebf3!important;background:#fff!important;color:#495057!important;font-size:.85rem!important;font-weight:600!important;cursor:pointer!important;transition:all .2s!important}
+.dataTables_wrapper .dataTables_paginate .pagination .page-item.active .page-link{background:linear-gradient(135deg,var(--ph) 0%,var(--ph-mid) 100%)!important;border-color:var(--ph)!important;color:#fff!important}
+div.dataTables_wrapper div.dataTables_filter input,
+div.dataTables_wrapper div.dataTables_length select{border-radius:12px!important;border:1px solid #dfe5ef!important;min-height:38px;box-shadow:none!important}
+.dt-buttons{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.dt-buttons .btn{border-radius:12px!important;padding:.45rem .90rem!important;font-size:.82rem!important;font-weight:600!important;display:inline-flex!important;align-items:center!important;gap:4px!important}
+.dt-button-background{display:none!important}
+.dataTables_wrapper .dataTables_info{font-size:.82rem;color:#6c757d}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net@1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-responsive@2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-responsive-bs5@2.5.0/js/responsive.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-buttons@2.4.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-buttons-bs5@2.4.2/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-buttons@2.4.2/js/buttons.html5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-buttons@2.4.2/js/buttons.print.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+$(function(){
+  const phViewModal = new bootstrap.Modal(document.getElementById('phViewModal'));
+  let activeFilter = '';
+
+  function fmt(v){
+    return parseFloat(v || 0).toLocaleString('pt-MZ', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  function esc(s){
+    return String(s || '')
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+
+  const table = $('#phTable').DataTable({
+    responsive:true,
+    autoWidth:false,
+    pageLength:10,
+    dom:'<"dt-buttons-row d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3"Bf>rtip',
+    buttons:[
+      {extend:'excelHtml5', text:'<i class="material-symbols-rounded me-1" style="font-size:15px">table_view</i>Excel', className:'btn btn-outline-success', title:'Historico_Pagamentos'},
+      {extend:'csvHtml5', text:'<i class="material-symbols-rounded me-1" style="font-size:15px">csv</i>CSV', className:'btn btn-outline-secondary', title:'Historico_Pagamentos'},
+      {extend:'pdfHtml5', text:'<i class="material-symbols-rounded me-1" style="font-size:15px">picture_as_pdf</i>PDF', className:'btn btn-outline-danger', title:'Historico_Pagamentos', orientation:'landscape'},
+      {extend:'print', text:'<i class="material-symbols-rounded me-1" style="font-size:15px">print</i>Imprimir', className:'btn btn-outline-primary', title:'Historico_Pagamentos'},
+    ],
+    language:{
+      search:'Pesquisar:',
+      lengthMenu:'Mostrar _MENU_ registos',
+      info:'Mostrando _START_ a _END_ de _TOTAL_ registos',
+      zeroRecords:'Nenhum registo encontrado',
+      emptyTable:'Sem dados disponíveis',
+      paginate:{first:'Primeiro',last:'Último',next:'Seguinte',previous:'Anterior'}
+    },
+    columnDefs:[
+      {orderable:false, targets:[9]},
+      {
+        targets:4,
+        render:function(data,type){
+          if(type==='filter' || type==='sort'){
+            const t=document.createElement('div');
+            t.innerHTML=data;
+            const s=t.querySelector('.factura-codigo');
+            return s ? s.textContent.trim() : data;
+          }
+          return data;
+        }
+      }
+    ]
+  });
+
+  $('.stat-filter').on('click', function(){
+    const f = $(this).data('filter');
+
+    if(activeFilter === f){
+      activeFilter = '';
+      $('.stat-filter').removeClass('stat-active');
+      table.column(4).search('').draw();
+    }else{
+      activeFilter = f;
+      $('.stat-filter').removeClass('stat-active');
+      $(this).addClass('stat-active');
+      table.column(4).search(f).draw();
+    }
+  });
+
+  $(document).on('click', '.btn-view-ph', function(){
+    const id = $(this).data('id');
+
+    Swal.fire({
+      title:'A carregar...',
+      allowOutsideClick:false,
+      didOpen:()=>Swal.showLoading()
+    });
+
+    $.get(`/pagamentos/historico/${id}/json/`, function(r){
+      Swal.close();
+
+      const sym = r.moeda_simbolo ? r.moeda_simbolo + ' ' : '';
+
+      $('#phViewContent').html(`
+        <div class="card border-0 shadow-sm view-card">
+          <div class="card-body p-4">
+
+            <div class="dt-section-title mb-3">
+              <i class="material-symbols-rounded me-2">payments</i>Detalhes do Histórico
+            </div>
+
+            <div class="row g-3 mb-4">
+              <div class="col-md-3">
+                <div class="view-label">Histórico ID</div>
+                <div class="view-value">${r.id}</div>
+              </div>
+              <div class="col-md-3">
+                <div class="view-label">Pagamento</div>
+                <div class="view-value">${esc(r.pagamento_numero || '—')}</div>
+              </div>
+              <div class="col-md-3">
+                <div class="view-label">Data de Pagamento</div>
+                <div class="view-value">${esc(r.data_pagamento || '—')}</div>
+              </div>
+              <div class="col-md-3">
+                <div class="view-label">Valor Pago</div>
+                <div class="view-value text-success">${sym}${fmt(r.valor_pago)}</div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="view-label">Cliente</div>
+                <div class="view-value">${esc(r.cliente_nome || '—')}</div>
+              </div>
+              <div class="col-md-4">
+                <div class="view-label">Referência</div>
+                <div class="view-value">${esc(r.referencia || '—')}</div>
+              </div>
+              <div class="col-md-4">
+                <div class="view-label">Banco de Origem</div>
+                <div class="view-value">${esc(r.banco_origem || '—')}</div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="view-label">Número de Transacção</div>
+                <div class="view-value">${esc(r.numero_transaccao || '—')}</div>
+              </div>
+              <div class="col-md-4">
+                <div class="view-label">Registado Por</div>
+                <div class="view-value">${esc(r.registado_por || '—')}</div>
+              </div>
+              <div class="col-md-4">
+                <div class="view-label">Criado Em</div>
+                <div class="view-value">${esc(r.criado_em || '—')}</div>
+              </div>
+
+              <div class="col-12">
+                <div class="view-label">Observações</div>
+                <div class="view-value">${esc(r.observacoes || '—')}</div>
+              </div>
+            </div>
+
+            <div class="dt-section-title mb-3">
+              <i class="material-symbols-rounded me-2">account_balance_wallet</i>Pagamento Principal
+            </div>
+
+            <div class="row g-3 mb-4">
+              <div class="col-md-3">
+                <div class="view-label">Estado</div>
+                <div class="view-value">${esc(r.pagamento_estado || '—')}</div>
+              </div>
+              <div class="col-md-3">
+                <div class="view-label">Valor PO</div>
+                <div class="view-value">${sym}${fmt(r.valor_po)}</div>
+              </div>
+              <div class="col-md-3">
+                <div class="view-label">Valor Recebido</div>
+                <div class="view-value">${sym}${fmt(r.valor_recebido)}</div>
+              </div>
+              <div class="col-md-3">
+                <div class="view-label">Saldo Pendente</div>
+                <div class="view-value text-warning">${sym}${fmt(r.saldo_pendente)}</div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="view-label">Data Prevista</div>
+                <div class="view-value">${esc(r.pagamento_data_prevista || '—')}</div>
+              </div>
+              <div class="col-md-3">
+                <div class="view-label">Data Recebida</div>
+                <div class="view-value">${esc(r.pagamento_data_recebido || '—')}</div>
+              </div>
+              <div class="col-md-3">
+                <div class="view-label">Ref. do Pagamento</div>
+                <div class="view-value">${esc(r.pagamento_referencia || '—')}</div>
+              </div>
+              <div class="col-md-3">
+                <div class="view-label">Banco Origem</div>
+                <div class="view-value">${esc(r.pagamento_banco_origem || '—')}</div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="view-label">Nº Transacção</div>
+                <div class="view-value">${esc(r.pagamento_numero_transaccao || '—')}</div>
+              </div>
+              <div class="col-md-6">
+                <div class="view-label">Observações do Pagamento</div>
+                <div class="view-value">${esc(r.pagamento_observacoes || '—')}</div>
+              </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+              <div class="col-lg-6">
+                <div class="view-soft-card h-100">
+                  <div class="dt-section-title mb-3">
+                    <i class="material-symbols-rounded me-2">description</i>PO Relacionada
+                  </div>
+
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <div class="view-label">PO Interna</div>
+                      <div class="view-value">${esc(r.po_numero || '—')}</div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="view-label">PO Cliente</div>
+                      <div class="view-value">${esc(r.po_cliente_numero || '—')}</div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="view-label">Valor Total PO</div>
+                      <div class="view-value">${sym}${fmt(r.po_valor_total)}</div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="view-label">Cotação</div>
+                      <div class="view-value">${esc(r.quotacao_numero || '—')}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-lg-6">
+                <div class="view-soft-card h-100">
+                  <div class="dt-section-title mb-3">
+                    <i class="material-symbols-rounded me-2">receipt_long</i>Factura Associada
+                  </div>
+
+                  <div class="row g-3">
+                    <div class="col-md-4">
+                      <div class="view-label">Número</div>
+                      <div class="view-value">${esc(r.factura_numero || '—')}</div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="view-label">Estado</div>
+                      <div class="view-value">${esc(r.factura_estado || '—')}</div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="view-label">Total</div>
+                      <div class="view-value">${r.factura_numero ? sym + fmt(r.factura_total) : '—'}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="view-soft-card">
+              <div class="dt-section-title mb-3">
+                <i class="material-symbols-rounded me-2">account_balance</i>Conta Bancária de Destino
+              </div>
+
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <div class="view-label">Banco</div>
+                  <div class="view-value">${esc(r.dado_bancario.banco || '—')}</div>
+                </div>
+                <div class="col-md-2">
+                  <div class="view-label">Moeda</div>
+                  <div class="view-value">${esc(r.dado_bancario.moeda || '—')}</div>
+                </div>
+                <div class="col-md-3">
+                  <div class="view-label">Conta</div>
+                  <div class="view-value">${esc(r.dado_bancario.conta || '—')}</div>
+                </div>
+                <div class="col-md-3">
+                  <div class="view-label">NIB</div>
+                  <div class="view-value">${esc(r.dado_bancario.nib || '—')}</div>
+                </div>
+                <div class="col-md-6">
+                  <div class="view-label">Titular</div>
+                  <div class="view-value">${esc(r.dado_bancario.titular || '—')}</div>
+                </div>
+                <div class="col-md-3">
+                  <div class="view-label">SWIFT</div>
+                  <div class="view-value">${esc(r.dado_bancario.swift || '—')}</div>
+                </div>
+                <div class="col-md-3">
+                  <div class="view-label">IBAN</div>
+                  <div class="view-value">${esc(r.dado_bancario.iban || '—')}</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      `);
+
+      phViewModal.show();
+    }).fail(function(){
+      Swal.fire({
+        icon:'error',
+        title:'Erro',
+        text:'Não foi possível carregar os detalhes do histórico.'
+      });
+    });
+  });
+
+  const mc = document.getElementById('django-messages');
+  if(mc){
+    mc.querySelectorAll('span').forEach(span => {
+      const t = span.dataset.tags || '';
+      const icon = t.includes('error') ? 'error' : t.includes('warning') ? 'warning' : 'success';
+      Swal.fire({
+        icon:icon,
+        title:icon==='success' ? 'Sucesso' : 'Aviso',
+        text:span.textContent,
+        timer:3000,
+        showConfirmButton:false
+      });
+    });
+  }
+});
+</script>
+{% endblock extra_js %}

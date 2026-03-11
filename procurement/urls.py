@@ -53,6 +53,7 @@ from procurement.views.po.purchase_order_view import (download_purchase_order_an
 from procurement.views.pagamentos.pagamento_view import (pagamentos_view, download_po_anexo_view, pagamento_detail_json_view, update_pagamento_view, download_pagamento_anexo_view, create_pagamento_livre_view)
 from procurement.views.facturas.facturas_view import (facturas_view, factura_create_view, factura_detail_json_view, factura_update_view, factura_change_estado_view, factura_pdf_view, po_itens_json_view, factura_check_pagamento_view, factura_change_estado_com_pagamento_view)
 from procurement.views.recibos.recibos_view import (recibos_view, recibo_create_view, recibo_detail_json_view, recibo_anular_view, recibo_pdf_view, factura_info_json_view)
+from procurement.views.pagamentos.pagamento_historico_view import (pagamentos_historico_view, pagamento_historico_detail_json_view)
 
 
 
@@ -108,6 +109,9 @@ urlpatterns = [
     path('pagamentos/anexos/<int:anexo_id>/download/', download_pagamento_anexo_view, name='pagamentos_anexo_download'),
     path('pagamentos/purchase-orders/anexo/<int:anexo_id>/download/', download_po_anexo_view, name='po_anexo_download'),
     path('pagamentos/criar-livre/', create_pagamento_livre_view, name='pagamento_criar_livre'),
+    
+    path('pagamentos/historico/', pagamentos_historico_view, name='pagamentos_historico'),
+    path('pagamentos/historico/<int:historico_id>/json/', pagamento_historico_detail_json_view, name='pagamentos_historico_detail_json'),
     
     
     #====================== Facturas ==========================================
