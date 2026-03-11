@@ -26,6 +26,9 @@ from .facturaestado import FacturaEstado
 from .facturaitem import FacturaItem
 from .recibo import Recibo
 from .facturadadobancario import FacturaDadoBancario
+from .guiaestado import GuiaEstado
+from .guiaentrega import GuiaEntrega
+from .guiaentregaitem import GuiaEntregaItem
 
 
 __all__ = [
@@ -57,4 +60,7 @@ __all__ = [
     'FacturaItem',
     'Recibo',
     'FacturaDadoBancario',
+    'GuiaEstado',
+    'GuiaEntrega',
+    'GuiaEntregaItem'
 ]

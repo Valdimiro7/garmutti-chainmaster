@@ -54,6 +54,7 @@ from procurement.views.pagamentos.pagamento_view import (pagamentos_view, downlo
 from procurement.views.facturas.facturas_view import (facturas_view, factura_create_view, factura_detail_json_view, factura_update_view, factura_change_estado_view, factura_pdf_view, po_itens_json_view, factura_check_pagamento_view, factura_change_estado_com_pagamento_view)
 from procurement.views.recibos.recibos_view import (recibos_view, recibo_create_view, recibo_detail_json_view, recibo_anular_view, recibo_pdf_view, factura_info_json_view)
 from procurement.views.pagamentos.pagamento_historico_view import (pagamentos_historico_view, pagamento_historico_detail_json_view)
+from procurement.views.guiaentrega.guias_entrega_view import (guia_entrega_change_estado_view, guias_entrega_view, guia_entrega_create_view, guia_entrega_update_view, guia_entrega_detail_json_view, po_itens_para_guia_json_view, guia_entrega_pdf_view)
 
 
 
@@ -135,6 +136,15 @@ urlpatterns = [
     path('recibos/<int:recibo_id>/pdf/',       recibo_pdf_view,          name='recibo_pdf'),
     path('recibos/factura/<int:factura_id>/info/',  factura_info_json_view, name='recibo_factura_info'),
     
+    
+    
+    path('guias-entrega/', guias_entrega_view, name='guias_entrega'),
+    path('guias-entrega/create/', guia_entrega_create_view, name='guias_entrega_create'),
+    path('guias-entrega/<int:guia_id>/update/', guia_entrega_update_view, name='guias_entrega_update'),
+    path('guias-entrega/<int:guia_id>/json/', guia_entrega_detail_json_view, name='guias_entrega_detail_json'),
+    path('guias-entrega/po/<int:po_id>/itens/', po_itens_para_guia_json_view, name='guias_entrega_po_itens'),
+    path('guias-entrega/<int:guia_id>/pdf/', guia_entrega_pdf_view, name='guias_entrega_pdf'),
+    path('guias-entrega/<int:guia_id>/change-estado/', guia_entrega_change_estado_view, name='guias_entrega_change_estado'),    
     
     #Fornecesores
     path('fornecedores/', fornecedores_view, name='fornecedores'),

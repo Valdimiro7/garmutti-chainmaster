@@ -1,0 +1,738 @@
+{% extends "layouts/pro_base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-3 ge-page">
+
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm ge-hero-card">
+        <div class="card-body p-4 p-md-5 position-relative">
+          <div class="row align-items-center g-4">
+            <div class="col-lg-7">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="ge-hero-icon">
+                  <i class="material-symbols-rounded">local_shipping</i>
+                </div>
+                <div>
+                  <h3 class="mb-1 fw-bold text-dark">Guias de Entrega</h3>
+                  <p class="text-muted mb-0">Registo, gestão e emissão de guias de entrega.</p>
+                </div>
+              </div>
+              <div class="d-flex flex-wrap gap-2">
+                <span class="badge rounded-pill ge-soft-badge">Entrega</span>
+                <span class="badge rounded-pill ge-soft-badge">PO</span>
+                <span class="badge rounded-pill ge-soft-badge">Factura</span>
+                <span class="badge rounded-pill ge-soft-badge">PDF</span>
+              </div>
+            </div>
+            <div class="col-lg-5">
+              <div class="ge-stats-grid">
+                <div class="mini-stat-card">
+                  <span class="mini-stat-label">Total Guias</span>
+                  <h4 class="mb-0 text-dark">{{ total_guias }}</h4>
+                </div>
+                <div class="mini-stat-card">
+                  <span class="mini-stat-label">Pendentes</span>
+                  <h4 class="mb-0 text-warning">{{ total_pendentes }}</h4>
+                </div>
+                <div class="mini-stat-card">
+                  <span class="mini-stat-label">Entregues</span>
+                  <h4 class="mb-0 text-success">{{ total_entregues }}</h4>
+                </div>
+                <div class="mini-stat-card">
+                  <span class="mini-stat-label">Canceladas</span>
+                  <h4 class="mb-0 text-danger">{{ total_canceladas }}</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mt-3 g-3">
+            <div class="col-md-6">
+              <div class="ge-value-card">
+                <div class="ge-value-label">Valor Total</div>
+                <div class="ge-value-amount">{{ valor_total|floatformat:2 }}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="ge-value-card">
+                <div class="ge-value-label">Valor Entregue</div>
+                <div class="ge-value-amount text-success">{{ valor_entregue|floatformat:2 }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ge-hero-accent"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm ge-main-card">
+    <div class="card-body p-0">
+      <div class="ge-topbar px-4 pt-4 pb-3">
+        <div class="row align-items-center g-3">
+          <div class="col-lg-8">
+            <h5 class="mb-1 fw-bold text-dark">Lista de Guias de Entrega</h5>
+            <p class="text-muted mb-0">Todas as guias registadas no sistema.</p>
+          </div>
+          <div class="col-lg-4 d-flex justify-content-lg-end">
+            <button type="button" class="btn btn-primary btn-modern btn-ge" id="btnNovaGuia">
+              <i class="material-symbols-rounded me-1">add</i>Nova Guia
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-4 pb-4">
+        <div class="table-responsive mt-3">
+          <table id="geTable" class="table align-items-center mb-0 ge-table w-100">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Número</th>
+                <th>Cliente</th>
+                <th>PO</th>
+                <th>Factura</th>
+                <th>Data Guia</th>
+                <th>Entrega</th>
+                <th>Total</th>
+                <th>Estado</th>
+                <th class="text-center">Acções</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for g in guias %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td class="fw-semibold">{{ g.numero }}</td>
+                <td>{{ g.cliente.nome }}</td>
+                <td>{% if g.purchase_order %}{{ g.purchase_order.numero }}{% else %}—{% endif %}</td>
+                <td>{% if g.factura %}{{ g.factura.numero }}{% else %}—{% endif %}</td>
+                <td>{{ g.data_guia|date:"d/m/Y" }}</td>
+                <td>{% if g.data_entrega %}{{ g.data_entrega|date:"d/m/Y" }}{% else %}—{% endif %}</td>
+                <td>{% if g.moeda %}{{ g.moeda.simbolo }} {% endif %}{{ g.subtotal|floatformat:2 }}</td>
+                <td>
+                  <span class="status-pill"
+                        style="background-color:{{ g.estado.cor }}18;color:{{ g.estado.cor }};border:1px solid {{ g.estado.cor }}40;">
+                    {{ g.estado.nome }}
+                  </span>
+                </td>
+                <td class="text-center">
+                    <div class="d-flex justify-content-center gap-1 flex-wrap">
+                        <button type="button" class="btn btn-sm btn-outline-info btn-view-ge" data-id="{{ g.id }}" title="Visualizar">
+                        <i class="material-symbols-rounded" style="font-size:15px">visibility</i>
+                        </button>
+
+                        {% if g.estado.codigo != 'entregue' %}
+                        <button type="button" class="btn btn-sm btn-outline-primary btn-edit-ge" data-id="{{ g.id }}" title="Editar">
+                        <i class="material-symbols-rounded" style="font-size:15px">edit</i>
+                        </button>
+
+                        <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary" type="button"
+                                data-bs-toggle="dropdown" aria-expanded="false" title="Alterar estado">
+                            <i class="material-symbols-rounded" style="font-size:15px">swap_horiz</i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm">
+                            {% for est in estados %}
+                            {% if est.id != g.estado_id %}
+                            <li>
+                                <a class="dropdown-item btn-change-estado-ge" href="#"
+                                data-id="{{ g.id }}"
+                                data-estado-id="{{ est.id }}"
+                                data-label="{{ est.nome }}">
+                                <i class="material-symbols-rounded me-2 align-middle" style="font-size:15px">circle</i>{{ est.nome }}
+                                </a>
+                            </li>
+                            {% endif %}
+                            {% endfor %}
+                        </ul>
+                        </div>
+                        {% endif %}
+
+                        <a href="{% url 'procurement:guias_entrega_pdf' g.id %}" target="_blank" class="btn btn-sm btn-outline-danger" title="PDF">
+                        <i class="material-symbols-rounded" style="font-size:15px">picture_as_pdf</i>
+                        </a>
+                    </div>
+                    </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% include "includes/pro_footer.html" %}
+</div>
+
+<div class="modal fade" id="geModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-lg modal-modern">
+      <div class="modal-header border-0 pb-0">
+        <div>
+          <h5 class="modal-title fw-bold" id="geModalTitle">Nova Guia de Entrega</h5>
+          <p class="text-muted mb-0 small" id="geModalSub">Preencha os dados da guia.</p>
+        </div>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body pt-3 ge-modal-body">
+        <div class="modal-section-title mb-3">
+          <i class="material-symbols-rounded me-2">receipt_long</i>Dados Gerais
+        </div>
+
+        <div class="row g-3 mb-4">
+          <div class="col-md-3">
+            <label class="form-label">Número</label>
+            <input type="text" id="ge_numero" class="form-control modern-input" disabled value="{{ default_numero }}">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Data da Guia <span class="text-danger">*</span></label>
+            <input type="date" id="ge_data_guia" class="form-control modern-input" value="{{ today }}">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Data de Entrega</label>
+            <input type="date" id="ge_data_entrega" class="form-control modern-input">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Moeda</label>
+            <select id="ge_moeda_id" class="form-select modern-input">
+              <option value="">—</option>
+              {% for m in moedas %}
+              <option value="{{ m.id }}">{{ m.codigo }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Cliente <span class="text-danger">*</span></label>
+            <select id="ge_cliente_id" class="form-select modern-input">
+              <option value="">— Seleccionar —</option>
+              {% for c in clientes %}
+              <option value="{{ c.id }}">{{ c.nome }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">PO Associada</label>
+            <select id="ge_po_id" class="form-select modern-input">
+              <option value="">— Sem PO —</option>
+              {% for po in pos %}
+              <option value="{{ po.id }}"
+                      data-cliente="{{ po.cliente_id }}"
+                      data-moeda="{{ po.moeda_id|default:'' }}">
+                {{ po.numero }}{% if po.po_cliente_numero %} / {{ po.po_cliente_numero }}{% endif %} — {{ po.cliente.nome }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-2">
+            <label class="form-label d-block">&nbsp;</label>
+            <button type="button" id="btnImportarPOGuia" class="btn btn-outline-secondary w-100 btn-import-po" disabled>
+              <i class="material-symbols-rounded me-1" style="font-size:15px">download</i>Importar
+            </button>
+          </div>
+
+          <div class="col-md-2">
+            <label class="form-label">Factura</label>
+            <select id="ge_factura_id" class="form-select modern-input">
+              <option value="">—</option>
+              {% for f in facturas %}
+              <option value="{{ f.id }}">{{ f.numero }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+          <div class="col-md-4">
+            <label class="form-label">Recebido por</label>
+            <input type="text" id="ge_recebido_por" class="form-control modern-input">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Contacto do Recebedor</label>
+            <input type="text" id="ge_contacto_recebedor" class="form-control modern-input">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Local de Entrega</label>
+            <input type="text" id="ge_local_entrega" class="form-control modern-input">
+          </div>
+        </div>
+
+        <div class="modal-section-title mb-3">
+          <i class="material-symbols-rounded me-2">inventory_2</i>Itens da Guia
+          <button type="button" id="btnAddItemGe" class="btn btn-sm btn-outline-primary ms-auto fc-compact-btn">
+            <i class="material-symbols-rounded me-1" style="font-size:14px">add</i>Linha
+          </button>
+        </div>
+
+        <div class="table-responsive mb-3 ge-items-wrap">
+          <table class="table table-sm align-middle mb-0" id="geItemsTable">
+            <thead class="table-light">
+              <tr>
+                <th style="width:38%">Descrição</th>
+                <th style="width:10%">Unidade</th>
+                <th style="width:12%">Qtd.</th>
+                <th style="width:16%">Preço Unit.</th>
+                <th style="width:16%">Total</th>
+                <th style="width:8%"></th>
+              </tr>
+            </thead>
+            <tbody id="geItemsBody"></tbody>
+          </table>
+        </div>
+
+        <div class="row g-3 mb-4 justify-content-end">
+          <div class="col-lg-4 col-md-5">
+            <div class="ge-totais-card">
+              <div class="d-flex justify-content-between">
+                <span class="fw-bold">TOTAL</span>
+                <span class="fw-bold fs-5 text-primary" id="ge_disp_total">0,00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-12">
+            <label class="form-label">Observações</label>
+            <textarea id="ge_observacoes" rows="3" class="form-control modern-input ge-textarea"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer border-0 pt-0 gap-2">
+        <button type="button" class="btn btn-outline-secondary btn-modern" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" id="btnGuardarGuia" class="btn btn-primary btn-modern btn-ge">
+          <i class="material-symbols-rounded me-1">save</i>Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="geViewModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-lg modal-modern">
+      <div class="modal-header border-0">
+        <div>
+          <h5 class="modal-title fw-bold">Visualizar Guia de Entrega</h5>
+          <p class="text-muted mb-0 small">Detalhes completos da guia.</p>
+        </div>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body bg-light">
+        <div id="geViewContent"></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<link href="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.8/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/datatables.net-responsive-bs5@2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/datatables.net-buttons-bs5@2.4.2/css/buttons.bootstrap5.min.css" rel="stylesheet">
+
+<style>
+:root{
+  --ge:#2E3E82;--ge-mid:#4256ad;--ge-light:#eef2ff;--ge-border:#dbe3ff;--ge-border-soft:#e9edf7;
+}
+.ge-page .card{border-radius:22px}
+.ge-hero-card{position:relative;overflow:hidden;background:linear-gradient(135deg,#fff 0%,#f4f7ff 100%)}
+.ge-hero-accent{position:absolute;right:-50px;top:-50px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(46,62,130,.16) 0%,rgba(46,62,130,0) 70%);pointer-events:none}
+.ge-hero-icon{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;color:#fff;background:linear-gradient(135deg,var(--ge) 0%,var(--ge-mid) 100%);box-shadow:0 12px 30px rgba(46,62,130,.22)}
+.ge-hero-icon i{font-size:30px}
+.ge-soft-badge{background:var(--ge-light);color:var(--ge);border:1px solid var(--ge-border);font-weight:700;padding:.48rem .9rem}
+.ge-stats-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.mini-stat-card{background:#fff;border:1px solid #edf1fb;border-radius:18px;padding:16px;box-shadow:0 6px 20px rgba(15,23,42,.04)}
+.mini-stat-label{display:block;font-size:.78rem;color:#6b7280;margin-bottom:6px;font-weight:600}
+.ge-value-card{background:#fff;border:1px solid #e8edf8;border-radius:18px;padding:18px 20px}
+.ge-value-label{font-size:.82rem;color:#6b7280;margin-bottom:6px;font-weight:700}
+.ge-value-amount{font-size:1.45rem;font-weight:800;color:var(--ge)}
+.ge-main-card{overflow:hidden}
+.ge-topbar{border-bottom:1px solid #edf1fb;background:linear-gradient(180deg,#fff 0%,#f8faff 100%)}
+.ge-table thead th{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#6c757d;font-weight:800;background:#f8f9ff;border-bottom:1px solid #edf1fb;white-space:nowrap}
+.status-pill{display:inline-flex;align-items:center;padding:.42rem .80rem;border-radius:999px;font-size:.74rem;font-weight:700}
+.btn-modern{border-radius:14px!important;padding:.65rem 1.1rem!important;font-weight:700!important}
+.btn-ge{background:linear-gradient(135deg,var(--ge) 0%,var(--ge-mid) 100%)!important;border:none!important;color:#fff!important}
+.modal-modern{border-radius:24px}
+.ge-modal-body{max-height:80vh;overflow-y:auto;padding-right:1.2rem}
+.modal-section-title{display:flex;align-items:center;font-size:.80rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--ge);border-bottom:1px solid var(--ge-border);padding-bottom:8px;margin-bottom:12px}
+.modern-input{border-radius:14px!important;border:1px solid #dfe5ef!important;min-height:46px;box-shadow:none!important;background:#fff!important}
+.modern-input:focus{border-color:var(--ge)!important;box-shadow:0 0 0 .2rem rgba(46,62,130,.10)!important}
+.ge-items-wrap{border:1px solid var(--ge-border-soft);border-radius:18px;overflow:hidden}
+#geItemsTable thead th{font-size:.75rem;font-weight:800;color:#667085;border-bottom:1px solid var(--ge-border-soft);background:#f8faff;white-space:nowrap}
+#geItemsTable tbody td{vertical-align:middle;padding:10px 8px}
+.ge-item-row input{border-radius:10px!important;border:1px solid #dfe5ef!important;box-shadow:none!important;min-height:40px;width:100%;padding:8px 10px;font-size:.84rem}
+.ge-item-row .btn-remove-item{border-radius:10px!important;padding:7px 10px!important}
+.ge-totais-card{background:linear-gradient(135deg,#f4f6ff,#f8faff);border:1px solid var(--ge-border);border-radius:18px;padding:18px 20px}
+.ge-textarea{min-height:110px!important;resize:vertical;padding-top:12px!important}
+.view-card{border-radius:20px;overflow:hidden}
+.view-label{font-size:.74rem;text-transform:uppercase;letter-spacing:.05em;color:#8892a6;font-weight:800;margin-bottom:4px}
+.view-value{font-size:.95rem;color:#1f2937;font-weight:700;word-break:break-word;min-height:22px}
+.view-soft-card{background:linear-gradient(135deg,#fff,#f8faff);border:1px solid var(--ge-border-soft);border-radius:18px;padding:18px}
+
+.dataTables_wrapper .dataTables_filter input,
+.dataTables_wrapper .dataTables_length select{border-radius:12px!important;border:1px solid #dfe5ef!important;min-height:38px;box-shadow:none!important;background:#fff!important}
+.dt-buttons{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.dt-buttons .btn{border-radius:12px!important;padding:.45rem .90rem!important;font-size:.82rem!important;font-weight:700!important;display:inline-flex!important;align-items:center!important;gap:4px!important}
+.dataTables_wrapper .dataTables_paginate .pagination{display:flex!important;gap:4px!important;flex-wrap:wrap!important}
+.dataTables_wrapper .dataTables_paginate .pagination .page-item .page-link{all:unset!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:36px!important;height:36px!important;padding:0 10px!important;border-radius:10px!important;border:1px solid #e7ebf3!important;background:#fff!important;color:#495057!important;font-size:.85rem!important;font-weight:700!important;cursor:pointer!important;transition:all .2s!important}
+.dataTables_wrapper .dataTables_paginate .pagination .page-item.active .page-link{background:linear-gradient(135deg,var(--ge) 0%,var(--ge-mid) 100%)!important;border-color:var(--ge)!important;color:#fff!important}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net@1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-responsive@2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-responsive-bs5@2.5.0/js/responsive.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-buttons@2.4.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-buttons-bs5@2.4.2/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-buttons@2.4.2/js/buttons.html5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-buttons@2.4.2/js/buttons.print.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+$(function(){
+  const geModal = new bootstrap.Modal(document.getElementById('geModal'));
+  const geViewModal = new bootstrap.Modal(document.getElementById('geViewModal'));
+  let editingId = null;
+
+  function fmt(v){
+    return parseFloat(v || 0).toLocaleString('pt-MZ',{minimumFractionDigits:2,maximumFractionDigits:2});
+  }
+  function esc(s){
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  const table = $('#geTable').DataTable({
+    responsive:true,autoWidth:false,pageLength:10,
+    dom:'<"dt-buttons-row d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3"Bf>rtip',
+    buttons:[
+      {extend:'excelHtml5',text:'Excel',className:'btn btn-outline-success',title:'Guias_Entrega'},
+      {extend:'csvHtml5',text:'CSV',className:'btn btn-outline-secondary',title:'Guias_Entrega'},
+      {extend:'pdfHtml5',text:'PDF',className:'btn btn-outline-danger',title:'Guias_Entrega',orientation:'landscape'},
+      {extend:'print',text:'Imprimir',className:'btn btn-outline-primary',title:'Guias_Entrega'}
+    ],
+    language:{search:'Pesquisar:',lengthMenu:'Mostrar _MENU_ registos',info:'Mostrando _START_ a _END_ de _TOTAL_ registos',zeroRecords:'Nenhum registo encontrado',emptyTable:'Sem dados disponíveis',paginate:{first:'Primeiro',last:'Último',next:'Seguinte',previous:'Anterior'}}
+  });
+
+  function recalcularTotais(){
+    let sub=0;
+    $('#geItemsBody tr.ge-item-row').each(function(){
+      const qty=parseFloat($(this).find('.item-qty').val())||0;
+      const pu=parseFloat($(this).find('.item-pu').val())||0;
+      const l=qty*pu;
+      $(this).find('.item-total').val(fmt(l));
+      sub+=l;
+    });
+    $('#ge_disp_total').text(fmt(sub));
+  }
+
+  function addItemRow(d){
+    d=d||{};
+    $('#geItemsBody').append(`
+      <tr class="ge-item-row">
+        <td><input type="text" class="form-control item-desc" value="${esc(d.descricao||'')}" placeholder="Descrição do item"></td>
+        <td><input type="text" class="form-control item-unid" value="${esc(d.unidade||'')}" placeholder="un"></td>
+        <td><input type="number" class="form-control item-qty" value="${d.quantidade||1}" min="0" step="0.0001"></td>
+        <td><input type="number" class="form-control item-pu" value="${d.preco_unit||0}" min="0" step="0.01"></td>
+        <td><input type="text" class="form-control item-total" value="${fmt(d.total_linha||0)}" disabled></td>
+        <td class="text-center">
+          <button type="button" class="btn btn-sm btn-outline-danger btn-remove-item">
+            <i class="material-symbols-rounded" style="font-size:14px">delete</i>
+          </button>
+        </td>
+      </tr>`);
+    recalcularTotais();
+  }
+
+  function resetModal(){
+    editingId=null;
+    $('#geModalTitle').text('Nova Guia de Entrega');
+    $('#geModalSub').text('Preencha os dados da guia.');
+    $('#ge_numero').val('{{ default_numero }}');
+    $('#ge_data_guia').val('{{ today }}');
+    $('#ge_data_entrega,#ge_cliente_id,#ge_po_id,#ge_moeda_id,#ge_factura_id,#ge_recebido_por,#ge_contacto_recebedor,#ge_local_entrega,#ge_observacoes').val('');
+    $('#btnImportarPOGuia').prop('disabled',true);
+    $('#geItemsBody').empty();
+    addItemRow();
+  }
+
+    $(document).on('click', '.btn-change-estado-ge', function(e){
+    e.preventDefault();
+
+    const guiaId = $(this).data('id');
+    const estadoId = $(this).data('estado-id');
+    const estadoLabel = $(this).data('label');
+
+    Swal.fire({
+      title: `Alterar para "${estadoLabel}"?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sim, alterar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#2E3E82',
+      cancelButtonColor: '#6c757d',
+      reverseButtons: true,
+    }).then((result) => {
+      if (!result.isConfirmed) return;
+
+      Swal.fire({
+        title:'A processar...',
+        allowOutsideClick:false,
+        allowEscapeKey:false,
+        didOpen:()=>Swal.showLoading()
+      });
+
+      $.ajax({
+        url: `/guias-entrega/${guiaId}/change-estado/`,
+        method: 'POST',
+        data: {
+          estado_id: estadoId
+        },
+        headers: {
+          'X-CSRFToken': getCookie('csrftoken')
+        }
+      }).done(function(r){
+        Swal.fire({
+          icon:'success',
+          title:'Estado alterado!',
+          text:r.message,
+          timer:2200,
+          showConfirmButton:false
+        }).then(()=>location.reload());
+      }).fail(function(xhr){
+        Swal.fire({
+          icon:'error',
+          title:'Erro',
+          text:xhr.responseJSON ? xhr.responseJSON.message : 'Não foi possível alterar o estado.'
+        });
+      });
+    });
+  });
+
+  $('#btnNovaGuia').on('click', function(){ resetModal(); geModal.show(); });
+  $('#btnAddItemGe').on('click', function(){ addItemRow(); });
+  $(document).on('input','.item-qty,.item-pu', recalcularTotais);
+  $(document).on('click','.btn-remove-item', function(){
+    $(this).closest('tr').remove();
+    if(!$('#geItemsBody tr.ge-item-row').length) addItemRow();
+    else recalcularTotais();
+  });
+
+  $('#ge_po_id').on('change', function(){
+    const o=$(this).find('option:selected'), poId=$(this).val();
+    if(poId){
+      $('#btnImportarPOGuia').prop('disabled',false);
+      const ci=o.data('cliente'), mi=o.data('moeda');
+      if(ci) $('#ge_cliente_id').val(ci);
+      if(mi) $('#ge_moeda_id').val(mi);
+    }else{
+      $('#btnImportarPOGuia').prop('disabled',true);
+    }
+  });
+
+  $('#btnImportarPOGuia').on('click', function(){
+    const poId=$('#ge_po_id').val();
+    if(!poId) return;
+
+    Swal.fire({title:'A importar itens...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+    $.get(`/guias-entrega/po/${poId}/itens/`, function(r){
+      Swal.close();
+      $('#geItemsBody').empty();
+      if(r.itens && r.itens.length) r.itens.forEach(it=>addItemRow(it));
+      else addItemRow();
+
+      if(r.cliente_id) $('#ge_cliente_id').val(r.cliente_id);
+      if(r.moeda_id) $('#ge_moeda_id').val(r.moeda_id);
+
+      recalcularTotais();
+      Swal.fire({icon:'success',title:'Itens importados!',timer:1600,showConfirmButton:false});
+    }).fail(function(){
+      Swal.fire({icon:'error',title:'Erro',text:'Não foi possível importar os itens da PO.'});
+    });
+  });
+
+  $('#btnGuardarGuia').on('click', function(){
+    if(!$('#ge_cliente_id').val() || !$('#ge_data_guia').val()){
+      Swal.fire({icon:'warning',title:'Campos obrigatórios',text:'Preencha o cliente e a data da guia.'});
+      return;
+    }
+
+    const itens=[];
+    $('#geItemsBody tr.ge-item-row').each(function(){
+      const desc=$(this).find('.item-desc').val().trim();
+      if(!desc) return;
+      itens.push({
+        descricao:desc,
+        unidade:$(this).find('.item-unid').val().trim(),
+        quantidade:$(this).find('.item-qty').val(),
+        preco_unit:$(this).find('.item-pu').val()
+      });
+    });
+
+    if(!itens.length){
+      Swal.fire({icon:'warning',title:'Sem itens',text:'Adicione pelo menos um item.'});
+      return;
+    }
+
+    const p=new FormData();
+    p.append('cliente_id',$('#ge_cliente_id').val());
+    p.append('purchase_order_id',$('#ge_po_id').val());
+    p.append('factura_id',$('#ge_factura_id').val());
+    p.append('moeda_id',$('#ge_moeda_id').val());
+    p.append('data_guia',$('#ge_data_guia').val());
+    p.append('data_entrega',$('#ge_data_entrega').val());
+    p.append('recebido_por',$('#ge_recebido_por').val());
+    p.append('contacto_recebedor',$('#ge_contacto_recebedor').val());
+    p.append('local_entrega',$('#ge_local_entrega').val());
+    p.append('observacoes',$('#ge_observacoes').val());
+    p.append('itens_json',JSON.stringify(itens));
+
+    const url = editingId ? `/guias-entrega/${editingId}/update/` : `/guias-entrega/create/`;
+
+    Swal.fire({title:'A processar...',allowOutsideClick:false,allowEscapeKey:false,didOpen:()=>Swal.showLoading()});
+
+    $.ajax({
+      url:url,
+      method:'POST',
+      data:p,
+      processData:false,
+      contentType:false,
+      headers:{'X-CSRFToken': getCookie('csrftoken')}
+    }).done(function(r){
+      Swal.fire({icon:'success',title:'Guardado!',text:r.message,timer:2200,showConfirmButton:false})
+      .then(()=>{ geModal.hide(); location.reload(); });
+    }).fail(function(xhr){
+      Swal.fire({icon:'error',title:'Erro',text:xhr.responseJSON ? xhr.responseJSON.message : 'Erro inesperado.'});
+    });
+  });
+
+  $(document).on('click','.btn-edit-ge', function(){
+    const id=$(this).data('id');
+    Swal.fire({title:'A carregar...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+
+    $.get(`/guias-entrega/${id}/json/`, function(r){
+      Swal.close();
+      editingId=r.id;
+      $('#geModalTitle').text('Editar Guia de Entrega');
+      $('#geModalSub').text(`Guia: ${r.numero}`);
+      $('#ge_numero').val(r.numero);
+      $('#ge_data_guia').val(r.data_guia||'');
+      $('#ge_data_entrega').val(r.data_entrega||'');
+      $('#ge_cliente_id').val(r.cliente_id||'');
+      $('#ge_po_id').val(r.purchase_order_id||'');
+      $('#ge_factura_id').val(r.factura_id||'');
+      $('#ge_moeda_id').val(r.moeda_id||'');
+      $('#ge_recebido_por').val(r.recebido_por||'');
+      $('#ge_contacto_recebedor').val(r.contacto_recebedor||'');
+      $('#ge_local_entrega').val(r.local_entrega||'');
+      $('#ge_observacoes').val(r.observacoes||'');
+      $('#geItemsBody').empty();
+      if(r.itens && r.itens.length) r.itens.forEach(it=>addItemRow(it)); else addItemRow();
+      $('#btnImportarPOGuia').prop('disabled', !r.purchase_order_id);
+      recalcularTotais();
+      geModal.show();
+    }).fail(function(){
+      Swal.fire({icon:'error',title:'Erro',text:'Não foi possível carregar a guia.'});
+    });
+  });
+
+  $(document).on('click','.btn-view-ge', function(){
+    const id=$(this).data('id');
+    Swal.fire({title:'A carregar...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+
+    $.get(`/guias-entrega/${id}/json/`, function(r){
+      Swal.close();
+      const sym=r.moeda_simbolo ? r.moeda_simbolo+' ' : '';
+      let itensHtml='';
+
+      if(r.itens && r.itens.length){
+        itensHtml=r.itens.map((it,i)=>`
+          <tr>
+            <td>${i+1}</td>
+            <td>${esc(it.descricao)}</td>
+            <td>${esc(it.unidade||'—')}</td>
+            <td class="text-end">${parseFloat(it.quantidade).toLocaleString('pt-MZ',{maximumFractionDigits:4})}</td>
+            <td class="text-end">${sym}${fmt(it.preco_unit)}</td>
+            <td class="text-end fw-semibold">${sym}${fmt(it.total_linha)}</td>
+          </tr>`).join('');
+      }else{
+        itensHtml='<tr><td colspan="6" class="text-center text-muted py-3">Sem itens.</td></tr>';
+      }
+
+      $('#geViewContent').html(`
+        <div class="card border-0 shadow-sm view-card"><div class="card-body p-4">
+          <div class="row g-3 mb-4">
+            <div class="col-md-3"><div class="view-label">Número</div><div class="view-value">${r.numero||'—'}</div></div>
+            <div class="col-md-3"><div class="view-label">Estado</div><div class="view-value"><span class="status-pill" style="background-color:${r.estado_cor}18;color:${r.estado_cor};border:1px solid ${r.estado_cor}40">${r.estado_nome||'—'}</span></div></div>
+            <div class="col-md-3"><div class="view-label">Data da Guia</div><div class="view-value">${r.data_guia||'—'}</div></div>
+            <div class="col-md-3"><div class="view-label">Data de Entrega</div><div class="view-value">${r.data_entrega||'—'}</div></div>
+
+            <div class="col-md-4"><div class="view-label">Cliente</div><div class="view-value">${r.cliente_nome||'—'}</div></div>
+            <div class="col-md-4"><div class="view-label">PO</div><div class="view-value">${r.purchase_order_numero||'—'}</div></div>
+            <div class="col-md-4"><div class="view-label">Factura</div><div class="view-value">${r.factura_numero||'—'}</div></div>
+
+            <div class="col-md-4"><div class="view-label">Recebido por</div><div class="view-value">${r.recebido_por||'—'}</div></div>
+            <div class="col-md-4"><div class="view-label">Contacto</div><div class="view-value">${r.contacto_recebedor||'—'}</div></div>
+            <div class="col-md-4"><div class="view-label">Local de Entrega</div><div class="view-value">${r.local_entrega||'—'}</div></div>
+          </div>
+
+          <div class="view-soft-card mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="view-label mb-0">Subtotal</div>
+              <div class="view-value text-primary">${sym}${fmt(r.subtotal)}</div>
+            </div>
+          </div>
+
+          <div class="table-responsive mb-4">
+            <table class="table table-sm table-bordered align-middle" style="font-size:.84rem">
+              <thead class="table-light">
+                <tr>
+                  <th>#</th>
+                  <th>Descrição</th>
+                  <th>Unid.</th>
+                  <th class="text-end">Qtd.</th>
+                  <th class="text-end">Preço Unit.</th>
+                  <th class="text-end">Total</th>
+                </tr>
+              </thead>
+              <tbody>${itensHtml}</tbody>
+            </table>
+          </div>
+
+          ${r.observacoes ? `<div><div class="view-label">Observações</div><div class="view-value">${esc(r.observacoes)}</div></div>` : ''}
+          <div class="mt-4">
+            <a href="${r.pdf_url}" target="_blank" class="btn btn-danger btn-modern">
+              <i class="material-symbols-rounded me-1">picture_as_pdf</i>Descarregar PDF
+            </a>
+          </div>
+        </div></div>
+      `);
+
+      geViewModal.show();
+    }).fail(function(){
+      Swal.fire({icon:'error',title:'Erro',text:'Não foi possível carregar os detalhes da guia.'});
+    });
+  });
+
+  function getCookie(name){
+    const v=document.cookie.match('(^|;) ?'+name+'=([^;]*)(;|$)');
+    return v ? v[2] : null;
+  }
+
+  resetModal();
+});
+</script>
+{% endblock extra_js %}
