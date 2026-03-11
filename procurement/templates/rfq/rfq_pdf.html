@@ -4,17 +4,23 @@
   <meta charset="utf-8">
   <title>{{ rfq.numero }}</title>
   <style>
-    @page {
-      size: A4;
-      margin: 12mm;
+    @font-face {
+      font-family: 'DejaVu Sans';
+      src: url('file:///usr/share/fonts/truetype/dejavu/DejaVuSans.ttf');
+      font-weight: normal;
+    }
+    @font-face {
+      font-family: 'DejaVu Sans';
+      src: url('file:///usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf');
+      font-weight: bold;
     }
 
+    @page { size: A4; margin: 12mm; }
+
     html, body {
-      margin: 0;
-      padding: 0;
-      background: #ffffff;
-      color: #000000;
-      font-family: Arial, Helvetica, sans-serif;
+      margin: 0; padding: 0;
+      background: #ffffff; color: #000000;
+      font-family: 'DejaVu Sans', sans-serif;
       font-size: 12px;
     }
   </style>
