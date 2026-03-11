@@ -11,6 +11,8 @@ class Pagamento(models.Model):
 
     purchase_order = models.OneToOneField(
         PurchaseOrder,
+        null=True,           
+        blank=True,          
         on_delete=models.DO_NOTHING,
         db_column='purchase_order_id',
         related_name='pagamento',

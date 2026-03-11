@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block content %}
-<div class="container-fluid py-3">
+<div class="container-fluid py-3 fc-page">
 
   {% if messages %}
   <div id="django-messages" style="display:none;">
@@ -12,11 +12,11 @@
   </div>
   {% endif %}
 
-  <!-- ── Hero ───────────────────────────────────────────────────────── -->
+  <!-- Hero -->
   <div class="row mb-4">
     <div class="col-12">
       <div class="card border-0 shadow-sm fc-hero-card">
-        <div class="card-body p-4 p-md-5">
+        <div class="card-body p-4 p-md-5 position-relative">
           <div class="row align-items-center g-4">
             <div class="col-lg-7">
               <div class="d-flex align-items-center gap-3 mb-3">
@@ -51,11 +51,12 @@
                 </div>
                 <div class="mini-stat-card stat-no-filter">
                   <span class="mini-stat-label">Total Facturas</span>
-                  <h4 class="mb-0">{{ total_facturas }}</h4>
+                  <h4 class="mb-0 text-dark">{{ total_facturas }}</h4>
                 </div>
               </div>
             </div>
           </div>
+
           <div class="row mt-3 g-3">
             <div class="col-md-6">
               <div class="fc-value-card">
@@ -70,13 +71,14 @@
               </div>
             </div>
           </div>
+
+          <div class="fc-hero-accent"></div>
         </div>
-        <div class="fc-hero-accent"></div>
       </div>
     </div>
   </div>
 
-  <!-- ── Tabela ─────────────────────────────────────────────────────── -->
+  <!-- Tabela -->
   <div class="card border-0 shadow-sm fc-main-card">
     <div class="card-body p-0">
       <div class="fc-topbar px-4 pt-4 pb-3">
@@ -92,6 +94,7 @@
           </div>
         </div>
       </div>
+
       <div class="px-4 pb-4">
         <div class="table-responsive mt-3">
           <table id="fcTable" class="table align-items-center mb-0 fc-table w-100">
@@ -130,19 +133,22 @@
                   </span>
                 </td>
                 <td class="text-center">
-                  <div class="d-flex justify-content-center gap-1 flex-wrap">
+                  <div class="d-flex justify-content-center gap-1 flex-wrap fc-actions-wrap">
                     <button type="button" class="btn btn-sm btn-outline-info btn-view-fc" data-id="{{ f.id }}" title="Visualizar">
                       <i class="material-symbols-rounded" style="font-size:15px">visibility</i>
                     </button>
+
                     {% if f.estado.codigo != 'cancelada' and f.estado.codigo != 'paga' %}
                     <button type="button" class="btn btn-sm btn-outline-primary btn-edit-fc" data-id="{{ f.id }}" title="Editar">
                       <i class="material-symbols-rounded" style="font-size:15px">edit</i>
                     </button>
                     {% endif %}
+
                     <a href="{% url 'procurement:factura_pdf' f.id %}" target="_blank"
                        class="btn btn-sm btn-outline-danger" title="PDF">
                       <i class="material-symbols-rounded" style="font-size:15px">picture_as_pdf</i>
                     </a>
+
                     {% if f.estado.codigo != 'cancelada' and f.estado.codigo != 'paga' %}
                     <div class="dropdown">
                       <button class="btn btn-sm btn-outline-secondary" type="button"
@@ -177,7 +183,7 @@
   {% include "includes/pro_footer.html" %}
 </div>
 
-<!-- ===================== MODAL CRIAR / EDITAR ===================== -->
+<!-- MODAL CRIAR / EDITAR -->
 <div class="modal fade" id="fcModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content border-0 shadow-lg modal-modern">
@@ -189,33 +195,25 @@
         <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
       </div>
 
-      <div class="modal-body pt-3" style="max-height:80vh;overflow-y:auto;">
-
-        <!-- Secção: Dados gerais -->
+      <div class="modal-body pt-3 fc-modal-body">
         <div class="modal-section-title mb-3">
           <i class="material-symbols-rounded me-2">receipt_long</i>Dados Gerais
         </div>
+
         <div class="row g-3 mb-4">
-          <div class="col-md-3">
+          <div class="col-md-4">
             <label class="form-label">Número</label>
             <input type="text" id="fc_numero" class="form-control modern-input" disabled value="{{ default_numero }}">
           </div>
-          <div class="col-md-3">
-            <label class="form-label">Estado</label>
-            <select id="fc_estado_id" class="form-select modern-input">
-              {% for est in estados %}
-              <option value="{{ est.id }}" data-codigo="{{ est.codigo }}">{{ est.nome }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div class="col-md-3">
+          <div class="col-md-4">
             <label class="form-label">Data de Emissão <span class="text-danger">*</span></label>
             <input type="date" id="fc_data_emissao" class="form-control modern-input" value="{{ today }}">
           </div>
-          <div class="col-md-3">
+          <div class="col-md-4">
             <label class="form-label">Data de Vencimento</label>
             <input type="date" id="fc_data_vencimento" class="form-control modern-input">
           </div>
+
           <div class="col-md-4">
             <label class="form-label">Cliente <span class="text-danger">*</span></label>
             <select id="fc_cliente_id" class="form-select modern-input">
@@ -225,6 +223,7 @@
               {% endfor %}
             </select>
           </div>
+
           <div class="col-md-4">
             <label class="form-label">PO Associada</label>
             <select id="fc_po_id" class="form-select modern-input">
@@ -235,17 +234,21 @@
                       data-moeda="{{ po.moeda_id|default:'' }}"
                       data-quotacao="{% if po.quotacao %}{{ po.quotacao.numero }}{% endif %}"
                       data-valor="{{ po.valor_total|floatformat:2 }}">
-                {{ po.numero }}{% if po.po_cliente_numero %} / {{ po.po_cliente_numero }}{% endif %} — {{ po.cliente.nome }}
+                {{ po.numero }}{% if po.po_cliente_numero %} / {{ po.po_cliente_numero }}{% endif %}
+                — {{ po.cliente.nome }}
+                — Total PO: {{ po.valor_total|floatformat:2 }}
               </option>
               {% endfor %}
             </select>
           </div>
+
           <div class="col-md-2">
-            <label class="form-label">&nbsp;</label>
-            <button type="button" id="btnImportarPO" class="btn btn-outline-secondary w-100 modern-input" style="min-height:46px;" disabled>
+            <label class="form-label d-block">&nbsp;</label>
+            <button type="button" id="btnImportarPO" class="btn btn-outline-secondary w-100 btn-import-po" disabled>
               <i class="material-symbols-rounded me-1" style="font-size:15px">download</i>Importar itens
             </button>
           </div>
+
           <div class="col-md-2">
             <label class="form-label">Moeda</label>
             <select id="fc_moeda_id" class="form-select modern-input">
@@ -255,18 +258,18 @@
               {% endfor %}
             </select>
           </div>
+
           <div class="col-md-6">
-            <label class="form-label">Conta Bancária para Pagamento</label>
-            <select id="fc_dado_bancario_id" class="form-select modern-input">
-              <option value="">— Seleccionar conta —</option>
+            <label class="form-label">Contas Bancárias para Pagamento</label>
+            <select id="fc_dado_bancario_ids" class="form-select" multiple>
               {% for db in dados_bancarios %}
               <option value="{{ db.id }}">{{ db.label_completo }}</option>
               {% endfor %}
             </select>
+            <small class="text-muted">Pode seleccionar uma ou várias contas.</small>
           </div>
         </div>
 
-        <!-- Painel info da PO seleccionada -->
         <div id="fc_po_info_wrap" class="d-none mb-4">
           <div class="fc-po-info-card">
             <div class="row g-3 align-items-center">
@@ -280,11 +283,11 @@
               </div>
               <div class="col-md-6 d-flex gap-2 justify-content-md-end flex-wrap">
                 <a id="btn_download_po" href="#" target="_blank"
-                   class="btn btn-sm btn-outline-secondary d-none" style="border-radius:10px">
+                   class="btn btn-sm btn-outline-secondary d-none fc-compact-btn">
                   <i class="material-symbols-rounded me-1" style="font-size:14px">picture_as_pdf</i>Baixar PO
                 </a>
                 <a id="btn_download_quot" href="#" target="_blank"
-                   class="btn btn-sm btn-outline-primary d-none" style="border-radius:10px">
+                   class="btn btn-sm btn-outline-primary d-none fc-compact-btn">
                   <i class="material-symbols-rounded me-1" style="font-size:14px">description</i>Baixar Cotação
                 </a>
               </div>
@@ -292,49 +295,45 @@
           </div>
         </div>
 
-        <!-- Secção: Itens -->
         <div class="modal-section-title mb-3">
           <i class="material-symbols-rounded me-2">list_alt</i>Itens da Factura
-          <button type="button" id="btnAddItem" class="btn btn-sm btn-outline-primary ms-auto" style="border-radius:10px">
+          <button type="button" id="btnAddItem" class="btn btn-sm btn-outline-primary ms-auto fc-compact-btn">
             <i class="material-symbols-rounded me-1" style="font-size:14px">add</i>Linha
           </button>
         </div>
 
-        <div class="table-responsive mb-3">
-          <table class="table table-sm align-middle" id="fcItemsTable" style="font-size:.85rem;min-width:600px">
+        <div class="table-responsive mb-3 fc-items-wrap">
+          <table class="table table-sm align-middle mb-0" id="fcItemsTable">
             <thead class="table-light">
               <tr>
                 <th style="width:38%">Descrição <span class="text-danger">*</span></th>
-                <th style="width:9%">Unidade</th>
-                <th style="width:10%">Qtd.</th>
-                <th style="width:15%">Preço Unit.</th>
-                <th style="width:15%">Total</th>
-                <th style="width:5%"></th>
+                <th style="width:10%">Unidade</th>
+                <th style="width:12%">Qtd.</th>
+                <th style="width:16%">Preço Unit.</th>
+                <th style="width:16%">Total</th>
+                <th style="width:8%"></th>
               </tr>
             </thead>
-            <tbody id="fcItemsBody">
-              <!-- linhas injectadas via JS -->
-            </tbody>
+            <tbody id="fcItemsBody"></tbody>
           </table>
         </div>
 
-        <!-- Secção: Totais -->
         <div class="row g-3 mb-4 justify-content-end">
-          <div class="col-md-5">
+          <div class="col-lg-5 col-md-6">
             <div class="fc-totais-card">
               <div class="d-flex justify-content-between mb-2">
                 <span class="text-muted small">Subtotal</span>
                 <span class="fw-semibold" id="fc_disp_subtotal">0,00</span>
               </div>
-              <div class="d-flex justify-content-between align-items-center mb-2">
+              <div class="d-flex justify-content-between align-items-center mb-2 gap-2">
                 <span class="text-muted small">Desconto (valor)</span>
-                <input type="number" id="fc_desconto" class="form-control form-control-sm modern-input text-end"
-                       style="width:120px;min-height:34px" min="0" step="0.01" value="0">
+                <input type="number" id="fc_desconto" class="form-control form-control-sm modern-input text-end fc-small-input"
+                       min="0" step="0.01" value="0">
               </div>
-              <div class="d-flex justify-content-between align-items-center mb-2">
+              <div class="d-flex justify-content-between align-items-center mb-2 gap-2">
                 <span class="text-muted small">IVA (%)</span>
-                <input type="number" id="fc_iva_pct" class="form-control form-control-sm modern-input text-end"
-                       style="width:80px;min-height:34px" min="0" max="100" step="0.01" value="{{ iva_padrao }}">
+                <input type="number" id="fc_iva_pct" class="form-control form-control-sm modern-input text-end fc-tiny-input"
+                       min="0" max="100" step="0.01" value="{{ iva_padrao }}">
               </div>
               <div class="d-flex justify-content-between mb-2">
                 <span class="text-muted small">Valor IVA</span>
@@ -349,19 +348,17 @@
           </div>
         </div>
 
-        <!-- Secção: Obs / Termos -->
         <div class="row g-3 mb-3">
           <div class="col-md-6">
             <label class="form-label">Observações</label>
-            <textarea id="fc_observacoes" rows="3" class="form-control modern-input"></textarea>
+            <textarea id="fc_observacoes" rows="3" class="form-control modern-input fc-textarea"></textarea>
           </div>
           <div class="col-md-6">
             <label class="form-label">Termos e Condições</label>
-            <textarea id="fc_termos" rows="3" class="form-control modern-input"></textarea>
+            <textarea id="fc_termos" rows="3" class="form-control modern-input fc-textarea"></textarea>
           </div>
         </div>
-
-      </div><!-- /modal-body -->
+      </div>
 
       <div class="modal-footer border-0 pt-0 gap-2">
         <button type="button" class="btn btn-outline-secondary btn-modern" data-bs-dismiss="modal">Cancelar</button>
@@ -373,7 +370,7 @@
   </div>
 </div>
 
-<!-- ===================== MODAL VISUALIZAR ===================== -->
+<!-- MODAL VISUALIZAR -->
 <div class="modal fade" id="fcViewModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content border-0 shadow-lg modal-modern">
@@ -392,62 +389,218 @@
   </div>
 </div>
 
+<!-- MODAL ASSOCIAR HISTÓRICO DE PAGAMENTO -->
+<div class="modal fade" id="fcPagamentoModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-lg modal-modern">
+      <div class="modal-header border-0 pb-0">
+        <div>
+          <h5 class="modal-title fw-bold">
+            <i class="material-symbols-rounded me-2 align-middle" style="font-size:20px;color:var(--fc)">payments</i>
+            Associar Histórico de Pagamento
+          </h5>
+          <p class="text-muted mb-0 small">
+            Seleccione um ou mais registos de pagamento a associar a esta factura.
+          </p>
+        </div>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body pt-3">
+        <!-- Contador de seleccionados -->
+        <div id="fcPagSelCount" class="d-none mb-3">
+          <div class="fc-sel-count-bar">
+            <i class="material-symbols-rounded me-1" style="font-size:16px">check_circle</i>
+            <span id="fcPagSelCountText">0 seleccionado(s)</span>
+          </div>
+        </div>
+        <div id="fcPagamentoList"></div>
+      </div>
+      <div class="modal-footer border-0 pt-0 gap-2">
+        <button type="button" class="btn btn-outline-secondary btn-modern" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" id="btnConfirmarPagamento" class="btn btn-primary btn-modern btn-fc" disabled>
+          <i class="material-symbols-rounded me-1">check</i>Confirmar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock content %}
 
 {% block extra_js %}
+
 <link href="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.8/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/datatables.net-responsive-bs5@2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/datatables.net-buttons-bs5@2.4.2/css/buttons.bootstrap5.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
 
 <style>
-:root{--fc:#2E3E82;--fc-mid:#4256ad;--fc-light:#eef2ff;--fc-border:#dae3ff}
-
-.fc-hero-card{position:relative;overflow:hidden;border-radius:22px;background:linear-gradient(135deg,#fff 0%,#f4f6ff 100%)}
-.fc-hero-accent{position:absolute;right:-60px;top:-60px;width:220px;height:220px;background:radial-gradient(circle,rgba(46,62,130,.15) 0%,rgba(46,62,130,0) 70%);pointer-events:none}
-.fc-hero-icon{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--fc) 0%,var(--fc-mid) 100%);color:#fff;box-shadow:0 12px 30px rgba(46,62,130,.22)}
+:root{
+  --fc:#2E3E82;--fc-mid:#4256ad;--fc-light:#eef2ff;
+  --fc-border:#dbe3ff;--fc-border-soft:#e9edf7;
+  --fc-text:#1f2937;--fc-muted:#6b7280;
+}
+.fc-page .card{border-radius:22px}
+.fc-hero-card{position:relative;overflow:hidden;background:linear-gradient(135deg,#fff 0%,#f4f7ff 100%);}
+.fc-hero-accent{
+  position:absolute;right:-50px;top:-50px;width:220px;height:220px;border-radius:50%;
+  background:radial-gradient(circle,rgba(46,62,130,.16) 0%,rgba(46,62,130,0) 70%);pointer-events:none;
+}
+.fc-hero-icon{
+  width:64px;height:64px;border-radius:18px;display:flex;align-items:center;
+  justify-content:center;color:#fff;flex-shrink:0;
+  background:linear-gradient(135deg,var(--fc) 0%,var(--fc-mid) 100%);
+  box-shadow:0 12px 30px rgba(46,62,130,.22);
+}
 .fc-hero-icon i{font-size:30px}
-.fc-soft-badge{background:var(--fc-light);color:var(--fc);border:1px solid var(--fc-border);font-weight:600;padding:.5rem .9rem}
-.fc-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.mini-stat-card{background:#fff;border:1px solid #edf0f7;border-radius:18px;padding:18px 16px;box-shadow:0 8px 22px rgba(15,23,42,.04)}
-.mini-stat-label{display:block;font-size:.78rem;color:#6c757d;margin-bottom:6px}
-.stat-filter{cursor:pointer;transition:all .2s}
-.stat-filter:hover{border-color:var(--fc)!important}
-.stat-filter.stat-active{border-color:var(--fc)!important;background:var(--fc-light)!important}
-.fc-value-card{background:#fff;border:1px solid #e8edf8;border-radius:18px;padding:18px 20px}
-.fc-value-label{font-size:.82rem;color:#6c757d;margin-bottom:6px;font-weight:600}
-.fc-value-amount{font-size:1.45rem;font-weight:800;color:var(--fc)}
-.fc-main-card{border-radius:22px;overflow:hidden}
-.fc-topbar{border-bottom:1px solid #edf0f7;background:linear-gradient(180deg,#fff 0%,#f8f9ff 100%)}
-.fc-table thead th{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#6c757d;font-weight:700;background:#f8f9ff}
-.fc-ref-pill{display:inline-flex;align-items:center;background:var(--fc-light);color:var(--fc);border:1px solid var(--fc-border);border-radius:8px;padding:3px 10px;font-size:.78rem;font-weight:700}
-.status-pill{display:inline-flex;align-items:center;padding:.42rem .80rem;border-radius:999px;font-size:.74rem;font-weight:700}
-.btn-modern{border-radius:14px!important;padding:.6rem 1.1rem!important;font-weight:600!important}
-.btn-fc{background:linear-gradient(135deg,var(--fc) 0%,var(--fc-mid) 100%)!important;border:none!important;color:#fff!important}
-.modal-modern{border-radius:22px}
-.modal-section-title{display:flex;align-items:center;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--fc);border-bottom:1px solid var(--fc-border);padding-bottom:8px;margin-bottom:12px}
-.modern-input{border-radius:14px!important;border:1px solid #dfe5ef!important;min-height:46px;box-shadow:none!important}
-.modern-input:focus{border-color:var(--fc)!important;box-shadow:0 0 0 .2rem rgba(46,62,130,.10)!important}
-.fc-totais-card{background:linear-gradient(135deg,#f4f6ff,#f8faff);border:1px solid var(--fc-border);border-radius:18px;padding:18px 20px}
-.fc-po-info-card{background:linear-gradient(135deg,#f0f4ff,#f8faff);border:1px solid var(--fc-border);border-radius:16px;padding:16px 20px}
-.fc-info-label{font-size:.74rem;text-transform:uppercase;letter-spacing:.05em;color:#8892a6;font-weight:700;margin-bottom:4px}
-.fc-info-value{font-size:.95rem;color:#1f2937;font-weight:600}
-.fc-item-row td{vertical-align:middle}
-.fc-item-row input{border-radius:10px!important;border:1px solid #dfe5ef!important;padding:5px 8px;font-size:.83rem}
+.fc-soft-badge{background:var(--fc-light);color:var(--fc);border:1px solid var(--fc-border);font-weight:700;padding:.48rem .9rem;}
+.fc-stats-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+.mini-stat-card{
+  background:#fff;border:1px solid #edf1fb;border-radius:18px;padding:16px;
+  box-shadow:0 6px 20px rgba(15,23,42,.04);transition:all .2s ease;
+}
+.mini-stat-label{display:block;font-size:.78rem;color:var(--fc-muted);margin-bottom:6px;font-weight:600;}
+.stat-filter{cursor:pointer}
+.stat-filter:hover{border-color:var(--fc);transform:translateY(-1px);}
+.stat-active{border-color:var(--fc)!important;background:var(--fc-light)!important;}
+.fc-value-card{background:#fff;border:1px solid #e8edf8;border-radius:18px;padding:18px 20px;}
+.fc-value-label{font-size:.82rem;color:var(--fc-muted);margin-bottom:6px;font-weight:700;}
+.fc-value-amount{font-size:1.45rem;font-weight:800;color:var(--fc);}
+.fc-main-card{overflow:hidden;}
+.fc-topbar{border-bottom:1px solid #edf1fb;background:linear-gradient(180deg,#fff 0%,#f8faff 100%);}
+.fc-table thead th{
+  font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;
+  color:#6c757d;font-weight:800;background:#f8f9ff;
+  border-bottom:1px solid #edf1fb;white-space:nowrap;
+}
+.fc-table tbody td{vertical-align:middle;color:var(--fc-text);}
+.fc-ref-pill{
+  display:inline-flex;align-items:center;background:var(--fc-light);color:var(--fc);
+  border:1px solid var(--fc-border);border-radius:9px;padding:4px 10px;font-size:.78rem;font-weight:700;
+}
+.status-pill{display:inline-flex;align-items:center;padding:.42rem .80rem;border-radius:999px;font-size:.74rem;font-weight:700;}
+.fc-actions-wrap .btn{border-radius:10px!important;min-width:34px;}
+.btn-modern{border-radius:14px!important;padding:.65rem 1.1rem!important;font-weight:700!important;}
+.btn-fc{background:linear-gradient(135deg,var(--fc) 0%,var(--fc-mid) 100%)!important;border:none!important;color:#fff!important;}
+.btn-fc:hover{opacity:.95}
+.modal-modern{border-radius:24px;}
+.fc-modal-body{max-height:80vh;overflow-y:auto;padding-right:1.2rem;}
+.modal-section-title{
+  display:flex;align-items:center;font-size:.80rem;font-weight:800;
+  text-transform:uppercase;letter-spacing:.07em;color:var(--fc);
+  border-bottom:1px solid var(--fc-border);padding-bottom:8px;margin-bottom:12px;
+}
+.modern-input{border-radius:14px!important;border:1px solid #dfe5ef!important;min-height:46px;box-shadow:none!important;background:#fff!important;}
+.modern-input:focus{border-color:var(--fc)!important;box-shadow:0 0 0 .2rem rgba(46,62,130,.10)!important;}
+.btn-import-po{min-height:46px;border-radius:14px!important;font-weight:700;}
+.fc-compact-btn{border-radius:10px!important;font-weight:700;}
+.fc-po-info-card{background:linear-gradient(135deg,#f0f4ff,#f8faff);border:1px solid var(--fc-border);border-radius:16px;padding:16px 20px;}
+.fc-info-label{font-size:.74rem;text-transform:uppercase;letter-spacing:.05em;color:#8892a6;font-weight:800;margin-bottom:4px;}
+.fc-info-value{font-size:.95rem;color:#1f2937;font-weight:700;}
+.fc-items-wrap{border:1px solid var(--fc-border-soft);border-radius:18px;overflow:hidden;}
+#fcItemsTable thead th{font-size:.75rem;font-weight:800;color:#667085;border-bottom:1px solid var(--fc-border-soft);background:#f8faff;white-space:nowrap;}
+#fcItemsTable tbody td{vertical-align:middle;padding:10px 8px;}
+.fc-item-row input{border-radius:10px!important;border:1px solid #dfe5ef!important;box-shadow:none!important;min-height:40px;width:100%;padding:8px 10px;font-size:.84rem;}
+.fc-item-row .btn-remove-item{border-radius:10px!important;padding:7px 10px!important;}
+.fc-totais-card{background:linear-gradient(135deg,#f4f6ff,#f8faff);border:1px solid var(--fc-border);border-radius:18px;padding:18px 20px;}
+.fc-small-input{width:120px!important;min-height:36px!important;}
+.fc-tiny-input{width:90px!important;min-height:36px!important;}
+.fc-textarea{min-height:110px!important;resize:vertical;padding-top:12px!important;}
+.view-card{border-radius:20px;overflow:hidden;}
+.view-label{font-size:.74rem;text-transform:uppercase;letter-spacing:.05em;color:#8892a6;font-weight:800;margin-bottom:4px;}
+.view-value{font-size:.95rem;color:#1f2937;font-weight:700;word-break:break-word;min-height:22px;}
+.view-soft-card{background:linear-gradient(135deg,#fff,#f8faff);border:1px solid var(--fc-border-soft);border-radius:18px;padding:18px;}
+.view-bank-item{border:1px solid var(--fc-border);background:#fff;border-radius:12px;padding:10px 12px;margin-bottom:8px;font-size:.86rem;}
+.view-bank-item:last-child{margin-bottom:0}
 
-/* Pagination igual ao PO template */
-.dataTables_wrapper .dataTables_paginate .pagination{display:flex!important;gap:4px!important;flex-wrap:wrap!important}
-.dataTables_wrapper .dataTables_paginate .pagination .page-item .page-link{all:unset!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:36px!important;height:36px!important;padding:0 10px!important;border-radius:10px!important;border:1px solid #e7ebf3!important;background:#fff!important;color:#495057!important;font-size:.85rem!important;font-weight:600!important;cursor:pointer!important;transition:all .2s!important}
-.dataTables_wrapper .dataTables_paginate .pagination .page-item.active .page-link{background:linear-gradient(135deg,var(--fc) 0%,var(--fc-mid) 100%)!important;border-color:var(--fc)!important;color:#fff!important}
-div.dataTables_wrapper div.dataTables_filter input,
-div.dataTables_wrapper div.dataTables_length select{border-radius:12px!important;border:1px solid #dfe5ef!important;min-height:38px;box-shadow:none!important}
-.dt-buttons{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.dt-buttons .btn{border-radius:12px!important;padding:.45rem .90rem!important;font-size:.82rem!important;font-weight:600!important;display:inline-flex!important;align-items:center!important;gap:4px!important}
-.dt-button-background{display:none!important}
-.dataTables_wrapper .dataTables_info{font-size:.82rem;color:#6c757d}
+/* ── Histórico de Pagamento cards ── */
+.fc-pag-item{
+  border:2px solid var(--fc-border-soft);border-radius:14px;
+  padding:14px 16px;cursor:pointer;background:#fff;
+  transition:border-color .18s,background .18s,box-shadow .18s;
+  user-select:none;
+}
+.fc-pag-item:hover{
+  border-color:var(--fc-mid);background:#f7f9ff;
+  box-shadow:0 4px 18px rgba(46,62,130,.08);
+}
+.fc-pag-item.fc-pag-selected{
+  border-color:var(--fc)!important;background:var(--fc-light)!important;
+  box-shadow:0 4px 18px rgba(46,62,130,.13)!important;
+}
+.fc-pag-item.fc-pag-already{
+  border-color:#22c55e!important;background:#f0fdf4!important;
+  pointer-events:none;opacity:.85;
+}
+.fc-pag-check{
+  width:22px;height:22px;border-radius:6px;
+  border:2px solid #d1d9ef;display:flex;align-items:center;
+  justify-content:center;flex-shrink:0;
+  transition:all .18s;color:transparent;
+}
+.fc-pag-item.fc-pag-selected .fc-pag-check{border-color:var(--fc);background:var(--fc);color:#fff;}
+.fc-pag-item.fc-pag-already .fc-pag-check{border-color:#22c55e;background:#22c55e;color:#fff;}
+.fc-pag-tag{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:.72rem;font-weight:700;padding:3px 8px;
+  border-radius:999px;white-space:nowrap;
+}
+.fc-pag-tag-po{background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;}
+.fc-pag-tag-nopo{background:#fef9c3;color:#854d0e;border:1px solid #fde047;}
+.fc-pag-tag-linked{background:#dcfce7;color:#15803d;border:1px solid #86efac;}
 
-/* View modal */
-.view-label{font-size:.74rem;text-transform:uppercase;letter-spacing:.05em;color:#8892a6;font-weight:700;margin-bottom:4px}
-.view-value{font-size:.95rem;color:#1f2937;font-weight:600;word-break:break-word;min-height:22px}
+/* Barra contador */
+.fc-sel-count-bar{
+  display:flex;align-items:center;gap:6px;
+  background:var(--fc-light);color:var(--fc);
+  border:1px solid var(--fc-border);border-radius:10px;
+  padding:8px 14px;font-size:.82rem;font-weight:700;
+}
+
+/* ── DataTables ── */
+.dataTables_wrapper .dataTables_filter input,
+.dataTables_wrapper .dataTables_length select{
+  border-radius:12px!important;border:1px solid #dfe5ef!important;
+  min-height:38px;box-shadow:none!important;background:#fff!important;
+}
+.dataTables_wrapper .dataTables_filter input:focus,
+.dataTables_wrapper .dataTables_length select:focus{border-color:var(--fc)!important;box-shadow:0 0 0 .2rem rgba(46,62,130,.08)!important;}
+.dt-buttons{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.dt-buttons .btn{border-radius:12px!important;padding:.45rem .90rem!important;font-size:.82rem!important;font-weight:700!important;display:inline-flex!important;align-items:center!important;gap:4px!important;}
+.dataTables_wrapper .dataTables_paginate .pagination{display:flex!important;gap:4px!important;flex-wrap:wrap!important;}
+.dataTables_wrapper .dataTables_paginate .pagination .page-item .page-link{
+  all:unset!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  min-width:36px!important;height:36px!important;padding:0 10px!important;border-radius:10px!important;
+  border:1px solid #e7ebf3!important;background:#fff!important;color:#495057!important;
+  font-size:.85rem!important;font-weight:700!important;cursor:pointer!important;transition:all .2s!important;
+}
+.dataTables_wrapper .dataTables_paginate .pagination .page-item.active .page-link{
+  background:linear-gradient(135deg,var(--fc) 0%,var(--fc-mid) 100%)!important;border-color:var(--fc)!important;color:#fff!important;
+}
+.dataTables_wrapper .dataTables_info{font-size:.82rem;color:#6c757d;}
+.dropdown-menu .dropdown-item{font-size:.88rem;padding:.55rem .9rem;}
+
+/* ── Select2 ── */
+.select2-container{width:100%!important}
+.select2-container--bootstrap-5{border:none!important;outline:none!important;box-shadow:none!important;}
+.select2-container--bootstrap-5 .select2-selection{border-radius:14px!important;border:1px solid #dfe5ef!important;min-height:46px!important;padding:.42rem .70rem!important;box-shadow:none!important;outline:none!important;background:#fff!important;}
+.select2-container--bootstrap-5 .select2-selection--multiple{min-height:46px!important;}
+.select2-container--bootstrap-5.select2-container--focus .select2-selection,
+.select2-container--bootstrap-5.select2-container--open .select2-selection{border-color:var(--fc)!important;box-shadow:0 0 0 .2rem rgba(46,62,130,.10)!important;outline:none!important;}
+.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered{display:flex!important;flex-wrap:wrap!important;gap:6px!important;padding:0!important;}
+.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice{background:var(--fc-light)!important;border:1px solid var(--fc-border)!important;color:var(--fc)!important;border-radius:999px!important;padding:4px 10px!important;font-size:.78rem!important;font-weight:700!important;margin:0!important;}
+.select2-container--bootstrap-5 .select2-selection__choice__remove{margin-right:6px!important;border:none!important;}
+.select2-container--bootstrap-5 .select2-dropdown{border:1px solid #dfe5ef!important;border-radius:0 0 14px 14px!important;box-shadow:0 8px 24px rgba(46,62,130,.10)!important;overflow:hidden!important;}
+.select2-container--bootstrap-5 .select2-dropdown--above{border-radius:14px 14px 0 0!important;}
+.select2-container--bootstrap-5 .select2-search{padding:10px!important;}
+.select2-container--bootstrap-5 .select2-search__field{border-radius:10px!important;border:1px solid #dfe5ef!important;padding:8px 10px!important;outline:none!important;box-shadow:none!important;}
+.select2-container--bootstrap-5 .select2-search__field:focus{border-color:var(--fc)!important;box-shadow:0 0 0 .15rem rgba(46,62,130,.10)!important;outline:none!important;}
+.select2-container--bootstrap-5 .select2-results__option{padding:10px 12px!important;font-size:.9rem!important;}
+.select2-container--bootstrap-5 .select2-results__option--highlighted{background:var(--fc-light)!important;color:var(--fc)!important;}
+
+@media (max-width:991.98px){.fc-stats-grid{grid-template-columns:1fr 1fr;}}
+@media (max-width:767.98px){.fc-stats-grid{grid-template-columns:1fr;}.fc-modal-body{padding-right:1rem;}}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
@@ -462,400 +615,432 @@ div.dataTables_wrapper div.dataTables_length select{border-radius:12px!important
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
 $(function(){
   const fcModal     = new bootstrap.Modal(document.getElementById('fcModal'));
   const fcViewModal = new bootstrap.Modal(document.getElementById('fcViewModal'));
+  const fcPagModal  = new bootstrap.Modal(document.getElementById('fcPagamentoModal'));
   const CSRF        = $('[name=csrfmiddlewaretoken]').first().val() || getCookie('csrftoken');
-  let   editingId   = null;
+  let editingId     = null;
+  let activeFilter  = '';
 
-  function getCookie(name){
-    const v = document.cookie.match('(^|;) ?'+name+'=([^;]*)(;|$)');
-    return v ? v[2] : null;
-  }
+  // Contexto mudança de estado
+  let _pendingFacturaId   = null;
+  let _pendingEstadoId    = null;
+  let _pendingEstadoLabel = null;
+  let _selectedHistIds    = new Set(); // múltipla selecção
 
-  // ── DataTable ──────────────────────────────────────────────────────────
+  function getCookie(n){ const v=document.cookie.match('(^|;) ?'+n+'=([^;]*)(;|$)'); return v?v[2]:null; }
+  function fmt(v){ return parseFloat(v||0).toLocaleString('pt-MZ',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  /* ── Select2 ── */
+  $('#fc_dado_bancario_ids').select2({theme:'bootstrap-5',width:'100%',placeholder:'Seleccione uma ou várias contas',closeOnSelect:false,dropdownParent:$('#fcModal')});
+
+  /* ── DataTable ── */
   const table = $('#fcTable').DataTable({
-    responsive: true, autoWidth: false, pageLength: 10,
-    dom: '<"dt-buttons-row d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3"Bf>rtip',
+    responsive:true,autoWidth:false,pageLength:10,
+    dom:'<"dt-buttons-row d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3"Bf>rtip',
     buttons:[
-      {extend:'excelHtml5', text:'Excel',    className:'btn btn-outline-success',   title:'Facturas'},
-      {extend:'csvHtml5',   text:'CSV',      className:'btn btn-outline-secondary', title:'Facturas'},
-      {extend:'pdfHtml5',   text:'PDF',      className:'btn btn-outline-danger',    title:'Facturas', orientation:'landscape'},
-      {extend:'print',      text:'Imprimir', className:'btn btn-outline-primary',   title:'Facturas'},
+      {extend:'excelHtml5',text:'Excel',   className:'btn btn-outline-success',   title:'Facturas'},
+      {extend:'csvHtml5',  text:'CSV',     className:'btn btn-outline-secondary', title:'Facturas'},
+      {extend:'pdfHtml5',  text:'PDF',     className:'btn btn-outline-danger',    title:'Facturas',orientation:'landscape'},
+      {extend:'print',     text:'Imprimir',className:'btn btn-outline-primary',   title:'Facturas'}
     ],
-    language:{
-      search:'Pesquisar:', lengthMenu:'Mostrar _MENU_ registos',
-      info:'Mostrando _START_ a _END_ de _TOTAL_ registos',
-      zeroRecords:'Nenhum registo encontrado', emptyTable:'Sem dados disponíveis',
-      paginate:{first:'Primeiro',last:'Último',next:'Seguinte',previous:'Anterior'},
-    },
+    language:{search:'Pesquisar:',lengthMenu:'Mostrar _MENU_ registos',info:'Mostrando _START_ a _END_ de _TOTAL_ registos',zeroRecords:'Nenhum registo encontrado',emptyTable:'Sem dados disponíveis',paginate:{first:'Primeiro',last:'Último',next:'Seguinte',previous:'Anterior'}},
     columnDefs:[
-      {orderable:false, targets:[8]},
-      {targets:7, render:function(data,type){
-        if(type==='filter'||type==='sort'){
-          const tmp=document.createElement('div'); tmp.innerHTML=data;
-          const s=tmp.querySelector('.estado-codigo'); return s?s.textContent.trim():data;
-        }
+      {orderable:false,targets:[8]},
+      {targets:7,render:function(data,type){
+        if(type==='filter'||type==='sort'){const t=document.createElement('div');t.innerHTML=data;const s=t.querySelector('.estado-codigo');return s?s.textContent.trim():data;}
         return data;
-      }},
-    ],
+      }}
+    ]
   });
 
-  let activeFilter = '';
-  $('.stat-filter').on('click', function(){
+  /* ── Stat filters ── */
+  $('.stat-filter').on('click',function(){
     const f=$(this).data('filter');
-    if(activeFilter===f){activeFilter='';table.column(7).search('').draw();$('.stat-filter').removeClass('stat-active');}
-    else{activeFilter=f;table.column(7).search(f).draw();$('.stat-filter').removeClass('stat-active');$(this).addClass('stat-active');}
+    if(activeFilter===f){activeFilter='';$('.stat-filter').removeClass('stat-active');table.column(7).search('').draw();}
+    else{activeFilter=f;$('.stat-filter').removeClass('stat-active');$(this).addClass('stat-active');table.column(7).search(f).draw();}
   });
 
-  // ── Helpers ────────────────────────────────────────────────────────────
-  function fmt(v){return parseFloat(v||0).toLocaleString('pt-MZ',{minimumFractionDigits:2,maximumFractionDigits:2});}
-
+  /* ── Totais ── */
   function recalcularTotais(){
-    let subtotal=0;
+    let sub=0;
     $('#fcItemsBody tr.fc-item-row').each(function(){
-      const qty  = parseFloat($(this).find('.item-qty').val())||0;
-      const pu   = parseFloat($(this).find('.item-pu').val())||0;
-      const line = (qty*pu);
-      $(this).find('.item-total').val(fmt(line));
-      subtotal += line;
+      const qty=parseFloat($(this).find('.item-qty').val())||0;
+      const pu =parseFloat($(this).find('.item-pu').val())||0;
+      const l=qty*pu; $(this).find('.item-total').val(fmt(l)); sub+=l;
     });
-    const desconto = parseFloat($('#fc_desconto').val())||0;
-    const ivaPct   = parseFloat($('#fc_iva_pct').val())||0;
-    const base     = Math.max(subtotal-desconto,0);
-    const iva      = base*ivaPct/100;
-    const total    = base+iva;
-    $('#fc_disp_subtotal').text(fmt(subtotal));
-    $('#fc_disp_iva').text(fmt(iva));
-    $('#fc_disp_total').text(fmt(total));
+    const desc=parseFloat($('#fc_desconto').val())||0;
+    const ivp =parseFloat($('#fc_iva_pct').val())||0;
+    const base=Math.max(sub-desc,0);
+    const iva=base*ivp/100;
+    $('#fc_disp_subtotal').text(fmt(sub));$('#fc_disp_iva').text(fmt(iva));$('#fc_disp_total').text(fmt(base+iva));
   }
 
-  function addItemRow(data){
-    data = data || {};
-    const row = `
+  /* ── Linha item ── */
+  function addItemRow(d){
+    d=d||{};
+    $('#fcItemsBody').append(`
       <tr class="fc-item-row">
-        <td><input type="text"   class="form-control item-desc" value="${esc(data.descricao||'')}" placeholder="Descrição do item"></td>
-        <td><input type="text"   class="form-control item-unid" value="${esc(data.unidade||'')}" placeholder="un"></td>
-        <td><input type="number" class="form-control item-qty"  value="${data.quantidade||1}" min="0" step="0.0001"></td>
-        <td><input type="number" class="form-control item-pu"   value="${data.preco_unit||0}" min="0" step="0.01"></td>
-        <td><input type="text"   class="form-control item-total" value="${fmt(data.total_linha||0)}" disabled></td>
-        <td>
-          <button type="button" class="btn btn-sm btn-outline-danger btn-remove-item" style="border-radius:8px;padding:4px 8px">
+        <td><input type="text"   class="form-control item-desc" value="${esc(d.descricao||'')}" placeholder="Descrição do item"></td>
+        <td><input type="text"   class="form-control item-unid" value="${esc(d.unidade||'')}"   placeholder="un"></td>
+        <td><input type="number" class="form-control item-qty"  value="${d.quantidade||1}"      min="0" step="0.0001"></td>
+        <td><input type="number" class="form-control item-pu"   value="${d.preco_unit||0}"      min="0" step="0.01"></td>
+        <td><input type="text"   class="form-control item-total" value="${fmt(d.total_linha||0)}" disabled></td>
+        <td class="text-center">
+          <button type="button" class="btn btn-sm btn-outline-danger btn-remove-item">
             <i class="material-symbols-rounded" style="font-size:14px">delete</i>
           </button>
         </td>
-      </tr>`;
-    $('#fcItemsBody').append(row);
+      </tr>`);
     recalcularTotais();
   }
 
-  function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-
+  /* ── Reset modal ── */
   function resetModal(){
     editingId=null;
-    $('#fcModalTitle').text('Nova Factura');
-    $('#fcModalSub').text('Preencha os dados da factura.');
-    $('#fc_numero').val('{{ default_numero }}');
-    $('#fc_estado_id option[data-codigo="rascunho"]').prop('selected',true);
-    $('#fc_data_emissao').val('{{ today }}');
-    $('#fc_data_vencimento').val('');
-    $('#fc_cliente_id').val('');
-    $('#fc_po_id').val('');
-    $('#fc_moeda_id').val('');
-    $('#fc_dado_bancario_id').val('');
-    $('#fc_desconto').val('0');
-    $('#fc_iva_pct').val('{{ iva_padrao }}');
-    $('#fc_observacoes').val('');
-    $('#fc_termos').val('');
+    $('#fcModalTitle').text('Nova Factura');$('#fcModalSub').text('Preencha os dados da factura.');
+    $('#fc_numero').val('{{ default_numero }}');$('#fc_data_emissao').val('{{ today }}');
+    $('#fc_data_vencimento,#fc_cliente_id,#fc_po_id,#fc_moeda_id').val('');
+    $('#fc_dado_bancario_ids').val(null).trigger('change');
+    $('#fc_desconto').val('0');$('#fc_iva_pct').val('{{ iva_padrao }}');
+    $('#fc_observacoes,#fc_termos').val('');
     $('#fcItemsBody').empty();
     $('#btnImportarPO').prop('disabled',true);
     $('#fc_po_info_wrap').addClass('d-none');
-    $('#btn_download_po, #btn_download_quot').addClass('d-none').attr('href','#');
-    addItemRow();
-    recalcularTotais();
+    $('#btn_download_po,#btn_download_quot').addClass('d-none').attr('href','#');
+    addItemRow();recalcularTotais();
   }
 
-  // ── Eventos de itens ───────────────────────────────────────────────────
-  $('#btnAddItem').on('click', ()=>addItemRow());
-
-  $(document).on('input', '.item-qty, .item-pu', recalcularTotais);
-  $(document).on('input', '#fc_desconto, #fc_iva_pct', recalcularTotais);
-  $(document).on('click', '.btn-remove-item', function(){
-    $(this).closest('tr').remove(); recalcularTotais();
+  $('#btnAddItem').on('click',()=>addItemRow());
+  $(document).on('input','.item-qty,.item-pu',recalcularTotais);
+  $(document).on('input','#fc_desconto,#fc_iva_pct',recalcularTotais);
+  $(document).on('click','.btn-remove-item',function(){
+    $(this).closest('tr').remove();
+    if(!$('#fcItemsBody tr.fc-item-row').length) addItemRow(); else recalcularTotais();
   });
 
-  // ── Seleccionar PO → mostra painel info e activa botão importar ──────
-  $('#fc_po_id').on('change', function(){
-    const opt   = $(this).find('option:selected');
-    const poId  = $(this).val();
+  /* ── PO select ── */
+  $('#fc_po_id').on('change',function(){
+    const o=$(this).find('option:selected'),poId=$(this).val();
     if(poId){
-      $('#btnImportarPO').prop('disabled', false);
-      const cliId   = opt.data('cliente');
-      const moedaId = opt.data('moeda');
-      const quotNum = opt.data('quotacao') || '—';
-      const valor   = opt.data('valor') || '0,00';
-      if(cliId)   $('#fc_cliente_id').val(cliId);
-      if(moedaId) $('#fc_moeda_id').val(moedaId);
-      $('#fc_po_valor_display').text(valor);
-      $('#fc_po_quotacao_display').text(quotNum !== '' ? quotNum : '—');
-      // Reset download buttons — serão preenchidos após importar
-      $('#btn_download_po, #btn_download_quot').addClass('d-none').attr('href','#');
+      $('#btnImportarPO').prop('disabled',false);
+      const ci=o.data('cliente'),mi=o.data('moeda');
+      if(ci) $('#fc_cliente_id').val(ci); if(mi) $('#fc_moeda_id').val(mi);
+      $('#fc_po_valor_display').text(o.data('valor')||'0,00');
+      $('#fc_po_quotacao_display').text(o.data('quotacao')||'—');
+      $('#btn_download_po,#btn_download_quot').addClass('d-none').attr('href','#');
       $('#fc_po_info_wrap').removeClass('d-none');
-    } else {
-      $('#btnImportarPO').prop('disabled', true);
-      $('#fc_po_info_wrap').addClass('d-none');
+    }else{
+      $('#btnImportarPO').prop('disabled',true);$('#fc_po_info_wrap').addClass('d-none');
+      $('#btn_download_po,#btn_download_quot').addClass('d-none').attr('href','#');
     }
   });
 
-  // ── Importar itens da Quotação (via PO) ───────────────────────────────
-  $('#btnImportarPO').on('click', function(){
-    const poId = $('#fc_po_id').val();
-    if(!poId) return;
-    Swal.fire({title:'A importar itens...', allowOutsideClick:false, didOpen:()=>Swal.showLoading()});
-    $.get(`/facturas/po/${poId}/itens/`, function(r){
-      Swal.close();
-
-      // Preencher itens
-      $('#fcItemsBody').empty();
-      r.itens.forEach(it => addItemRow(it));
+  /* ── Importar itens ── */
+  $('#btnImportarPO').on('click',function(){
+    const poId=$('#fc_po_id').val(); if(!poId) return;
+    Swal.fire({title:'A importar itens...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+    $.get(`/facturas/po/${poId}/itens/`,function(r){
+      Swal.close();$('#fcItemsBody').empty();
+      if(r.itens&&r.itens.length) r.itens.forEach(it=>addItemRow(it)); else addItemRow();
       recalcularTotais();
-
-      // Preencher termos
       if(r.termos) $('#fc_termos').val(r.termos);
-
-      // Actualizar painel info com dados reais
       $('#fc_po_valor_display').text(fmt(r.po_valor_total));
-      $('#fc_po_quotacao_display').text(r.quotacao_numero || '—');
-
-      // Botões download
-      if(r.po_download_url){
-        $('#btn_download_po').attr('href', r.po_download_url).removeClass('d-none');
-      }
-      if(r.quot_download_url){
-        $('#btn_download_quot').attr('href', r.quot_download_url).removeClass('d-none');
-      }
-
-      Swal.fire({icon:'success', title:'Itens importados!',
-        text: r.quotacao_numero ? `Da Cotação ${r.quotacao_numero}` : 'Linha genérica criada.',
-        timer:1800, showConfirmButton:false});
+      $('#fc_po_quotacao_display').text(r.quotacao_numero||'—');
+      if(r.po_download_url) $('#btn_download_po').attr('href',r.po_download_url).removeClass('d-none');
+      if(r.quot_download_url) $('#btn_download_quot').attr('href',r.quot_download_url).removeClass('d-none');
+      Swal.fire({icon:'success',title:'Itens importados!',text:r.quotacao_numero?`Da Cotação ${r.quotacao_numero}`:'Linha genérica criada.',timer:1800,showConfirmButton:false});
     }).fail(()=>Swal.fire({icon:'error',title:'Erro',text:'Não foi possível importar os itens da PO.'}));
   });
 
-  // ── Abrir modal Nova Factura ───────────────────────────────────────────
-  $('#btnNovaFactura').on('click', ()=>{ resetModal(); fcModal.show(); });
-
-  // ── Abrir modal Editar ────────────────────────────────────────────────
-  $(document).on('click', '.btn-edit-fc', function(){
+  /* ── Nova / Editar ── */
+  $('#btnNovaFactura').on('click',()=>{resetModal();fcModal.show();});
+  $(document).on('click','.btn-edit-fc',function(){
     const id=$(this).data('id');
-    Swal.fire({title:'A carregar...', allowOutsideClick:false, didOpen:()=>Swal.showLoading()});
-    $.get(`/facturas/${id}/json/`, function(r){
-      Swal.close();
-      editingId=r.id;
-      $('#fcModalTitle').text('Editar Factura');
-      $('#fcModalSub').text(`Factura: ${r.numero}`);
-      $('#fc_numero').val(r.numero);
-      $('#fc_estado_id').val(r.estado_id || $(`#fc_estado_id option[data-codigo="${r.estado_codigo}"]`).val());
-      $(`#fc_estado_id option`).each(function(){if($(this).data('codigo')===r.estado_codigo)$(this).prop('selected',true);});
-      $('#fc_data_emissao').val(r.data_emissao);
-      $('#fc_data_vencimento').val(r.data_vencimento);
-      $('#fc_cliente_id').val(r.cliente_id);
-      $('#fc_po_id').val(r.purchase_order_id||'');
-      $('#fc_moeda_id').val(r.moeda_id||'');
-      $('#fc_dado_bancario_id').val(r.dado_bancario_id||'');
-      $('#fc_desconto').val(r.desconto);
-      $('#fc_iva_pct').val(r.iva_pct);
-      $('#fc_observacoes').val(r.observacoes);
-      $('#fc_termos').val(r.termos);
+    Swal.fire({title:'A carregar...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+    $.get(`/facturas/${id}/json/`,function(r){
+      Swal.close();editingId=r.id;
+      $('#fcModalTitle').text('Editar Factura');$('#fcModalSub').text(`Factura: ${r.numero}`);
+      $('#fc_numero').val(r.numero);$('#fc_data_emissao').val(r.data_emissao||'');
+      $('#fc_data_vencimento').val(r.data_vencimento||'');$('#fc_cliente_id').val(r.cliente_id||'');
+      $('#fc_po_id').val(r.purchase_order_id||'');$('#fc_moeda_id').val(r.moeda_id||'');
+      $('#fc_dado_bancario_ids').val(r.dado_bancario_ids||[]).trigger('change');
+      $('#fc_desconto').val(r.desconto||'0');$('#fc_iva_pct').val(r.iva_pct||'{{ iva_padrao }}');
+      $('#fc_observacoes').val(r.observacoes||'');$('#fc_termos').val(r.termos||'');
       $('#fcItemsBody').empty();
-      if(r.itens && r.itens.length) r.itens.forEach(it=>addItemRow(it));
-      else addItemRow();
+      if(r.itens&&r.itens.length) r.itens.forEach(it=>addItemRow(it)); else addItemRow();
       recalcularTotais();
-      if(r.purchase_order_id) $('#btnImportarPO').prop('disabled',false);
-
-      // Restaurar painel info da PO
       if(r.purchase_order_id){
-        $('#fc_po_valor_display').text(fmt(r.po_valor_total));
-        $('#fc_po_quotacao_display').text(r.quotacao_numero || '—');
-        if(r.po_download_url)   $('#btn_download_po').attr('href', r.po_download_url).removeClass('d-none');
-        if(r.quot_download_url) $('#btn_download_quot').attr('href', r.quot_download_url).removeClass('d-none');
+        $('#btnImportarPO').prop('disabled',false);
+        $('#fc_po_valor_display').text(fmt(r.po_valor_total||0));$('#fc_po_quotacao_display').text(r.quotacao_numero||'—');
+        if(r.po_download_url) $('#btn_download_po').attr('href',r.po_download_url).removeClass('d-none');
+        if(r.quot_download_url) $('#btn_download_quot').attr('href',r.quot_download_url).removeClass('d-none');
         $('#fc_po_info_wrap').removeClass('d-none');
-      } else {
-        $('#fc_po_info_wrap').addClass('d-none');
+      }else{
+        $('#btnImportarPO').prop('disabled',true);$('#fc_po_info_wrap').addClass('d-none');
+        $('#btn_download_po,#btn_download_quot').addClass('d-none').attr('href','#');
       }
-
       fcModal.show();
     }).fail(()=>Swal.fire({icon:'error',title:'Erro',text:'Não foi possível carregar os dados.'}));
   });
 
-  // ── Guardar factura ───────────────────────────────────────────────────
-  $('#btnGuardarFactura').on('click', function(){
-    const cliente = $('#fc_cliente_id').val();
-    const dataEm  = $('#fc_data_emissao').val();
-    if(!cliente || !dataEm){
-      Swal.fire({icon:'warning', title:'Campos obrigatórios', text:'Preencha o cliente e a data de emissão.'});
-      return;
+  /* ── Guardar ── */
+  $('#btnGuardarFactura').on('click',function(){
+    if(!$('#fc_cliente_id').val()||!$('#fc_data_emissao').val()){
+      Swal.fire({icon:'warning',title:'Campos obrigatórios',text:'Preencha o cliente e a data de emissão.'});return;
     }
-
-    // Montar itens
     const itens=[];
     $('#fcItemsBody tr.fc-item-row').each(function(){
-      const desc=$(this).find('.item-desc').val().trim();
-      if(!desc) return;
-      itens.push({
-        descricao  : desc,
-        unidade    : $(this).find('.item-unid').val().trim(),
-        quantidade : $(this).find('.item-qty').val(),
-        preco_unit : $(this).find('.item-pu').val(),
-      });
+      const desc=$(this).find('.item-desc').val().trim(); if(!desc) return;
+      itens.push({descricao:desc,unidade:$(this).find('.item-unid').val().trim(),quantidade:$(this).find('.item-qty').val(),preco_unit:$(this).find('.item-pu').val()});
     });
-
-    if(!itens.length){
-      Swal.fire({icon:'warning', title:'Sem itens', text:'Adicione pelo menos um item à factura.'});
-      return;
-    }
-
-    const payload = new FormData();
-    payload.append('csrfmiddlewaretoken', CSRF);
-    payload.append('cliente_id',       cliente);
-    payload.append('purchase_order_id',$('#fc_po_id').val());
-    payload.append('moeda_id',         $('#fc_moeda_id').val());
-    payload.append('dado_bancario_id', $('#fc_dado_bancario_id').val());
-    payload.append('estado_id',        $('#fc_estado_id').val());
-    payload.append('data_emissao',     dataEm);
-    payload.append('data_vencimento',  $('#fc_data_vencimento').val());
-    payload.append('desconto',         $('#fc_desconto').val());
-    payload.append('iva_pct',          $('#fc_iva_pct').val());
-    payload.append('observacoes',      $('#fc_observacoes').val());
-    payload.append('termos',           $('#fc_termos').val());
-    payload.append('itens_json',       JSON.stringify(itens));
-
-    const url = editingId ? `/facturas/${editingId}/update/` : '/facturas/create/';
-
-    Swal.fire({title:'A processar...', allowOutsideClick:false, allowEscapeKey:false, didOpen:()=>Swal.showLoading()});
-
-    $.ajax({
-      url, method:'POST', data:payload, processData:false, contentType:false,
-      headers:{'X-CSRFToken':CSRF},
-    }).done(function(r){
-      Swal.fire({icon:'success', title:'Guardado!', text:r.message, timer:2200, showConfirmButton:false, timerProgressBar:true})
-        .then(()=>{ fcModal.hide(); location.reload(); });
-    }).fail(function(xhr){
-      const msg = xhr.responseJSON ? xhr.responseJSON.message : 'Erro inesperado.';
-      Swal.fire({icon:'error', title:'Erro', text:msg});
-    });
+    if(!itens.length){Swal.fire({icon:'warning',title:'Sem itens',text:'Adicione pelo menos um item à factura.'});return;}
+    const p=new FormData();
+    p.append('csrfmiddlewaretoken',CSRF);p.append('cliente_id',$('#fc_cliente_id').val());
+    p.append('purchase_order_id',$('#fc_po_id').val());p.append('moeda_id',$('#fc_moeda_id').val());
+    ($('#fc_dado_bancario_ids').val()||[]).forEach(id=>p.append('dado_bancario_ids[]',id));
+    p.append('data_emissao',$('#fc_data_emissao').val());p.append('data_vencimento',$('#fc_data_vencimento').val());
+    p.append('desconto',$('#fc_desconto').val());p.append('iva_pct',$('#fc_iva_pct').val());
+    p.append('observacoes',$('#fc_observacoes').val());p.append('termos',$('#fc_termos').val());
+    p.append('itens_json',JSON.stringify(itens));
+    const url=editingId?`/facturas/${editingId}/update/`:'/facturas/create/';
+    Swal.fire({title:'A processar...',allowOutsideClick:false,allowEscapeKey:false,didOpen:()=>Swal.showLoading()});
+    $.ajax({url,method:'POST',data:p,processData:false,contentType:false,headers:{'X-CSRFToken':CSRF}})
+    .done(function(r){
+      Swal.fire({icon:'success',title:'Guardado!',text:r.message,timer:2200,showConfirmButton:false,timerProgressBar:true})
+      .then(()=>{fcModal.hide();location.reload();});
+    }).fail(function(xhr){Swal.fire({icon:'error',title:'Erro',text:xhr.responseJSON?xhr.responseJSON.message:'Erro inesperado.'});});
   });
 
-  // ── Visualizar factura ────────────────────────────────────────────────
-  $(document).on('click', '.btn-view-fc', function(){
+  /* ── Visualizar ── */
+  $(document).on('click','.btn-view-fc',function(){
     const id=$(this).data('id');
-    Swal.fire({title:'A carregar...', allowOutsideClick:false, didOpen:()=>Swal.showLoading()});
-    $.get(`/facturas/${id}/json/`, function(r){
+    Swal.fire({title:'A carregar...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+    $.get(`/facturas/${id}/json/`,function(r){
       Swal.close();
-      const sym = r.moeda_simbolo ? r.moeda_simbolo+' ' : '';
-
+      const sym=r.moeda_simbolo?r.moeda_simbolo+' ':'';
       let itensHtml='';
-      if(r.itens && r.itens.length){
-        itensHtml = r.itens.map((it,i)=>`
-          <tr>
-            <td>${i+1}</td>
-            <td>${esc(it.descricao)}</td>
-            <td>${esc(it.unidade||'—')}</td>
-            <td class="text-end">${parseFloat(it.quantidade).toLocaleString('pt-MZ',{maximumFractionDigits:4})}</td>
-            <td class="text-end">${sym}${fmt(it.preco_unit)}</td>
-            <td class="text-end fw-semibold">${sym}${fmt(it.total_linha)}</td>
-          </tr>`).join('');
-      } else {
-        itensHtml='<tr><td colspan="6" class="text-center text-muted py-3">Sem itens.</td></tr>';
-      }
-
+      if(r.itens&&r.itens.length){
+        itensHtml=r.itens.map((it,i)=>`
+          <tr><td>${i+1}</td><td>${esc(it.descricao)}</td><td>${esc(it.unidade||'—')}</td>
+          <td class="text-end">${parseFloat(it.quantidade).toLocaleString('pt-MZ',{maximumFractionDigits:4})}</td>
+          <td class="text-end">${sym}${fmt(it.preco_unit)}</td>
+          <td class="text-end fw-semibold">${sym}${fmt(it.total_linha)}</td></tr>`).join('');
+      }else{ itensHtml='<tr><td colspan="6" class="text-center text-muted py-3">Sem itens.</td></tr>'; }
+      let contasHtml='<div class="text-muted">—</div>';
+      if(r.dados_bancarios&&r.dados_bancarios.length) contasHtml=r.dados_bancarios.map(c=>`<div class="view-bank-item">${esc(c.label)}</div>`).join('');
       $('#fcViewContent').html(`
-        <div class="card border-0 shadow-sm">
-          <div class="card-body p-4">
-            <div class="row g-3 mb-4">
-              <div class="col-md-3"><div class="view-label">Número</div><div class="view-value">${r.numero||'—'}</div></div>
-              <div class="col-md-3"><div class="view-label">Estado</div>
-                <div class="view-value">
-                  <span class="status-pill" style="background-color:${r.estado_cor}18;color:${r.estado_cor};border:1px solid ${r.estado_cor}40">${r.estado_nome||'—'}</span>
-                </div></div>
-              <div class="col-md-3"><div class="view-label">Data Emissão</div><div class="view-value">${r.data_emissao||'—'}</div></div>
-              <div class="col-md-3"><div class="view-label">Vencimento</div><div class="view-value">${r.data_vencimento||'—'}</div></div>
-              <div class="col-md-4"><div class="view-label">Cliente</div><div class="view-value">${r.cliente_nome||'—'}</div></div>
-              <div class="col-md-4"><div class="view-label">PO Interna</div><div class="view-value">${r.purchase_order_numero||'—'}</div></div>
-              <div class="col-md-4"><div class="view-label">PO Cliente</div><div class="view-value">${r.po_cliente_numero||'—'}</div></div>
-            </div>
-
-            <div class="modal-section-title mb-3"><i class="material-symbols-rounded me-2">list_alt</i>Itens</div>
-            <div class="table-responsive mb-4">
-              <table class="table table-sm table-bordered align-middle" style="font-size:.84rem">
-                <thead class="table-light">
-                  <tr><th>#</th><th>Descrição</th><th>Unid.</th><th class="text-end">Qtd.</th><th class="text-end">Preço Unit.</th><th class="text-end">Total</th></tr>
-                </thead>
-                <tbody>${itensHtml}</tbody>
-              </table>
-            </div>
-
-            <div class="row justify-content-end">
-              <div class="col-md-5">
-                <div class="fc-totais-card">
-                  <div class="d-flex justify-content-between mb-2"><span class="text-muted small">Subtotal</span><span class="fw-semibold">${sym}${fmt(r.subtotal)}</span></div>
-                  <div class="d-flex justify-content-between mb-2"><span class="text-muted small">Desconto (${r.desconto_pct}%)</span><span class="fw-semibold">- ${sym}${fmt(r.desconto)}</span></div>
-                  <div class="d-flex justify-content-between mb-2"><span class="text-muted small">IVA (${r.iva_pct}%)</span><span class="fw-semibold">${sym}${fmt(r.iva_valor)}</span></div>
-                  <hr class="my-2">
-                  <div class="d-flex justify-content-between"><span class="fw-bold">TOTAL</span><span class="fw-bold fs-5 text-primary">${sym}${fmt(r.total)}</span></div>
-                </div>
-              </div>
-            </div>
-
-            ${r.observacoes ? `<div class="mt-4"><div class="view-label">Observações</div><div class="view-value">${esc(r.observacoes)}</div></div>` : ''}
-            ${r.termos ? `<div class="mt-3"><div class="view-label">Termos e Condições</div><div class="view-value small">${esc(r.termos)}</div></div>` : ''}
+        <div class="card border-0 shadow-sm view-card"><div class="card-body p-4">
+          <div class="row g-3 mb-4">
+            <div class="col-md-3"><div class="view-label">Número</div><div class="view-value">${r.numero||'—'}</div></div>
+            <div class="col-md-3"><div class="view-label">Estado</div><div class="view-value">
+              <span class="status-pill" style="background-color:${r.estado_cor}18;color:${r.estado_cor};border:1px solid ${r.estado_cor}40">${r.estado_nome||'—'}</span>
+            </div></div>
+            <div class="col-md-3"><div class="view-label">Data Emissão</div><div class="view-value">${r.data_emissao||'—'}</div></div>
+            <div class="col-md-3"><div class="view-label">Vencimento</div><div class="view-value">${r.data_vencimento||'—'}</div></div>
+            <div class="col-md-4"><div class="view-label">Cliente</div><div class="view-value">${r.cliente_nome||'—'}</div></div>
+            <div class="col-md-4"><div class="view-label">PO Interna</div><div class="view-value">${r.purchase_order_numero||'—'}</div></div>
+            <div class="col-md-4"><div class="view-label">PO Cliente</div><div class="view-value">${r.po_cliente_numero||'—'}</div></div>
           </div>
-        </div>
-      `);
-
+          <div class="row g-4 mb-4">
+            <div class="col-lg-7"><div class="view-soft-card h-100">
+              <div class="modal-section-title mb-3"><i class="material-symbols-rounded me-2">account_balance</i>Contas Bancárias</div>
+              ${contasHtml}
+            </div></div>
+            <div class="col-lg-5"><div class="fc-totais-card h-100">
+              <div class="d-flex justify-content-between mb-2"><span class="text-muted small">Subtotal</span><span class="fw-semibold">${sym}${fmt(r.subtotal)}</span></div>
+              <div class="d-flex justify-content-between mb-2"><span class="text-muted small">Desconto (${r.desconto_pct}%)</span><span class="fw-semibold">- ${sym}${fmt(r.desconto)}</span></div>
+              <div class="d-flex justify-content-between mb-2"><span class="text-muted small">IVA (${r.iva_pct}%)</span><span class="fw-semibold">${sym}${fmt(r.iva_valor)}</span></div>
+              <hr class="my-2">
+              <div class="d-flex justify-content-between"><span class="fw-bold">TOTAL</span><span class="fw-bold fs-5 text-primary">${sym}${fmt(r.total)}</span></div>
+            </div></div>
+          </div>
+          <div class="modal-section-title mb-3"><i class="material-symbols-rounded me-2">list_alt</i>Itens</div>
+          <div class="table-responsive mb-4">
+            <table class="table table-sm table-bordered align-middle" style="font-size:.84rem">
+              <thead class="table-light"><tr><th>#</th><th>Descrição</th><th>Unid.</th><th class="text-end">Qtd.</th><th class="text-end">Preço Unit.</th><th class="text-end">Total</th></tr></thead>
+              <tbody>${itensHtml}</tbody>
+            </table>
+          </div>
+          ${r.observacoes?`<div class="mt-4"><div class="view-label">Observações</div><div class="view-value">${esc(r.observacoes)}</div></div>`:''}
+          ${r.termos?`<div class="mt-3"><div class="view-label">Termos e Condições</div><div class="view-value small">${esc(r.termos)}</div></div>`:''}
+        </div></div>`);
       $('#fcViewFooter').html(`
-        ${r.po_download_url ? `<a href="${r.po_download_url}" target="_blank" class="btn btn-outline-secondary btn-modern"><i class="material-symbols-rounded me-1">picture_as_pdf</i>Baixar PO</a>` : ''}
-        ${r.quot_download_url ? `<a href="${r.quot_download_url}" target="_blank" class="btn btn-outline-primary btn-modern"><i class="material-symbols-rounded me-1">description</i>Baixar Cotação</a>` : ''}
+        ${r.po_download_url?`<a href="${r.po_download_url}" target="_blank" class="btn btn-outline-secondary btn-modern"><i class="material-symbols-rounded me-1">picture_as_pdf</i>Baixar PO</a>`:''}
+        ${r.quot_download_url?`<a href="${r.quot_download_url}" target="_blank" class="btn btn-outline-primary btn-modern"><i class="material-symbols-rounded me-1">description</i>Baixar Cotação</a>`:''}
         <a href="${r.pdf_url}" target="_blank" class="btn btn-danger btn-modern">
           <i class="material-symbols-rounded me-1">picture_as_pdf</i>Descarregar Factura PDF
         </a>
-        <button type="button" class="btn btn-outline-secondary btn-modern" data-bs-dismiss="modal">Fechar</button>
-      `);
-
+        <button type="button" class="btn btn-outline-secondary btn-modern" data-bs-dismiss="modal">Fechar</button>`);
       fcViewModal.show();
     }).fail(()=>Swal.fire({icon:'error',title:'Erro',text:'Não foi possível carregar os dados.'}));
   });
 
-  // ── Alterar estado ────────────────────────────────────────────────────
-  $(document).on('click', '.btn-change-estado-fc', function(e){
+  /* ════════════════════════════════════════════════
+     ALTERAR ESTADO — verificação histórico pagamento
+  ════════════════════════════════════════════════ */
+
+  $(document).on('click','.btn-change-estado-fc',function(e){
     e.preventDefault();
-    const id=$(this).data('id'), estadoId=$(this).data('estado-id'), label=$(this).data('label');
-    Swal.fire({
-      title:`Alterar para "${label}"?`, icon:'question',
-      showCancelButton:true, confirmButtonText:'Sim, alterar', cancelButtonText:'Cancelar',
-      confirmButtonColor:'#2E3E82', cancelButtonColor:'#6c757d', reverseButtons:true,
-    }).then(result=>{
-      if(!result.isConfirmed) return;
-      Swal.fire({title:'A processar...', allowOutsideClick:false, didOpen:()=>Swal.showLoading()});
-      $.post(`/facturas/${id}/estado/`, {csrfmiddlewaretoken:CSRF, estado_id:estadoId})
-        .done(r=>{
-          Swal.fire({icon:'success', title:'Estado alterado!', text:r.message, timer:2000, showConfirmButton:false, timerProgressBar:true})
-            .then(()=>location.reload());
-        })
-        .fail(()=>Swal.fire({icon:'error',title:'Erro',text:'Não foi possível alterar o estado.'}));
+    _pendingFacturaId   = $(this).data('id');
+    _pendingEstadoId    = $(this).data('estado-id');
+    _pendingEstadoLabel = $(this).data('label');
+    _selectedHistIds    = new Set();
+
+    Swal.fire({title:'A verificar pagamentos...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+
+    $.get(`/facturas/${_pendingFacturaId}/check-pagamento/`,function(r){
+      Swal.close();
+
+      // Já tem histórico associado → altera directamente
+      if(r.tem_historico){
+        _confirmarMudancaEstado();
+        return;
+      }
+
+      // Sem históricos disponíveis → confirma directamente via SweetAlert
+      if(!r.historicos_disponiveis||!r.historicos_disponiveis.length){
+        Swal.fire({
+          title:`Alterar para "${_pendingEstadoLabel}"?`,
+          html:'<p class="text-muted mb-0 small">Não foram encontrados históricos de pagamento para associar.</p>',
+          icon:'question',showCancelButton:true,
+          confirmButtonText:'Sim, alterar mesmo assim',cancelButtonText:'Cancelar',
+          confirmButtonColor:'#2E3E82',cancelButtonColor:'#6c757d',reverseButtons:true,
+        }).then(res=>{ if(res.isConfirmed) _confirmarMudancaEstado(); });
+        return;
+      }
+
+      // Pré-seleccionar os já associados a esta factura
+      if(r.historicos_ja_associados&&r.historicos_ja_associados.length){
+        r.historicos_ja_associados.forEach(id=>_selectedHistIds.add(id));
+      }
+
+      // Construir lista
+      let html=`
+        <p class="text-muted small mb-3">
+          Seleccione os registos de pagamento a associar antes de alterar o estado para
+          <strong>${_pendingEstadoLabel}</strong>.
+          Pode seleccionar múltiplos registos.
+        </p>
+        <div class="d-flex flex-column gap-2">`;
+
+      r.historicos_disponiveis.forEach(h=>{
+        const sym=h.moeda_simbolo?h.moeda_simbolo+' ':'';
+        const jaAssoc=r.historicos_ja_associados&&r.historicos_ja_associados.includes(h.id);
+        const tagPO=h.po_numero
+          ?`<span class="fc-pag-tag fc-pag-tag-po"><i class="material-symbols-rounded" style="font-size:12px">inventory_2</i>${esc(h.po_numero)}</span>`
+          :`<span class="fc-pag-tag fc-pag-tag-nopo"><i class="material-symbols-rounded" style="font-size:12px">remove_shopping_cart</i>Sem PO</span>`;
+        const tagAssoc=jaAssoc?`<span class="fc-pag-tag fc-pag-tag-linked"><i class="material-symbols-rounded" style="font-size:12px">link</i>Já associado</span>`:'';
+        const extraClass=jaAssoc?'fc-pag-already':'';
+        const checkInit=jaAssoc||_selectedHistIds.has(h.id)?'fc-pag-selected':'';
+
+        html+=`
+          <div class="fc-pag-item ${extraClass} ${checkInit}" data-id="${h.id}">
+            <div class="d-flex align-items-start justify-content-between gap-2 flex-wrap">
+              <div class="d-flex align-items-center gap-2">
+                <div class="fc-pag-check">
+                  <i class="material-symbols-rounded" style="font-size:14px">check</i>
+                </div>
+                <div>
+                  <span class="fw-bold text-dark">${esc(h.pagamento_numero)}</span>
+                  <span class="text-muted small ms-1">— ${esc(h.cliente_nome)}</span>
+                </div>
+              </div>
+              <div class="d-flex gap-1 flex-wrap">${tagPO}${tagAssoc}</div>
+            </div>
+            <div class="d-flex flex-wrap gap-3 mt-2 ps-4">
+              <div>
+                <div class="view-label">Valor Pago</div>
+                <div class="view-value small text-success fw-bold">${sym}${parseFloat(h.valor_pago).toLocaleString('pt-MZ',{minimumFractionDigits:2})}</div>
+              </div>
+              <div>
+                <div class="view-label">Data</div>
+                <div class="view-value small">${esc(h.data_pagamento)}</div>
+              </div>
+              ${h.referencia?`<div><div class="view-label">Referência</div><div class="view-value small">${esc(h.referencia)}</div></div>`:''}
+              ${h.banco_origem?`<div><div class="view-label">Banco</div><div class="view-value small">${esc(h.banco_origem)}</div></div>`:''}
+              ${h.numero_transaccao?`<div><div class="view-label">Nº Transacção</div><div class="view-value small">${esc(h.numero_transaccao)}</div></div>`:''}
+              ${h.dado_bancario?`<div><div class="view-label">Conta Destino</div><div class="view-value small">${esc(h.dado_bancario)}</div></div>`:''}
+            </div>
+          </div>`;
+      });
+
+      html+='</div>';
+      $('#fcPagamentoList').html(html);
+      _actualizarContador();
+      fcPagModal.show();
+
+    }).fail(()=>Swal.fire({icon:'error',title:'Erro',text:'Não foi possível verificar os pagamentos.'}));
+  });
+
+  /* Clique num card de histórico (toggle multi-select) */
+  $(document).on('click','.fc-pag-item:not(.fc-pag-already)',function(){
+    const id=parseInt($(this).data('id'));
+    if(_selectedHistIds.has(id)){
+      _selectedHistIds.delete(id);
+      $(this).removeClass('fc-pag-selected');
+    }else{
+      _selectedHistIds.add(id);
+      $(this).addClass('fc-pag-selected');
+    }
+    _actualizarContador();
+  });
+
+  function _actualizarContador(){
+    const n=_selectedHistIds.size;
+    if(n>0){
+      $('#fcPagSelCount').removeClass('d-none');
+      $('#fcPagSelCountText').text(`${n} registo${n!==1?'s':''} seleccionado${n!==1?'s':''}`);
+      $('#btnConfirmarPagamento').prop('disabled',false);
+    }else{
+      $('#fcPagSelCount').addClass('d-none');
+      $('#btnConfirmarPagamento').prop('disabled',true);
+    }
+  }
+
+  /* Confirmar */
+  $('#btnConfirmarPagamento').on('click',function(){
+    fcPagModal.hide();
+    _confirmarMudancaEstado();
+  });
+
+  /* Limpar ao fechar */
+  document.getElementById('fcPagamentoModal').addEventListener('hidden.bs.modal',function(){
+    _selectedHistIds=new Set();
+    $('#fcPagSelCount').addClass('d-none');
+    $('#btnConfirmarPagamento').prop('disabled',true);
+  });
+
+  /* Função central */
+  function _confirmarMudancaEstado(){
+    Swal.fire({title:'A processar...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+    $.post(`/facturas/${_pendingFacturaId}/estado-pagamento/`,{
+      csrfmiddlewaretoken:CSRF,
+      estado_id:_pendingEstadoId,
+      historico_ids:JSON.stringify([..._selectedHistIds]),
+    }).done(function(r){
+      Swal.fire({icon:'success',title:'Estado alterado!',text:r.message,timer:2000,showConfirmButton:false,timerProgressBar:true})
+      .then(()=>location.reload());
+    }).fail(function(xhr){
+      Swal.fire({icon:'error',title:'Erro',text:xhr.responseJSON?xhr.responseJSON.message:'Não foi possível alterar o estado.'});
     });
-  });
+  }
 
-  // ── Mensagens Django (fallback) ───────────────────────────────────────
+  /* ── Django messages ── */
   const mc=document.getElementById('django-messages');
-  if(mc) mc.querySelectorAll('span').forEach(span=>{
-    const isErr=span.dataset.tags.includes('error');
-    Swal.fire({icon:isErr?'error':'success',title:isErr?'Erro':'Sucesso',text:span.textContent,timer:3000,showConfirmButton:false});
-  });
-
-  function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  if(mc){
+    mc.querySelectorAll('span').forEach(span=>{
+      const isErr=span.dataset.tags.includes('error');
+      Swal.fire({icon:isErr?'error':'success',title:isErr?'Erro':'Sucesso',text:span.textContent,timer:3000,showConfirmButton:false});
+    });
+  }
 });
 </script>
+
 {% endblock extra_js %}

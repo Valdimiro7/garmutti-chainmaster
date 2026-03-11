@@ -87,6 +87,11 @@
             <h5 class="mb-1 fw-bold text-dark">Lista de Pagamentos</h5>
             <p class="text-muted mb-0">Todos os pagamentos associados a POs confirmadas.</p>
           </div>
+          <div class="col-lg-4 d-flex justify-content-lg-end">
+            <button type="button" class="btn btn-primary btn-modern btn-pg" id="btnRegistarPagamento">
+              <i class="material-symbols-rounded me-1">add</i>Registar Pagamento
+            </button>
+          </div>
         </div>
       </div>
 
@@ -111,8 +116,13 @@
               {% for p in pagamentos %}
               <tr>
                 <td>{{ forloop.counter }}</td>
-                <td>{{ p.numero }}</td>
-                <td>{{ p.purchase_order.numero }}</td>
+                <td>
+                  {{ p.numero }}
+                  {% if not p.purchase_order %}
+                    <span class="pg-tag-livre ms-1">Livre</span>
+                  {% endif %}
+                </td>
+                <td>{% if p.purchase_order %}{{ p.purchase_order.numero }}{% else %}—{% endif %}</td>
                 <td>{{ p.cliente.nome }}</td>
                 <td>{% if p.moeda %}{{ p.moeda.simbolo }} {% endif %}{{ p.valor_po|floatformat:2 }}</td>
                 <td>{% if p.moeda %}{{ p.moeda.simbolo }} {% endif %}{{ p.valor_recebido|floatformat:2 }}</td>
@@ -149,6 +159,120 @@
   {% include "includes/pro_footer.html" %}
 </div>
 
+<!-- ===================== MODAL REGISTAR PAGAMENTO LIVRE ===================== -->
+<div class="modal fade" id="pgLivreModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-lg modal-modern">
+      <div class="modal-header border-0 pb-0">
+        <div>
+          <h5 class="modal-title fw-bold">
+            <i class="material-symbols-rounded me-2 align-middle" style="font-size:20px;color:#2E3E82">add_card</i>
+            Registar Pagamento
+          </h5>
+          <p class="text-muted mb-0 small">Registe um pagamento recebido sem associação a uma PO.</p>
+        </div>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body pt-3" style="max-height:78vh;overflow-y:auto;">
+
+        <div class="modal-section-title mb-3">
+          <i class="material-symbols-rounded me-2">person</i>Identificação
+        </div>
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <label class="form-label">Cliente <span class="text-danger">*</span></label>
+            <select id="pl_cliente_id" class="form-select modern-input">
+              <option value="">— Seleccionar —</option>
+              {% for c in clientes %}
+              <option value="{{ c.id }}">{{ c.nome }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Moeda</label>
+            <select id="pl_moeda_id" class="form-select modern-input">
+              <option value="">—</option>
+              {% for m in moedas %}
+              <option value="{{ m.id }}">{{ m.codigo }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Data <span class="text-danger">*</span></label>
+            <input type="date" id="pl_data_pagamento" class="form-control modern-input" value="{{ today }}">
+          </div>
+        </div>
+
+        <div class="modal-section-title mb-3">
+          <i class="material-symbols-rounded me-2">attach_money</i>Valor e Conta
+        </div>
+        <div class="row g-3 mb-4">
+          <div class="col-md-5">
+            <label class="form-label">Valor Pago <span class="text-danger">*</span></label>
+            <input type="number" step="0.01" min="0.01" id="pl_valor_pago" class="form-control modern-input" placeholder="0.00">
+          </div>
+          <div class="col-md-7">
+            <label class="form-label">Conta que Recebeu</label>
+            <select id="pl_dado_bancario_id" class="form-select modern-input">
+              <option value="">— Seleccionar conta —</option>
+              {% for db in dados_bancarios %}
+              <option value="{{ db.id }}">{{ db.label_completo }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-section-title mb-3">
+          <i class="material-symbols-rounded me-2">receipt</i>Referências
+        </div>
+        <div class="row g-3 mb-4">
+          <div class="col-md-4">
+            <label class="form-label">Referência</label>
+            <input type="text" id="pl_referencia" class="form-control modern-input" placeholder="Ref. do pagamento">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Banco de Origem</label>
+            <input type="text" id="pl_banco_origem" class="form-control modern-input" placeholder="Banco do cliente">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Número de Transacção</label>
+            <input type="text" id="pl_numero_transaccao" class="form-control modern-input">
+          </div>
+        </div>
+
+        <div class="modal-section-title mb-3">
+          <i class="material-symbols-rounded me-2">attach_file</i>Anexos
+        </div>
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <label class="form-label">Comprovativo / POP</label>
+            <input type="file" id="pl_pop_anexos" name="pop_anexos" class="form-control modern-input" multiple>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Outros Anexos</label>
+            <input type="file" id="pl_outros_anexos" name="outros_anexos" class="form-control modern-input" multiple>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-2">
+          <div class="col-12">
+            <label class="form-label">Observações</label>
+            <textarea id="pl_observacoes" rows="3" class="form-control modern-input" style="min-height:90px;resize:vertical"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer border-0 pt-0 gap-2">
+        <button type="button" class="btn btn-outline-secondary btn-modern" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" id="btnGuardarPagamentoLivre" class="btn btn-primary btn-modern btn-pg">
+          <i class="material-symbols-rounded me-1">save</i>Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ===================== MODAL ACTUALIZAR ===================== -->
 <div class="modal fade" id="pgModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
@@ -165,7 +289,6 @@
         {% csrf_token %}
         <div class="modal-body pt-3" style="max-height:78vh;overflow-y:auto;">
 
-          <!-- Info resumo (readonly) -->
           <div class="row g-3 mb-3">
             <div class="col-md-3">
               <label class="form-label">Número</label>
@@ -185,7 +308,6 @@
             </div>
           </div>
 
-          <!-- Progresso de pagamento -->
           <div id="pg_progress_wrap" class="pg-progress-card mb-4 d-none">
             <div class="row g-3 align-items-center">
               <div class="col-md-4 text-center">
@@ -209,7 +331,6 @@
             </div>
           </div>
 
-          <!-- Datas e valor novo -->
           <div class="row g-3 mb-3">
             <div class="col-md-4">
               <label class="form-label">Data Prevista</label>
@@ -225,7 +346,6 @@
             </div>
           </div>
 
-          <!-- Conta que recebeu o dinheiro -->
           <div class="row g-3 mb-3">
             <div class="col-md-12">
               <label class="form-label fw-semibold">
@@ -241,7 +361,6 @@
             </div>
           </div>
 
-          <!-- Referências -->
           <div class="row g-3 mb-3">
             <div class="col-md-4">
               <label class="form-label">Referência do Pagamento</label>
@@ -257,7 +376,6 @@
             </div>
           </div>
 
-          <!-- Anexos -->
           <div class="row g-3 mb-3">
             <div class="col-md-6">
               <label class="form-label">Anexar POP</label>
@@ -269,7 +387,6 @@
             </div>
           </div>
 
-          <!-- Observações -->
           <div class="row g-3 mb-4">
             <div class="col-12">
               <label class="form-label">Observações</label>
@@ -277,7 +394,6 @@
             </div>
           </div>
 
-          <!-- Histórico de pagamentos -->
           <div id="pg_historico_wrap" class="d-none mb-4">
             <div class="modal-section-title mb-3">
               <i class="material-symbols-rounded me-2">history</i>Histórico de Pagamentos
@@ -286,13 +402,8 @@
               <table class="table table-sm table-bordered align-middle mb-0" style="font-size:.82rem;">
                 <thead class="table-light">
                   <tr>
-                    <th>Data</th>
-                    <th>Valor Pago</th>
-                    <th>Conta Destino</th>
-                    <th>Referência</th>
-                    <th>Banco Origem</th>
-                    <th>Transacção</th>
-                    <th>Observações</th>
+                    <th>Data</th><th>Valor Pago</th><th>Conta Destino</th>
+                    <th>Referência</th><th>Banco Origem</th><th>Transacção</th><th>Observações</th>
                   </tr>
                 </thead>
                 <tbody id="pg_historico_tbody"></tbody>
@@ -300,18 +411,15 @@
             </div>
           </div>
 
-          <!-- Anexos já registados -->
           <div id="pg_existing_attachments_wrap" class="d-none">
             <div class="modal-section-title mb-2">
               <i class="material-symbols-rounded me-2">attach_file</i>Anexos já registados
             </div>
             <div id="pg_existing_attachments" class="row g-2"></div>
           </div>
-
         </div>
 
         <div class="modal-footer border-0 pt-0 gap-2">
-          <!-- Botão download PO -->
           <div id="pg_po_download_wrap" class="me-auto d-none"></div>
           <button type="button" class="btn btn-outline-secondary btn-modern" data-bs-dismiss="modal">Cancelar</button>
           <button type="submit" class="btn btn-primary btn-modern btn-pg" id="btn_guardar_pg">
@@ -340,6 +448,7 @@
     </div>
   </div>
 </div>
+
 {% endblock content %}
 
 {% block extra_js %}
@@ -349,48 +458,46 @@
 
 <style>
 :root{
-  --pg:#2E3E82;
-  --pg-mid:#4256ad;
-  --pg-light:#eef2ff;
-  --pg-border:#dae3ff;
+  --pg:#2E3E82;--pg-mid:#4256ad;--pg-light:#eef2ff;--pg-border:#dae3ff;
 }
-
-/* Hero */
-.pg-hero-card{position:relative;overflow:hidden;border-radius:22px;background:linear-gradient(135deg,#ffffff 0%,#f4f6ff 100%)}
+.pg-hero-card{position:relative;overflow:hidden;border-radius:22px;background:linear-gradient(135deg,#fff 0%,#f4f6ff 100%)}
 .pg-hero-accent{position:absolute;right:-60px;top:-60px;width:220px;height:220px;background:radial-gradient(circle,rgba(46,62,130,.15) 0%,rgba(46,62,130,0) 70%)}
 .pg-hero-icon{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--pg) 0%,var(--pg-mid) 100%);color:#fff}
+.pg-hero-icon i{font-size:30px}
 .pg-soft-badge{background:var(--pg-light);color:var(--pg);border:1px solid var(--pg-border);font-weight:600;padding:.50rem .90rem}
 .pg-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.mini-stat-card{background:#fff;border:1px solid #edf0f7;border-radius:18px;padding:18px 16px}
+.mini-stat-card{background:#fff;border:1px solid #edf0f7;border-radius:18px;padding:18px 16px;transition:all .2s}
 .mini-stat-label{display:block;font-size:.78rem;color:#6c757d;margin-bottom:6px}
-.stat-filter{cursor:pointer;transition:all .2s}
+.stat-filter{cursor:pointer}
 .stat-filter.stat-active{border-color:var(--pg)!important;background:var(--pg-light)!important}
 .pg-value-card{background:#fff;border:1px solid #e8edf8;border-radius:18px;padding:18px 20px}
 .pg-value-label{font-size:.82rem;color:#6c757d;margin-bottom:6px;font-weight:600}
 .pg-value-amount{font-size:1.45rem;font-weight:800;color:var(--pg)}
-
-/* Main */
 .pg-main-card{border-radius:22px;overflow:hidden}
 .pg-topbar{border-bottom:1px solid #edf0f7;background:linear-gradient(180deg,#fff 0%,#f8f9ff 100%)}
 .pg-table thead th{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#6c757d;font-weight:700;background:#f8f9ff}
 .status-pill{display:inline-flex;align-items:center;padding:.42rem .80rem;border-radius:999px;font-size:.74rem;font-weight:700}
-
-/* Buttons */
 .btn-modern{border-radius:14px!important;padding:.6rem 1.1rem!important;font-weight:600!important;text-transform:none!important}
 .btn-pg{background:linear-gradient(135deg,var(--pg) 0%,var(--pg-mid) 100%)!important;border:none!important;color:#fff!important}
-
-/* Modal */
+.btn-pg:hover{opacity:.95}
 .modal-modern{border-radius:22px}
 .modal-section-title{display:flex;align-items:center;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--pg);border-bottom:1px solid var(--pg-border);padding-bottom:8px}
-.modern-input{border-radius:14px!important;border:1px solid #dfe5ef!important;min-height:46px;box-shadow:none!important}
+.modern-input{border-radius:14px!important;border:1px solid #dfe5ef!important;min-height:46px;box-shadow:none!important;background:#fff!important}
+.modern-input:focus{border-color:var(--pg)!important;box-shadow:0 0 0 .2rem rgba(46,62,130,.10)!important}
 .attachment-card{background:#f8f9ff;border:1px solid #e5eaf7;border-radius:14px;padding:12px 14px}
-
-/* Progress card */
 .pg-progress-card{background:linear-gradient(135deg,#f0f4ff,#f8faff);border:1px solid var(--pg-border);border-radius:18px;padding:20px 24px}
 .pg-prog-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6c757d;margin-bottom:4px}
 .pg-prog-value{font-size:1.25rem;font-weight:800;color:var(--pg)}
 
-/* DataTables pagination — igual ao template Purchase Orders */
+/* Tag livre */
+.pg-tag-livre{
+  display:inline-flex;align-items:center;
+  background:#fef9c3;color:#854d0e;
+  border:1px solid #fde68a;border-radius:999px;
+  font-size:.68rem;font-weight:700;padding:2px 8px;vertical-align:middle;
+}
+
+/* DataTables */
 .dataTables_wrapper .dataTables_paginate .pagination{display:flex!important;gap:4px!important;flex-wrap:wrap!important}
 .dataTables_wrapper .dataTables_paginate .pagination .page-item .page-link{all:unset!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:36px!important;height:36px!important;padding:0 10px!important;border-radius:10px!important;border:1px solid #e7ebf3!important;background:#fff!important;color:#495057!important;font-size:.85rem!important;font-weight:600!important;cursor:pointer!important;transition:all .2s!important}
 .dataTables_wrapper .dataTables_paginate .pagination .page-item.active .page-link{background:linear-gradient(135deg,var(--pg) 0%,var(--pg-mid) 100%)!important;border-color:var(--pg)!important;color:#fff!important}
@@ -418,67 +525,43 @@ div.dataTables_wrapper div.dataTables_length select{border-radius:12px!important
 
 <script>
 $(function(){
-  const pgModal     = new bootstrap.Modal(document.getElementById('pgModal'));
-  const pgViewModal = new bootstrap.Modal(document.getElementById('pgViewModal'));
-  const CSRF        = $('[name=csrfmiddlewaretoken]').val();
+  const pgLivreModal = new bootstrap.Modal(document.getElementById('pgLivreModal'));
+  const pgModal      = new bootstrap.Modal(document.getElementById('pgModal'));
+  const pgViewModal  = new bootstrap.Modal(document.getElementById('pgViewModal'));
+  const CSRF         = $('[name=csrfmiddlewaretoken]').val() || getCookie('csrftoken');
 
-  // ── DataTable ──────────────────────────────────────────────────────────────
+  function getCookie(n){ const v=document.cookie.match('(^|;) ?'+n+'=([^;]*)(;|$)'); return v?v[2]:null; }
+  function fmt(v){ return parseFloat(v||0).toLocaleString('pt-MZ',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+  /* ── DataTable ── */
   const table = $('#pgTable').DataTable({
-    responsive : true,
-    autoWidth  : false,
-    pageLength : 10,
-    dom        : '<"dt-buttons-row d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3"Bf>rtip',
-    buttons    : [
-      {extend:'excelHtml5', text:'<i class="material-symbols-rounded me-1" style="font-size:15px">table_view</i>Excel',  className:'btn btn-outline-success',    title:'Pagamentos'},
-      {extend:'csvHtml5',   text:'<i class="material-symbols-rounded me-1" style="font-size:15px">csv</i>CSV',            className:'btn btn-outline-secondary',  title:'Pagamentos'},
-      {extend:'pdfHtml5',   text:'<i class="material-symbols-rounded me-1" style="font-size:15px">picture_as_pdf</i>PDF', className:'btn btn-outline-danger',     title:'Pagamentos', orientation:'landscape'},
-      {extend:'print',      text:'<i class="material-symbols-rounded me-1" style="font-size:15px">print</i>Imprimir',     className:'btn btn-outline-primary',    title:'Pagamentos'},
+    responsive:true, autoWidth:false, pageLength:10,
+    dom:'<"dt-buttons-row d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3"Bf>rtip',
+    buttons:[
+      {extend:'excelHtml5', text:'<i class="material-symbols-rounded me-1" style="font-size:15px">table_view</i>Excel',  className:'btn btn-outline-success',   title:'Pagamentos'},
+      {extend:'csvHtml5',   text:'<i class="material-symbols-rounded me-1" style="font-size:15px">csv</i>CSV',            className:'btn btn-outline-secondary', title:'Pagamentos'},
+      {extend:'pdfHtml5',   text:'<i class="material-symbols-rounded me-1" style="font-size:15px">picture_as_pdf</i>PDF', className:'btn btn-outline-danger',    title:'Pagamentos', orientation:'landscape'},
+      {extend:'print',      text:'<i class="material-symbols-rounded me-1" style="font-size:15px">print</i>Imprimir',     className:'btn btn-outline-primary',   title:'Pagamentos'},
     ],
-    language:{
-      search       : 'Pesquisar:',
-      lengthMenu   : 'Mostrar _MENU_ registos',
-      info         : 'Mostrando _START_ a _END_ de _TOTAL_ registos',
-      zeroRecords  : 'Nenhum registo encontrado',
-      emptyTable   : 'Sem dados disponíveis',
-      paginate     : {first:'Primeiro', last:'Último', next:'Seguinte', previous:'Anterior'},
-    },
+    language:{search:'Pesquisar:',lengthMenu:'Mostrar _MENU_ registos',info:'Mostrando _START_ a _END_ de _TOTAL_ registos',zeroRecords:'Nenhum registo encontrado',emptyTable:'Sem dados disponíveis',paginate:{first:'Primeiro',last:'Último',next:'Seguinte',previous:'Anterior'}},
     columnDefs:[
-      {orderable:false, targets:[9]},
-      {targets:8, render:function(data,type,row){
-        if(type==='filter'||type==='sort'){
-          const tmp = document.createElement('div');
-          tmp.innerHTML = data;
-          const span = tmp.querySelector('.estado-codigo');
-          return span ? span.textContent.trim() : data;
-        }
+      {orderable:false,targets:[9]},
+      {targets:8,render:function(data,type){
+        if(type==='filter'||type==='sort'){const t=document.createElement('div');t.innerHTML=data;const s=t.querySelector('.estado-codigo');return s?s.textContent.trim():data;}
         return data;
       }},
     ],
   });
 
-  // ── Filtros rápidos por estado (sem filtro activo no arranque — mostra tudo) ─
-  let activeFilter = '';
-
-  $('.stat-filter').on('click', function(){
-    const f = $(this).data('filter');
-    if(activeFilter === f){
-      activeFilter = '';
-      table.column(8).search('').draw();
-      $('.stat-filter').removeClass('stat-active');
-    } else {
-      activeFilter = f;
-      table.column(8).search(f).draw();
-      $('.stat-filter').removeClass('stat-active');
-      $(this).addClass('stat-active');
-    }
+  let activeFilter='';
+  $('.stat-filter').on('click',function(){
+    const f=$(this).data('filter');
+    if(activeFilter===f){activeFilter='';table.column(8).search('').draw();$('.stat-filter').removeClass('stat-active');}
+    else{activeFilter=f;table.column(8).search(f).draw();$('.stat-filter').removeClass('stat-active');$(this).addClass('stat-active');}
   });
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
-  function fmt(v){
-    return parseFloat(v||0).toLocaleString('pt-MZ',{minimumFractionDigits:2,maximumFractionDigits:2});
-  }
-
-  function renderAnexos(anexos, btnClass){
+  /* ── Helpers render ── */
+  function renderAnexos(anexos,btnClass){
     if(!anexos||!anexos.length) return `<div class="col-12"><div class="alert alert-light border">Sem anexos.</div></div>`;
     return anexos.map(a=>`
       <div class="col-md-6">
@@ -509,105 +592,60 @@ $(function(){
       </tr>`).join('');
   }
 
-  // ── Abrir modal Actualizar ─────────────────────────────────────────────────
-  $(document).on('click','.btn-edit-pg',function(){
-    const id = $(this).data('id');
+  /* ════════════════════════════════════════════════
+     REGISTAR PAGAMENTO LIVRE (sem PO)
+  ════════════════════════════════════════════════ */
 
-    Swal.fire({
-      title          : 'A carregar...',
-      text           : 'Por favor aguarde.',
-      allowOutsideClick: false,
-      didOpen        : ()=>{ Swal.showLoading(); },
-    });
-
-    $.get(`/pagamentos/${id}/json/`, function(r){
-      Swal.close();
-
-      // Campos readonly
-      $('#pg_numero').val(r.numero||'');
-      $('#pg_po').val(r.purchase_order_numero||'');
-      $('#pg_po_cliente').val(r.po_cliente_numero||'');
-      $('#pg_cliente').val(r.cliente_nome||'');
-
-      // Datas e valores
-      $('#pg_data_prevista').val(r.data_pagamento_prevista||'');
-      $('#pg_data_recebida').val(r.data_pagamento_recebido||'');
-      $('#pg_valor_recebido').val(r.valor_recebido||'0.00');
-      $('#pg_referencia').val(r.referencia_pagamento||'');
-      $('#pg_banco').val(r.banco_origem||'');
-      $('#pg_transaccao').val(r.numero_transaccao||'');
-      $('#pg_observacoes').val(r.observacoes||'');
-      $('#pg_dado_bancario').val('');  // reset select
-
-      // Subtítulo com estado
-      $('#pgModalSubtitle').html(`Estado: <strong>${r.estado_nome||'—'}</strong>`);
-
-      // Progresso
-      const vPO        = parseFloat(r.valor_po)||0;
-      const vRecebido  = parseFloat(r.valor_recebido)||0;
-      const vSaldo     = parseFloat(r.saldo_pendente)||0;
-      const pct        = vPO>0 ? Math.min(100,(vRecebido/vPO*100)).toFixed(1) : 0;
-
-      $('#pg_prog_total').text(`${r.moeda_simbolo||''} ${fmt(r.valor_po)}`);
-      $('#pg_prog_recebido').text(`${r.moeda_simbolo||''} ${fmt(r.valor_recebido)}`);
-      $('#pg_prog_saldo').text(`${r.moeda_simbolo||''} ${fmt(r.saldo_pendente)}`);
-      $('#pg_progress_bar').css('width', pct+'%');
-      $('#pg_progress_pct').text(pct+'% recebido');
-      $('#pg_progress_wrap').removeClass('d-none');
-
-      // Histórico
-      if(r.historico && r.historico.length){
-        $('#pg_historico_tbody').html(renderHistoricoTabela(r.historico));
-        $('#pg_historico_wrap').removeClass('d-none');
-      } else {
-        $('#pg_historico_wrap').addClass('d-none');
-      }
-
-      // Anexos pagamento
-      if(r.anexos && r.anexos.length){
-        $('#pg_existing_attachments').html(renderAnexos(r.anexos,'btn-pg'));
-        $('#pg_existing_attachments_wrap').removeClass('d-none');
-      } else {
-        $('#pg_existing_attachments_wrap').addClass('d-none');
-      }
-
-      // Botão download PO do cliente
-      if(r.po_anexos && r.po_anexos.length){
-        const poLinks = r.po_anexos.map(a=>
-          `<a href="${a.download_url}" class="btn btn-outline-secondary btn-modern btn-sm" target="_blank">
-            <i class="material-symbols-rounded me-1" style="font-size:15px">download</i>PO Cliente
-          </a>`
-        ).join(' ');
-        $('#pg_po_download_wrap').html(poLinks).removeClass('d-none');
-      } else {
-        $('#pg_po_download_wrap').addClass('d-none');
-      }
-
-      // Action
-      $('#pgForm').attr('action', `/pagamentos/${id}/update/`);
-      pgModal.show();
-
-    }).fail(function(){
-      Swal.fire({icon:'error', title:'Erro', text:'Não foi possível carregar os dados.'});
-    });
+  /* Reset e abertura */
+  $('#btnRegistarPagamento').on('click',function(){
+    $('#pl_cliente_id').val('');
+    $('#pl_moeda_id').val('');
+    $('#pl_data_pagamento').val('{{ today }}');
+    $('#pl_valor_pago').val('');
+    $('#pl_dado_bancario_id').val('');
+    $('#pl_referencia,#pl_banco_origem,#pl_numero_transaccao,#pl_observacoes').val('');
+    $('#pl_pop_anexos,#pl_outros_anexos').val('');
+    pgLivreModal.show();
   });
 
-  // ── Submit form com SweetAlert ─────────────────────────────────────────────
-  $('#pgForm').on('submit', function(e){
-    e.preventDefault();
+  /* Guardar */
+  $('#btnGuardarPagamentoLivre').on('click',function(){
+    const clienteId = $('#pl_cliente_id').val();
+    const data      = $('#pl_data_pagamento').val();
+    const valor     = parseFloat($('#pl_valor_pago').val())||0;
 
-    Swal.fire({
-      title          : 'A processar...',
-      text           : 'Por favor aguarde.',
-      allowOutsideClick: false,
-      allowEscapeKey : false,
-      didOpen        : ()=>{ Swal.showLoading(); },
-    });
+    if(!clienteId){
+      Swal.fire({icon:'warning',title:'Campo obrigatório',text:'Seleccione o cliente.'}); return;
+    }
+    if(!data){
+      Swal.fire({icon:'warning',title:'Campo obrigatório',text:'Indique a data de pagamento.'}); return;
+    }
+    if(valor<=0){
+      Swal.fire({icon:'warning',title:'Valor inválido',text:'O valor pago deve ser maior que zero.'}); return;
+    }
 
-    const formData = new FormData(this);
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', CSRF);
+    formData.append('cliente_id',         clienteId);
+    formData.append('moeda_id',           $('#pl_moeda_id').val());
+    formData.append('data_pagamento',     data);
+    formData.append('valor_pago',         $('#pl_valor_pago').val());
+    formData.append('dado_bancario_id',   $('#pl_dado_bancario_id').val());
+    formData.append('referencia',         $('#pl_referencia').val());
+    formData.append('banco_origem',       $('#pl_banco_origem').val());
+    formData.append('numero_transaccao',  $('#pl_numero_transaccao').val());
+    formData.append('observacoes',        $('#pl_observacoes').val());
+
+    /* Anexos */
+    const popFiles    = document.getElementById('pl_pop_anexos').files;
+    const outrosFiles = document.getElementById('pl_outros_anexos').files;
+    for(let f of popFiles)    formData.append('pop_anexos', f);
+    for(let f of outrosFiles) formData.append('outros_anexos', f);
+
+    Swal.fire({title:'A processar...',allowOutsideClick:false,allowEscapeKey:false,didOpen:()=>Swal.showLoading()});
 
     $.ajax({
-      url        : $(this).attr('action'),
+      url        : '/pagamentos/criar-livre/',
       method     : 'POST',
       data       : formData,
       processData: false,
@@ -615,145 +653,148 @@ $(function(){
       headers    : {'X-CSRFToken': CSRF},
     }).done(function(res){
       Swal.fire({
-        icon             : 'success',
-        title            : 'Guardado!',
-        text             : res.message || 'Pagamento actualizado com sucesso.',
-        timer            : 2500,
-        showConfirmButton: false,
-        timerProgressBar : true,
-      }).then(()=>{
-        pgModal.hide();
-        location.reload();
-      });
+        icon:'success',title:'Registado!',text:res.message||'Pagamento criado com sucesso.',
+        timer:2200,showConfirmButton:false,timerProgressBar:true,
+      }).then(()=>{ pgLivreModal.hide(); location.reload(); });
     }).fail(function(xhr){
-      const msg = xhr.responseJSON ? xhr.responseJSON.message : 'Ocorreu um erro inesperado.';
-      Swal.fire({icon:'error', title:'Erro', text: msg});
+      const msg = xhr.responseJSON ? xhr.responseJSON.message : 'Erro inesperado.';
+      Swal.fire({icon:'error',title:'Erro',text:msg});
     });
   });
 
-  // ── Abrir modal Visualizar ─────────────────────────────────────────────────
-  $(document).on('click','.btn-view-pg',function(){
-    const id = $(this).data('id');
+  /* ════════════════════════════════════════════════
+     ACTUALIZAR PAGAMENTO (ligado a PO)
+  ════════════════════════════════════════════════ */
 
-    Swal.fire({
-      title: 'A carregar...', allowOutsideClick:false,
-      didOpen:()=>{ Swal.showLoading(); },
-    });
-
-    $.get(`/pagamentos/${id}/json/`, function(r){
+  $(document).on('click','.btn-edit-pg',function(){
+    const id=$(this).data('id');
+    Swal.fire({title:'A carregar...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+    $.get(`/pagamentos/${id}/json/`,function(r){
       Swal.close();
+      $('#pg_numero').val(r.numero||'');
+      $('#pg_po').val(r.purchase_order_numero||'—');
+      $('#pg_po_cliente').val(r.po_cliente_numero||'—');
+      $('#pg_cliente').val(r.cliente_nome||'');
+      $('#pg_data_prevista').val(r.data_pagamento_prevista||'');
+      $('#pg_data_recebida').val(r.data_pagamento_recebido||'');
+      $('#pg_valor_recebido').val(r.valor_recebido||'0.00');
+      $('#pg_referencia').val(r.referencia_pagamento||'');
+      $('#pg_banco').val(r.banco_origem||'');
+      $('#pg_transaccao').val(r.numero_transaccao||'');
+      $('#pg_observacoes').val(r.observacoes||'');
+      $('#pg_dado_bancario').val('');
+      $('#pgModalSubtitle').html(`Estado: <strong>${r.estado_nome||'—'}</strong>`);
 
-      const vPO       = parseFloat(r.valor_po)||0;
-      const vRecebido = parseFloat(r.valor_recebido)||0;
-      const pct       = vPO>0 ? Math.min(100,(vRecebido/vPO*100)).toFixed(1) : 0;
-      const sym       = r.moeda_simbolo ? r.moeda_simbolo+' ' : '';
+      const vPO=parseFloat(r.valor_po)||0,vR=parseFloat(r.valor_recebido)||0;
+      const pct=vPO>0?Math.min(100,(vR/vPO*100)).toFixed(1):0;
+      $('#pg_prog_total').text(`${r.moeda_simbolo||''} ${fmt(r.valor_po)}`);
+      $('#pg_prog_recebido').text(`${r.moeda_simbolo||''} ${fmt(r.valor_recebido)}`);
+      $('#pg_prog_saldo').text(`${r.moeda_simbolo||''} ${fmt(r.saldo_pendente)}`);
+      $('#pg_progress_bar').css('width',pct+'%');
+      $('#pg_progress_pct').text(pct+'% recebido');
+      $('#pg_progress_wrap').removeClass('d-none');
 
-      // PO download buttons
-      let poDownloadHtml = '';
-      if(r.po_anexos && r.po_anexos.length){
-        poDownloadHtml = r.po_anexos.map(a=>
-          `<a href="${a.download_url}" class="btn btn-sm btn-outline-secondary" target="_blank">
-            <i class="material-symbols-rounded me-1" style="font-size:14px">download</i>${a.nome_ficheiro}
-          </a>`
-        ).join(' ');
-      }
+      if(r.historico&&r.historico.length){$('#pg_historico_tbody').html(renderHistoricoTabela(r.historico));$('#pg_historico_wrap').removeClass('d-none');}
+      else{$('#pg_historico_wrap').addClass('d-none');}
 
-      // Histórico table
-      let historicoHtml = '';
-      if(r.historico && r.historico.length){
-        historicoHtml = `
-          <div class="modal-section-title mb-3 mt-4">
-            <i class="material-symbols-rounded me-2">history</i>Histórico de Pagamentos
-          </div>
-          <div class="table-responsive">
-            <table class="table table-sm table-bordered align-middle mb-0" style="font-size:.82rem;">
-              <thead class="table-light">
-                <tr><th>Data</th><th>Valor</th><th>Conta Destino</th><th>Referência</th><th>Banco Origem</th><th>Transacção</th></tr>
-              </thead>
-              <tbody>${renderHistoricoTabela(r.historico)}</tbody>
-            </table>
-          </div>`;
-      }
+      if(r.anexos&&r.anexos.length){$('#pg_existing_attachments').html(renderAnexos(r.anexos,'btn-pg'));$('#pg_existing_attachments_wrap').removeClass('d-none');}
+      else{$('#pg_existing_attachments_wrap').addClass('d-none');}
+
+      if(r.po_anexos&&r.po_anexos.length){
+        $('#pg_po_download_wrap').html(r.po_anexos.map(a=>`<a href="${a.download_url}" class="btn btn-outline-secondary btn-modern btn-sm" target="_blank"><i class="material-symbols-rounded me-1" style="font-size:15px">download</i>PO Cliente</a>`).join(' ')).removeClass('d-none');
+      }else{$('#pg_po_download_wrap').addClass('d-none');}
+
+      $('#pgForm').attr('action',`/pagamentos/${id}/update/`);
+      pgModal.show();
+    }).fail(()=>Swal.fire({icon:'error',title:'Erro',text:'Não foi possível carregar os dados.'}));
+  });
+
+  $('#pgForm').on('submit',function(e){
+    e.preventDefault();
+    Swal.fire({title:'A processar...',allowOutsideClick:false,allowEscapeKey:false,didOpen:()=>Swal.showLoading()});
+    $.ajax({
+      url:$(this).attr('action'),method:'POST',data:new FormData(this),
+      processData:false,contentType:false,headers:{'X-CSRFToken':CSRF},
+    }).done(function(res){
+      Swal.fire({icon:'success',title:'Guardado!',text:res.message||'Pagamento actualizado.',timer:2500,showConfirmButton:false,timerProgressBar:true})
+      .then(()=>{pgModal.hide();location.reload();});
+    }).fail(function(xhr){
+      Swal.fire({icon:'error',title:'Erro',text:xhr.responseJSON?xhr.responseJSON.message:'Erro inesperado.'});
+    });
+  });
+
+  /* ── Visualizar ── */
+  $(document).on('click','.btn-view-pg',function(){
+    const id=$(this).data('id');
+    Swal.fire({title:'A carregar...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+    $.get(`/pagamentos/${id}/json/`,function(r){
+      Swal.close();
+      const vPO=parseFloat(r.valor_po)||0,vR=parseFloat(r.valor_recebido)||0;
+      const pct=vPO>0?Math.min(100,(vR/vPO*100)).toFixed(1):0;
+      const sym=r.moeda_simbolo?r.moeda_simbolo+' ':'';
+      const tagLivre=!r.purchase_order_numero?`<span class="pg-tag-livre ms-1">Sem PO</span>`:'';
+
+      const poDownload=r.po_anexos&&r.po_anexos.length
+        ?`<div class="mb-3">
+            <div class="modal-section-title mb-2"><i class="material-symbols-rounded me-2">description</i>PO do Cliente</div>
+            <div class="d-flex gap-2 flex-wrap">${r.po_anexos.map(a=>`<a href="${a.download_url}" class="btn btn-sm btn-outline-secondary" target="_blank"><i class="material-symbols-rounded me-1" style="font-size:14px">download</i>${a.nome_ficheiro}</a>`).join(' ')}</div>
+           </div>`:'';
+
+      const historicoHtml=r.historico&&r.historico.length
+        ?`<div class="modal-section-title mb-3 mt-4"><i class="material-symbols-rounded me-2">history</i>Histórico de Pagamentos</div>
+           <div class="table-responsive">
+             <table class="table table-sm table-bordered align-middle mb-0" style="font-size:.82rem;">
+               <thead class="table-light"><tr><th>Data</th><th>Valor</th><th>Conta Destino</th><th>Referência</th><th>Banco Origem</th><th>Transacção</th></tr></thead>
+               <tbody>${renderHistoricoTabela(r.historico)}</tbody>
+             </table>
+           </div>`:'';
 
       $('#pgViewContent').html(`
-        <div class="card border-0 shadow-sm">
-          <div class="card-body p-4">
-
-            <!-- Progresso -->
-            <div class="pg-progress-card mb-4">
-              <div class="row g-3 align-items-center">
-                <div class="col-4 text-center">
-                  <div class="pg-prog-label">Total PO</div>
-                  <div class="pg-prog-value">${sym}${fmt(r.valor_po)}</div>
+        <div class="card border-0 shadow-sm"><div class="card-body p-4">
+          <div class="pg-progress-card mb-4">
+            <div class="row g-3 align-items-center">
+              <div class="col-4 text-center"><div class="pg-prog-label">Total PO</div><div class="pg-prog-value">${sym}${fmt(r.valor_po)}</div></div>
+              <div class="col-4 text-center"><div class="pg-prog-label">Recebido</div><div class="pg-prog-value text-success">${sym}${fmt(r.valor_recebido)}</div></div>
+              <div class="col-4 text-center"><div class="pg-prog-label">Saldo</div><div class="pg-prog-value text-warning">${sym}${fmt(r.saldo_pendente)}</div></div>
+              <div class="col-12">
+                <div class="progress" style="height:10px;border-radius:999px;">
+                  <div class="progress-bar bg-success" style="width:${pct}%"></div>
                 </div>
-                <div class="col-4 text-center">
-                  <div class="pg-prog-label">Recebido</div>
-                  <div class="pg-prog-value text-success">${sym}${fmt(r.valor_recebido)}</div>
-                </div>
-                <div class="col-4 text-center">
-                  <div class="pg-prog-label">Saldo</div>
-                  <div class="pg-prog-value text-warning">${sym}${fmt(r.saldo_pendente)}</div>
-                </div>
-                <div class="col-12">
-                  <div class="progress" style="height:10px;border-radius:999px;">
-                    <div class="progress-bar bg-success" style="width:${pct}%"></div>
-                  </div>
-                  <div class="text-end mt-1 small text-muted">${pct}% recebido</div>
-                </div>
+                <div class="text-end mt-1 small text-muted">${pct}% recebido</div>
               </div>
             </div>
-
-            <!-- Info -->
-            <div class="row g-3 mb-3">
-              <div class="col-md-3"><strong>Número:</strong><br>${r.numero||'—'}</div>
-              <div class="col-md-3"><strong>PO Interna:</strong><br>${r.purchase_order_numero||'—'}</div>
-              <div class="col-md-3"><strong>PO Cliente:</strong><br>${r.po_cliente_numero||'—'}</div>
-              <div class="col-md-3"><strong>Cliente:</strong><br>${r.cliente_nome||'—'}</div>
-              <div class="col-md-3"><strong>Estado:</strong><br>${r.estado_nome||'—'}</div>
-              <div class="col-md-3"><strong>Data Prevista:</strong><br>${r.data_pagamento_prevista||'—'}</div>
-              <div class="col-md-3"><strong>Data Recebida:</strong><br>${r.data_pagamento_recebido||'—'}</div>
-              <div class="col-md-3"><strong>Quotação:</strong><br>${r.quotacao_numero||'—'}</div>
-              <div class="col-md-6"><strong>Referência:</strong><br>${r.referencia_pagamento||'—'}</div>
-              <div class="col-md-6"><strong>Banco Origem:</strong><br>${r.banco_origem||'—'}</div>
-              <div class="col-12"><strong>Observações:</strong><br>${r.observacoes||'—'}</div>
-            </div>
-
-            <!-- PO Download -->
-            ${poDownloadHtml ? `
-            <div class="mb-3">
-              <div class="modal-section-title mb-2"><i class="material-symbols-rounded me-2">description</i>PO do Cliente</div>
-              <div class="d-flex gap-2 flex-wrap">${poDownloadHtml}</div>
-            </div>` : ''}
-
-            <!-- Histórico -->
-            ${historicoHtml}
-
-            <!-- Anexos pagamento -->
-            <div class="modal-section-title mb-3 mt-4">
-              <i class="material-symbols-rounded me-2">attach_file</i>Anexos
-            </div>
-            <div class="row g-3">${renderAnexos(r.anexos,'btn-pg')}</div>
-
           </div>
-        </div>
-      `);
-
+          <div class="row g-3 mb-3">
+            <div class="col-md-3"><strong>Número:</strong><br>${r.numero||'—'}${tagLivre}</div>
+            <div class="col-md-3"><strong>PO Interna:</strong><br>${r.purchase_order_numero||'—'}</div>
+            <div class="col-md-3"><strong>PO Cliente:</strong><br>${r.po_cliente_numero||'—'}</div>
+            <div class="col-md-3"><strong>Cliente:</strong><br>${r.cliente_nome||'—'}</div>
+            <div class="col-md-3"><strong>Estado:</strong><br>${r.estado_nome||'—'}</div>
+            <div class="col-md-3"><strong>Data Prevista:</strong><br>${r.data_pagamento_prevista||'—'}</div>
+            <div class="col-md-3"><strong>Data Recebida:</strong><br>${r.data_pagamento_recebido||'—'}</div>
+            <div class="col-md-3"><strong>Quotação:</strong><br>${r.quotacao_numero||'—'}</div>
+            <div class="col-md-6"><strong>Referência:</strong><br>${r.referencia_pagamento||'—'}</div>
+            <div class="col-md-6"><strong>Banco Origem:</strong><br>${r.banco_origem||'—'}</div>
+            <div class="col-12"><strong>Observações:</strong><br>${r.observacoes||'—'}</div>
+          </div>
+          ${poDownload}
+          ${historicoHtml}
+          <div class="modal-section-title mb-3 mt-4"><i class="material-symbols-rounded me-2">attach_file</i>Anexos</div>
+          <div class="row g-3">${renderAnexos(r.anexos,'btn-pg')}</div>
+        </div></div>`);
       pgViewModal.show();
-    }).fail(function(){
-      Swal.fire({icon:'error',title:'Erro',text:'Não foi possível carregar os dados.'});
-    });
+    }).fail(()=>Swal.fire({icon:'error',title:'Erro',text:'Não foi possível carregar os dados.'}));
   });
 
-  // ── SweetAlert para mensagens Django (fallback) ────────────────────────────
-  const msgContainer = document.getElementById('django-messages');
-  if(msgContainer){
-    msgContainer.querySelectorAll('span').forEach(span=>{
-      const tags = span.dataset.tags || '';
-      const icon = tags.includes('error') ? 'error' : tags.includes('warning') ? 'warning' : 'success';
-      Swal.fire({icon, title: icon==='success'?'Sucesso':'Aviso', text: span.textContent, timer:3000, showConfirmButton:false});
+  /* ── Django messages ── */
+  const mc=document.getElementById('django-messages');
+  if(mc){
+    mc.querySelectorAll('span').forEach(span=>{
+      const t=span.dataset.tags||'';
+      const icon=t.includes('error')?'error':t.includes('warning')?'warning':'success';
+      Swal.fire({icon,title:icon==='success'?'Sucesso':'Aviso',text:span.textContent,timer:3000,showConfirmButton:false});
     });
   }
-
 });
 </script>
 {% endblock extra_js %}

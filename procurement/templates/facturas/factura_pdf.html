@@ -63,10 +63,11 @@ table.timp td{font-size:9px;padding:3px 6px;border-bottom:1px solid #eee;text-al
 /* dados bancários */
 .db{margin-top:16px;page-break-inside:avoid}
 .db .dt{font-weight:700;font-size:9.5px;margin-bottom:5px}
-table.tdb{border-collapse:collapse}
-table.tdb th{font-size:8px;font-weight:600;padding:3px 14px 3px 0;border-bottom:1px solid #ccc;text-align:left}
-table.tdb td{font-size:9px;padding:3px 14px 3px 0;border-bottom:1px solid #eee;white-space:nowrap}
-table.tdb td:first-child{font-weight:600}
+.bank-card{border:1px solid #e6e6e6;border-radius:6px;padding:8px 10px;margin-bottom:8px}
+.bank-title{font-size:9px;font-weight:700;margin-bottom:5px;color:#2E3E82}
+table.tdb{width:100%;border-collapse:collapse}
+table.tdb td{font-size:9px;padding:3px 8px 3px 0;border-bottom:1px solid #eee;vertical-align:top}
+table.tdb td:first-child{font-weight:600;width:140px;color:#333}
 
 /* sumário */
 .sum{width:230px}
@@ -149,32 +150,32 @@ table.tsum tr.sf td{font-weight:800;font-size:10.5px;border-top:1.5px solid #1a1
 
   <!-- Itens -->
   <div style="min-height:100mm">
-  <table class="ti">
-    <thead>
-      <tr>
-        <th class="al" style="width:34px">#</th>
-        <th class="al">Descrição</th>
-        <th class="ac" style="width:70px">Unid.</th>
-        <th style="width:50px">Qtd</th>
-        <th style="width:110px">Valor Unitário</th>
-        <th style="width:110px">Total</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for item in factura.itens.all %}
-      <tr>
-        <td class="al">{{ forloop.counter }}</td>
-        <td class="al">{{ item.descricao }}</td>
-        <td class="ac">{{ item.unidade|default:"—" }}</td>
-        <td>{{ item.quantidade|floatformat:"-2" }}</td>
-        <td>{{ item.preco_unit|floatformat:"2" }}{% if factura.moeda %} {{ factura.moeda.simbolo }}{% else %} Mt{% endif %}</td>
-        <td>{{ item.total_linha|floatformat:"2" }}{% if factura.moeda %} {{ factura.moeda.simbolo }}{% else %} Mt{% endif %}</td>
-      </tr>
-      {% empty %}
-      <tr><td colspan="6" style="text-align:center;color:#999;padding:14px">Sem itens.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+    <table class="ti">
+      <thead>
+        <tr>
+          <th class="al" style="width:34px">#</th>
+          <th class="al">Descrição</th>
+          <th class="ac" style="width:70px">Unid.</th>
+          <th style="width:50px">Qtd</th>
+          <th style="width:110px">Valor Unitário</th>
+          <th style="width:110px">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in factura.itens.all %}
+        <tr>
+          <td class="al">{{ forloop.counter }}</td>
+          <td class="al">{{ item.descricao }}</td>
+          <td class="ac">{{ item.unidade|default:"—" }}</td>
+          <td>{{ item.quantidade|floatformat:"-2" }}</td>
+          <td>{{ item.preco_unit|floatformat:"2" }}{% if factura.moeda %} {{ factura.moeda.simbolo }}{% else %} Mt{% endif %}</td>
+          <td>{{ item.total_linha|floatformat:"2" }}{% if factura.moeda %} {{ factura.moeda.simbolo }}{% else %} Mt{% endif %}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" style="text-align:center;color:#999;padding:14px">Sem itens.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 
   <div class="bot">
@@ -203,43 +204,104 @@ table.tsum tr.sf td{font-weight:800;font-size:10.5px;border-top:1.5px solid #1a1
       </table>
 
       <!-- Dados Bancários -->
-      {% if factura.dado_bancario %}
-      {% with b=factura.dado_bancario %}
-      <div class="db">
-        <div class="dt">Dados Bancários para Pagamento</div>
-        <table class="tdb">
-          <thead>
-            <tr><th></th><th>Número de Conta</th><th>NIB</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>{{ b.banco|truncatechars:24 }}{% if b.moeda %} - {{ b.moeda }} Acc{% endif %}</td>
-              <td>{{ b.conta|default:"—" }}</td>
-              <td>{{ b.nib|default:"—" }}</td>
-            </tr>
-            {% if b.titular %}
-            <tr>
-              <td><strong>Titular:</strong></td>
-              <td colspan="2">{{ b.titular }}</td>
-            </tr>
-            {% endif %}
-            {% if b.iban %}
-            <tr>
-              <td><strong>IBAN:</strong></td>
-              <td colspan="2">{{ b.iban }}</td>
-            </tr>
-            {% endif %}
-            {% if b.swift %}
-            <tr>
-              <td><strong>SWIFT:</strong></td>
-              <td colspan="2">{{ b.swift }}</td>
-            </tr>
-            {% endif %}
-          </tbody>
-        </table>
-      </div>
+      {% with contas=factura.factura_dados_bancarios.all %}
+        {% if contas %}
+        <div class="db">
+          <div class="dt">Dados Bancários para Pagamento</div>
+
+          {% for rel in contas %}
+            {% with b=rel.dado_bancario %}
+              {% if b %}
+              <div class="bank-card">
+                <div class="bank-title">
+                  Conta {{ forloop.counter }}
+                  {% if b.banco %}— {{ b.banco }}{% endif %}
+                  {% if b.moeda %} — {{ b.moeda }}{% endif %}
+                </div>
+                <table class="tdb">
+                  <tbody>
+                    <tr>
+                      <td>Banco</td>
+                      <td>{{ b.banco|default:"—" }}</td>
+                    </tr>
+                    <tr>
+                      <td>Titular</td>
+                      <td>{{ b.titular|default:"—" }}</td>
+                    </tr>
+                    <tr>
+                      <td>Número de Conta</td>
+                      <td>{{ b.conta|default:"—" }}</td>
+                    </tr>
+                    <tr>
+                      <td>NIB</td>
+                      <td>{{ b.nib|default:"—" }}</td>
+                    </tr>
+                    {% if b.iban %}
+                    <tr>
+                      <td>IBAN</td>
+                      <td>{{ b.iban }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if b.swift %}
+                    <tr>
+                      <td>SWIFT</td>
+                      <td>{{ b.swift }}</td>
+                    </tr>
+                    {% endif %}
+                  </tbody>
+                </table>
+              </div>
+              {% endif %}
+            {% endwith %}
+          {% endfor %}
+        </div>
+
+        {% elif factura.dado_bancario %}
+        {% with b=factura.dado_bancario %}
+        <div class="db">
+          <div class="dt">Dados Bancários para Pagamento</div>
+          <div class="bank-card">
+            <div class="bank-title">
+              {% if b.banco %}{{ b.banco }}{% endif %}
+              {% if b.moeda %} — {{ b.moeda }}{% endif %}
+            </div>
+            <table class="tdb">
+              <tbody>
+                <tr>
+                  <td>Banco</td>
+                  <td>{{ b.banco|default:"—" }}</td>
+                </tr>
+                <tr>
+                  <td>Titular</td>
+                  <td>{{ b.titular|default:"—" }}</td>
+                </tr>
+                <tr>
+                  <td>Número de Conta</td>
+                  <td>{{ b.conta|default:"—" }}</td>
+                </tr>
+                <tr>
+                  <td>NIB</td>
+                  <td>{{ b.nib|default:"—" }}</td>
+                </tr>
+                {% if b.iban %}
+                <tr>
+                  <td>IBAN</td>
+                  <td>{{ b.iban }}</td>
+                </tr>
+                {% endif %}
+                {% if b.swift %}
+                <tr>
+                  <td>SWIFT</td>
+                  <td>{{ b.swift }}</td>
+                </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        {% endwith %}
+        {% endif %}
       {% endwith %}
-      {% endif %}
     </div>
 
     <!-- Sumário -->
@@ -247,16 +309,16 @@ table.tsum tr.sf td{font-weight:800;font-size:10.5px;border-top:1.5px solid #1a1
       <div class="st">Sumário</div>
       <table class="tsum">
         {% with sym=factura.moeda.simbolo|default:"Mt" %}
-        <tr><td>Subtotal</td>          <td>{{ factura.subtotal|floatformat:"2" }} {{ sym }}</td></tr>
+        <tr><td>Subtotal</td><td>{{ factura.subtotal|floatformat:"2" }} {{ sym }}</td></tr>
         {% if factura.desconto and factura.desconto > 0 %}
         <tr><td>Desconto ({{ factura.desconto_pct|floatformat:"2" }}%)</td><td>-{{ factura.desconto|floatformat:"2" }} {{ sym }}</td></tr>
         {% else %}
-        <tr><td>Descontos</td>         <td>0.00 {{ sym }}</td></tr>
+        <tr><td>Descontos</td><td>0.00 {{ sym }}</td></tr>
         {% endif %}
-        <tr><td>S/IVA</td>             <td>{{ factura.subtotal|floatformat:"2" }} {{ sym }}</td></tr>
+        <tr><td>S/IVA</td><td>{{ factura.subtotal|floatformat:"2" }} {{ sym }}</td></tr>
         <tr><td>IVA ({{ factura.iva_pct|floatformat:"0" }}%)</td><td>{{ factura.iva_valor|floatformat:"2" }} {{ sym }}</td></tr>
-        <tr><td>Total</td>             <td>{{ factura.total|floatformat:"2" }} {{ sym }}</td></tr>
-        <tr><td>Valor arredondado</td> <td>0.00 {{ sym }}</td></tr>
+        <tr><td>Total</td><td>{{ factura.total|floatformat:"2" }} {{ sym }}</td></tr>
+        <tr><td>Valor arredondado</td><td>0.00 {{ sym }}</td></tr>
         <tr class="sf"><td>Total a pagar</td><td>{{ factura.total|floatformat:"2" }} {{ sym }}</td></tr>
         {% endwith %}
       </table>

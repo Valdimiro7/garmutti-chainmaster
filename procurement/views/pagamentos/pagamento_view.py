@@ -15,6 +15,8 @@ from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 
 from procurement.models import (
+    Cliente,
+    Moeda,
     DadoBancario,
     Pagamento,
     PagamentoAnexo,
@@ -159,6 +161,10 @@ def pagamentos_view(request):
 
     dados_bancarios = DadoBancario.objects.filter(activo=True).order_by('ordem', 'banco')
 
+    # ▼ ADICIONAR ISTO
+    clientes = Cliente.objects.filter(estado=True).order_by('nome')
+    moedas = Moeda.objects.filter(estado=True).order_by('-predefinida', 'codigo')
+
     today       = timezone.localdate()
     week_start  = today - timedelta(days=today.weekday())
     month_start = today.replace(day=1)
@@ -197,6 +203,8 @@ def pagamentos_view(request):
         'segment'             : 'pagamentos',
         'pagamentos'          : pagamentos,
         'dados_bancarios'     : dados_bancarios,
+        'clientes'            : clientes,  
+        'moedas'              : moedas,     
         'total_pendentes'     : total_pendentes,
         'total_recebidos'     : total_recebidos,
         'valor_diario'        : valor_diario,
@@ -385,3 +393,78 @@ def download_po_anexo_view(request, anexo_id):
         filename=anexo.nome_ficheiro or os.path.basename(anexo.ficheiro.name),
         content_type=content_type or 'application/octet-stream',
     )
+    
+
+@login_required
+@require_POST
+@transaction.atomic
+def create_pagamento_livre_view(request):
+    """Cria um Pagamento sem PO associada, com um PagamentoHistorico inicial."""
+    from decimal import Decimal, InvalidOperation
+
+    try:
+        cliente_id        = request.POST.get('cliente_id') or None
+        moeda_id          = request.POST.get('moeda_id') or None
+        dado_bancario_id  = request.POST.get('dado_bancario_id') or None
+        valor_pago        = _parse_decimal(request.POST.get('valor_pago', '0'))
+        data_pagamento    = request.POST.get('data_pagamento') or None
+        referencia        = request.POST.get('referencia', '').strip() or None
+        banco_origem      = request.POST.get('banco_origem', '').strip() or None
+        numero_transaccao = request.POST.get('numero_transaccao', '').strip() or None
+        observacoes       = request.POST.get('observacoes', '').strip() or None
+
+        if not cliente_id:
+            return JsonResponse({'success': False, 'message': 'Cliente é obrigatório.'}, status=400)
+        if not data_pagamento:
+            return JsonResponse({'success': False, 'message': 'Data de pagamento é obrigatória.'}, status=400)
+        if valor_pago <= 0:
+            return JsonResponse({'success': False, 'message': 'O valor pago deve ser maior que zero.'}, status=400)
+
+        estado = PagamentoEstado.objects.filter(codigo='recebido', activo=True).first()
+        if not estado:
+            estado = _get_estado_pendente()
+
+        pagamento = Pagamento(
+            numero=_generate_pagamento_number(),
+            purchase_order=None,
+            estado=estado,
+            cliente_id=cliente_id,
+            moeda_id=moeda_id,
+            valor_po=Decimal('0'),
+            valor_recebido=valor_pago,
+            saldo_pendente=Decimal('0'),
+            data_pagamento_recebido=data_pagamento,
+            referencia_pagamento=referencia,
+            banco_origem=banco_origem,
+            numero_transaccao=numero_transaccao,
+            observacoes=observacoes,
+            criado_por=request.user,
+        )
+        pagamento.save()
+
+        dado_bancario = None
+        if dado_bancario_id:
+            dado_bancario = DadoBancario.objects.filter(id=dado_bancario_id, activo=True).first()
+
+        PagamentoHistorico.objects.create(
+            pagamento_id      = pagamento.id,
+            dado_bancario     = dado_bancario,
+            valor_pago        = valor_pago,
+            data_pagamento    = data_pagamento,
+            referencia        = referencia,
+            banco_origem      = banco_origem,
+            numero_transaccao = numero_transaccao,
+            observacoes       = observacoes,
+            registado_por     = request.user,
+        )
+
+        _save_uploaded_files(request, pagamento)
+
+        return JsonResponse({
+            'success': True,
+            'message': f'Pagamento "{pagamento.numero}" registado com sucesso.'
+        })
+
+    except Exception:
+        logger.exception("Erro ao criar pagamento livre")
+        return JsonResponse({'success': False, 'message': 'Erro inesperado ao criar o pagamento.'}, status=500)

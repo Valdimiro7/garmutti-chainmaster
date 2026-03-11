@@ -6,6 +6,7 @@ from .moeda import Moeda
 from .dadobancario import DadoBancario
 from .facturaestado import FacturaEstado
 
+
 class Factura(models.Model):
     numero = models.CharField(max_length=30, unique=True)
 
@@ -35,6 +36,8 @@ class Factura(models.Model):
         db_column='moeda_id',
         related_name='facturas',
     )
+
+    # Mantido por compatibilidade, mas o sistema passará a usar factura_dado_bancario
     dado_bancario = models.ForeignKey(
         DadoBancario,
         null=True, blank=True,
@@ -43,37 +46,36 @@ class Factura(models.Model):
         related_name='facturas',
     )
 
-    data_emissao    = models.DateField()
+    data_emissao = models.DateField()
     data_vencimento = models.DateField(null=True, blank=True)
 
-    # Valores calculados
-    subtotal        = models.DecimalField(max_digits=18, decimal_places=2, default=0)
-    desconto        = models.DecimalField(max_digits=18, decimal_places=2, default=0)  # valor absoluto
-    desconto_pct    = models.DecimalField(max_digits=5,  decimal_places=2, default=0)  # % informativo
-    iva_pct         = models.DecimalField(max_digits=5,  decimal_places=2, default=16) # 16%
-    iva_valor       = models.DecimalField(max_digits=18, decimal_places=2, default=0)
-    total           = models.DecimalField(max_digits=18, decimal_places=2, default=0)
+    subtotal = models.DecimalField(max_digits=18, decimal_places=2, default=0)
+    desconto = models.DecimalField(max_digits=18, decimal_places=2, default=0)
+    desconto_pct = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    iva_pct = models.DecimalField(max_digits=5, decimal_places=2, default=16)
+    iva_valor = models.DecimalField(max_digits=18, decimal_places=2, default=0)
+    total = models.DecimalField(max_digits=18, decimal_places=2, default=0)
 
-    observacoes     = models.TextField(null=True, blank=True)
-    termos          = models.TextField(null=True, blank=True)
+    observacoes = models.TextField(null=True, blank=True)
+    termos = models.TextField(null=True, blank=True)
 
-    pdf_gerado      = models.FileField(upload_to='facturas/pdf/', null=True, blank=True)
+    pdf_gerado = models.FileField(upload_to='facturas/pdf/', null=True, blank=True)
 
-    criado_por      = models.ForeignKey(
+    criado_por = models.ForeignKey(
         User,
         null=True, blank=True,
         on_delete=models.SET_NULL,
         db_column='criado_por',
         related_name='facturas_criadas',
     )
-    criado_em       = models.DateTimeField(auto_now_add=True)
-    actualizado_em  = models.DateTimeField(auto_now=True)
+    criado_em = models.DateTimeField(auto_now_add=True)
+    actualizado_em = models.DateTimeField(auto_now=True)
 
     class Meta:
-        managed  = False
+        managed = False
         db_table = 'facturas'
         ordering = ['-id']
-        verbose_name        = 'Factura'
+        verbose_name = 'Factura'
         verbose_name_plural = 'Facturas'
 
     def __str__(self):

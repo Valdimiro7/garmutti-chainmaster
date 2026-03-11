@@ -20,6 +20,15 @@ class PagamentoHistorico(models.Model):
         db_column='dado_bancario_id',
         related_name='pagamento_historico',
     )
+    
+    factura = models.ForeignKey(
+        'Factura',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        db_column='factura_id',
+        related_name='pagamento_historicos',
+    )
 
     valor_pago = models.DecimalField(max_digits=18, decimal_places=2, default=0)
     data_pagamento = models.DateField()
