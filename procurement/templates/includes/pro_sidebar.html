@@ -143,32 +143,10 @@
       </li>
 
       <li class="nav-item">
-        <a data-bs-toggle="collapse" href="#menu-relatorios" class="nav-link text-dark" aria-controls="menu-relatorios" role="button" aria-expanded="false">
+        <a class="nav-link {% if 'reports' == segment %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}" href="{% url 'procurement:reports' %}">
           <i class="material-symbols-rounded opacity-5">bar_chart</i>
           <span class="nav-link-text ms-2 ps-1">Relatórios</span>
         </a>
-        <div class="collapse" id="menu-relatorios">
-          <ul class="nav">
-            <li class="nav-item">
-              <a class="nav-link text-dark" href="{% url 'procurement:reports' %}">
-                <span class="sidenav-mini-icon">P</span>
-                <span class="sidenav-normal ms-2 ps-1">Pipeline Comercial</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-dark" href="#">
-                <span class="sidenav-mini-icon">V</span>
-                <span class="sidenav-normal ms-2 ps-1">Vendas por Cliente</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-dark" href="#">
-                <span class="sidenav-mini-icon">F</span>
-                <span class="sidenav-normal ms-2 ps-1">Fluxo RFQ → Factura</span>
-              </a>
-            </li>
-          </ul>
-        </div>
       </li>
 
       <!-- Secção: Admin -->
