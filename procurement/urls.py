@@ -55,7 +55,7 @@ from procurement.views.facturas.facturas_view import (facturas_view, factura_cre
 from procurement.views.recibos.recibos_view import (recibos_view, recibo_create_view, recibo_detail_json_view, recibo_anular_view, recibo_pdf_view, factura_info_json_view)
 from procurement.views.pagamentos.pagamento_historico_view import (pagamentos_historico_view, pagamento_historico_detail_json_view)
 from procurement.views.guiaentrega.guias_entrega_view import (guia_entrega_change_estado_view, guias_entrega_view, guia_entrega_create_view, guia_entrega_update_view, guia_entrega_detail_json_view, po_itens_para_guia_json_view, guia_entrega_pdf_view)
-
+from procurement.views.relatorios.relatorios_view import (reports_view, reports_preview_json_view, reports_pdf_view)
 
 
 
@@ -144,7 +144,15 @@ urlpatterns = [
     path('guias-entrega/<int:guia_id>/json/', guia_entrega_detail_json_view, name='guias_entrega_detail_json'),
     path('guias-entrega/po/<int:po_id>/itens/', po_itens_para_guia_json_view, name='guias_entrega_po_itens'),
     path('guias-entrega/<int:guia_id>/pdf/', guia_entrega_pdf_view, name='guias_entrega_pdf'),
-    path('guias-entrega/<int:guia_id>/change-estado/', guia_entrega_change_estado_view, name='guias_entrega_change_estado'),    
+    path('guias-entrega/<int:guia_id>/change-estado/', guia_entrega_change_estado_view, name='guias_entrega_change_estado'), 
+    
+    
+    
+    #=====================Relatórios==========================================
+    path('relatorios/', reports_view, name='reports'),
+    path('relatorios/preview/', reports_preview_json_view, name='reports_preview_json'),
+    path('relatorios/pdf/', reports_pdf_view, name='reports_pdf'),
+       
     
     #Fornecesores
     path('fornecedores/', fornecedores_view, name='fornecedores'),
