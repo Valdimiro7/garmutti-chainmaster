@@ -254,7 +254,7 @@ def reports_view(request):
     ]
 
     context = {
-        'segment': 'relatorios',
+        'segment': 'reports',
         'today': today.isoformat(),
         'report_cards': report_cards,
         'clientes': Cliente.objects.filter(estado=True).order_by('nome'),

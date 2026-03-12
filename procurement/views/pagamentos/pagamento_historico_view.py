@@ -70,7 +70,7 @@ def pagamentos_historico_view(request):
     )
 
     context = {
-        'segment': 'historico_pagamentos',
+        'segment': 'pagamentos_historico',
         'historicos': historicos,
         'total_registos': total_registos,
         'total_valor': total_valor,
