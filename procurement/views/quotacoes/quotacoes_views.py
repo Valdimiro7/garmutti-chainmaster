@@ -1,4 +1,5 @@
 from datetime import date
+import json
 import os
 from decimal import Decimal, InvalidOperation
 from django.conf import settings
@@ -116,11 +117,7 @@ def quotacoes_view(request):
         .order_by('-id')
     )
 
-    sugestoes = list(
-        QuotacaoDescricaoSugerida.objects
-        .order_by('-vezes', 'descricao')
-        .values_list('descricao', flat=True)[:200]
-    )
+    item_catalog = _get_existing_quotacao_item_catalog()
 
     total           = quotacoes.count()
     total_enviada   = quotacoes.filter(estado__codigo='enviada').count()
@@ -144,7 +141,7 @@ def quotacoes_view(request):
         'condicoes':            condicoes,
         'dados_bancarios':      dados_bancarios,
         'rfqs':                 rfqs,
-        'sugestoes_json':       sugestoes,
+        'item_catalog_json':    json.dumps(item_catalog, ensure_ascii=False),
         'total':                total,
         'total_enviada':        total_enviada,
         'total_aceite':         total_aceite,
@@ -455,3 +452,44 @@ def _save_quotacao(request, quotacao):
             pass
 
     return quotacao
+
+
+
+def _normalize_item_text(value):
+    return ' '.join((value or '').split()).strip()
+
+
+def _get_existing_quotacao_item_catalog(limit=3000):
+    """
+    Catálogo de itens já usados em quotações anteriores
+    para Select2 + auto-preenchimento.
+    """
+    catalog = {}
+
+    qs = (
+        QuotacaoItem.objects
+        .select_related('unidade')
+        .exclude(descricao__isnull=True)
+        .exclude(descricao__exact='')
+        .order_by('-id')
+    )
+
+    for item in qs[:limit]:
+        descricao = _normalize_item_text(item.descricao)
+        if not descricao:
+            continue
+
+        key = descricao.lower()
+        if key in catalog:
+            continue
+
+        catalog[key] = {
+            'descricao': descricao,
+            'unidade_id': item.unidade_id or '',
+            'preco_unitario': str(item.preco_unitario or 0),
+            'percentagem_iva': str(item.percentagem_iva or 16),
+            'comentarios': item.comentarios or '',
+            'especificacoes': item.especificacoes or '',
+        }
+
+    return catalog

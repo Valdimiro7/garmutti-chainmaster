@@ -35,6 +35,7 @@
                 <span class="badge rounded-pill qt-soft-badge">Preços & IVA</span>
                 <span class="badge rounded-pill qt-soft-badge">Ligação RFQ</span>
                 <span class="badge rounded-pill qt-soft-badge">Dados Bancários</span>
+                <span class="badge rounded-pill qt-soft-badge">Sugestões Select2</span>
               </div>
             </div>
 
@@ -199,7 +200,6 @@
                               </a>
                             </li>
                             <li><hr class="dropdown-divider"></li>
-                            <!-- Alterar Estado -->
                             {% for estado in estados %}
                               {% if estado.id != q.estado_id %}
                               <li>
@@ -251,7 +251,6 @@
 
         <div class="modal-body pt-3" style="max-height:72vh;overflow-y:auto;overflow-x:hidden;">
 
-          <!-- ── Dados Gerais ── -->
           <div class="modal-section-title mb-3">
             <i class="material-symbols-rounded me-2">description</i>Dados Gerais
           </div>
@@ -327,7 +326,6 @@
             </div>
           </div>
 
-          <!-- ── Condições Financeiras ── -->
           <div class="modal-section-title mb-3">
             <i class="material-symbols-rounded me-2">payments</i>Condições Financeiras
           </div>
@@ -369,14 +367,12 @@
                   <option value="{{ c.id }}" data-descricao="{{ c.descricao|default:'' }}">{{ c.nome }}</option>
                 {% endfor %}
               </select>
-              <!-- Termos inline -->
               <div id="termos_preview" class="qt-termos-preview d-none mt-2">
                 <span id="termos_texto" class="text-muted" style="font-size:.82rem;white-space:pre-line;"></span>
               </div>
             </div>
           </div>
 
-          <!-- ── Dados Bancários ── -->
           <div class="modal-section-title mb-3">
             <i class="material-symbols-rounded me-2">account_balance</i>Dados Bancários
             <span class="ms-2 text-muted fw-normal" style="font-size:.75rem;text-transform:none;letter-spacing:0">
@@ -386,7 +382,6 @@
 
           <div class="row g-3 mb-4">
             <div class="col-12">
-              <!-- Trigger button -->
               <div class="qt-banco-dropdown-wrap">
                 <button type="button" class="qt-banco-trigger modern-input" id="btnBancoDropdown"
                         aria-expanded="false">
@@ -395,7 +390,6 @@
                   <i class="material-symbols-rounded ms-auto qt-banco-chevron">expand_more</i>
                 </button>
 
-                <!-- Dropdown panel -->
                 <div class="qt-banco-panel" id="bancoPanelDropdown">
                   {% for db in dados_bancarios %}
                   <label class="qt-banco-option {% if db.id in db_predefinidos %}checked{% endif %}"
@@ -420,12 +414,10 @@
                 </div>
               </div>
 
-              <!-- Chips dos seleccionados -->
               <div id="bancoChips" class="d-flex flex-wrap gap-2 mt-2"></div>
             </div>
           </div>
 
-          <!-- ── Itens ── -->
           <div class="modal-section-title mb-3 d-flex justify-content-between align-items-center">
             <div>
               <i class="material-symbols-rounded me-2">inventory_2</i>Itens da Quotação
@@ -435,7 +427,6 @@
             </button>
           </div>
 
-          <!-- Totais em tempo real -->
           <div class="qt-totals-bar mb-3">
             <span class="qt-total-label">Subtotal:</span>
             <span id="lblSubtotal" class="qt-total-value">0.00</span>
@@ -452,7 +443,7 @@
               <thead>
                 <tr>
                   <th style="width:44px;">#</th>
-                  <th>Descrição</th>
+                  <th style="min-width:280px;">Descrição</th>
                   <th style="width:100px;">Qtd.</th>
                   <th style="width:140px;">Unidade</th>
                   <th style="width:130px;">P. Unit.</th>
@@ -465,7 +456,6 @@
             </table>
           </div>
 
-          <!-- ── Observações ── -->
           <div class="modal-section-title mb-2">
             <i class="material-symbols-rounded me-2">notes</i>Observações
           </div>
@@ -475,7 +465,7 @@
                       placeholder="Informações adicionais para o cliente…"></textarea>
           </div>
 
-        </div><!-- /modal-body -->
+        </div>
 
         <div class="modal-footer border-0 pt-0 d-flex justify-content-between align-items-center">
           <div class="qt-footer-totals d-none d-md-flex align-items-center gap-3">
@@ -523,11 +513,6 @@
   </div>
 </div>
 
-<!-- Datalist autocomplete -->
-<datalist id="dl_descricoes">
-  {% for s in sugestoes_json %}<option value="{{ s }}">{% endfor %}
-</datalist>
-
 {% endblock content %}
 
 
@@ -536,6 +521,7 @@
 <link href="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.8/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/datatables.net-responsive-bs5@2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/datatables.net-buttons-bs5@2.4.2/css/buttons.bootstrap5.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
 
 <style>
 :root{
@@ -544,15 +530,11 @@
   --qt-light:#eef2ff;
   --qt-border:#dae3ff;
 }
-
-/* Hero */
 .qt-hero-card{position:relative;overflow:hidden;border-radius:22px;background:linear-gradient(135deg,#ffffff 0%,#f4f6ff 100%)}
 .qt-hero-accent{position:absolute;right:-60px;top:-60px;width:220px;height:220px;background:radial-gradient(circle,rgba(46,62,130,.15) 0%,rgba(46,62,130,0) 70%);pointer-events:none}
 .qt-hero-icon{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--qt) 0%,var(--qt-mid) 100%);color:#fff;box-shadow:0 12px 30px rgba(46,62,130,.22)}
 .qt-hero-icon i{font-size:30px}
 .qt-soft-badge{background:var(--qt-light);color:var(--qt);border:1px solid var(--qt-border);font-weight:600;padding:.50rem .90rem}
-
-/* Stats */
 .qt-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .mini-stat-card{background:#fff;border:1px solid #edf0f7;border-radius:18px;padding:18px 16px;box-shadow:0 8px 22px rgba(15,23,42,.04)}
 .mini-stat-label{display:block;font-size:.78rem;color:#6c757d;margin-bottom:6px}
@@ -560,48 +542,30 @@
 .stat-filter:hover{border-color:var(--qt)!important;box-shadow:0 6px 20px rgba(46,62,130,.14)!important}
 .stat-filter.stat-active{border-color:var(--qt)!important;background:var(--qt-light)!important}
 .stat-filter.stat-active .mini-stat-label{color:var(--qt)}
-
-/* Cards */
 .qt-main-card{border-radius:22px;overflow:hidden}
 .qt-topbar{border-bottom:1px solid #edf0f7;background:linear-gradient(180deg,#fff 0%,#f8f9ff 100%)}
-
-/* Buttons */
 .btn-modern{border-radius:14px!important;padding:.75rem 1.1rem!important;font-weight:600!important;box-shadow:none!important;text-transform:none!important}
 .btn-qt{background:linear-gradient(135deg,var(--qt) 0%,var(--qt-mid) 100%)!important;border:none!important;color:#fff!important;box-shadow:0 10px 24px rgba(46,62,130,.22)!important}
-
-/* Table */
 .qt-table thead th{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#6c757d;font-weight:700;border-bottom:1px solid #eef1f6!important;padding-top:1rem!important;padding-bottom:1rem!important;background:#f8f9ff}
 .qt-table tbody td{vertical-align:middle;border-bottom:1px solid #f3f5f9!important;padding-top:.85rem!important;padding-bottom:.85rem!important}
 .table-subtext{font-size:.77rem;color:#8a93a2}
-
-/* Pills */
 .avatar-circle-qt{width:42px;height:42px;min-width:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--qt-light);color:var(--qt);font-weight:700;font-size:.85rem}
 .rfq-ref-pill{display:inline-flex;align-items:center;background:var(--qt-light);color:var(--qt);border:1px solid var(--qt-border);border-radius:8px;padding:3px 10px;font-size:.78rem;font-weight:700}
 .status-pill{display:inline-flex;align-items:center;padding:.42rem .80rem;border-radius:999px;font-size:.74rem;font-weight:700}
-
-/* Action */
 .btn-action-menu{width:38px;height:38px;border-radius:12px!important;border:1px solid #e9edf5!important;background:#fff!important;color:#495057!important;display:inline-flex;align-items:center;justify-content:center}
 .btn-view-qt{border-radius:12px!important}
-
-/* Modal */
 .modal-modern{border-radius:22px}
 .modal-section-title{display:flex;align-items:center;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--qt);border-bottom:1px solid var(--qt-border);padding-bottom:8px}
 .modern-input{border-radius:14px!important;border:1px solid #dfe5ef!important;min-height:46px;box-shadow:none!important}
 .modern-input:focus{border-color:var(--qt)!important;box-shadow:0 0 0 .2rem rgba(46,62,130,.10)!important}
-
-/* Items table */
 .qt-items-table thead th{background:#f4f6ff;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:#6c757d;border-bottom:1px solid #dae3ff!important}
 .qt-items-table tbody td{border-bottom:1px solid #edf0f7!important;vertical-align:middle}
 .btn-remove-item{width:34px;height:34px;border-radius:10px!important;border:none!important;background:#fff1f1!important;color:#dc3545!important;display:inline-flex;align-items:center;justify-content:center}
-
-/* Totals bar */
 .qt-totals-bar{display:flex;align-items:center;gap:10px;background:var(--qt-light);border:1px solid var(--qt-border);border-radius:14px;padding:10px 18px;font-size:.88rem;flex-wrap:wrap}
 .qt-total-label{color:#555;font-weight:600}
 .qt-total-value{color:var(--qt);font-weight:700;min-width:90px;text-align:right}
 .qt-total-sep{color:var(--qt-border)}
 .qt-footer-totals{background:var(--qt-light);border-radius:12px;padding:8px 16px}
-
-/* Dados Bancários – dropdown */
 .qt-banco-dropdown-wrap{position:relative}
 .qt-banco-trigger{width:100%;display:flex;align-items:center;gap:10px;padding:0 16px;height:46px;border:1px solid #dfe5ef;border-radius:14px;background:#fff;cursor:pointer;font-size:.9rem;color:#495057;transition:border-color .18s,box-shadow .18s;text-align:left}
 .qt-banco-trigger:hover,.qt-banco-trigger.open{border-color:var(--qt)!important;box-shadow:0 0 0 .2rem rgba(46,62,130,.10)!important}
@@ -622,27 +586,18 @@
 .qt-banco-detalhe{font-size:.74rem;color:#8a93a2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .qt-banco-tick{font-size:18px;color:#cdd3e0;flex-shrink:0;transition:color .15s}
 .qt-banco-option.checked .qt-banco-tick{color:var(--qt)}
-/* chips */
 .qt-banco-chip{display:inline-flex;align-items:center;gap:6px;background:var(--qt-light);color:var(--qt);border:1px solid var(--qt-border);border-radius:999px;padding:4px 12px;font-size:.76rem;font-weight:700}
 .qt-banco-chip button{background:none;border:none;padding:0;color:var(--qt);line-height:1;cursor:pointer;display:flex;align-items:center}
 .qt-banco-chip button i{font-size:14px}
-
-/* Termos preview */
 .qt-termos-preview{background:#f8f9ff;border:1px solid var(--qt-border);border-radius:10px;padding:10px 14px;font-size:.82rem}
-
-/* Toggle canceladas */
 .pill-toggle-canceladas{display:inline-flex;align-items:center;gap:6px;padding:.42rem .90rem;border-radius:999px;border:1.5px solid #f5c6cb;background:#fff5f5;color:#842029;font-size:.80rem;font-weight:700;cursor:pointer;transition:all .20s;white-space:nowrap;line-height:1}
 .pill-toggle-canceladas i{font-size:15px}
 .pill-toggle-canceladas:hover{background:#f8d7da;border-color:#dc3545}
 .pill-toggle-canceladas.pill-active{background:#dc3545;border-color:#dc3545;color:#fff}
 .pill-count-badge{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;border-radius:999px;background:rgba(220,53,69,.18);color:inherit;font-size:.72rem;font-weight:800;padding:0 5px}
 .pill-toggle-canceladas.pill-active .pill-count-badge{background:rgba(255,255,255,.30)}
-
-/* Preview */
 .qt-preview-wrap{background:#e9ecef;padding:18px;border-radius:18px}
 .qt-preview-sheet{max-width:980px;margin:0 auto;background:#fff;border-radius:8px;box-shadow:0 10px 30px rgba(15,23,42,.10);overflow:hidden}
-
-/* DataTables */
 .dataTables_wrapper .dataTables_paginate .pagination{display:flex!important;gap:4px!important;flex-wrap:wrap!important}
 .dataTables_wrapper .dataTables_paginate .pagination .page-item .page-link{all:unset!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:36px!important;height:36px!important;padding:0 10px!important;border-radius:10px!important;border:1px solid #e7ebf3!important;background:#fff!important;color:#495057!important;font-size:.85rem!important;font-weight:600!important;cursor:pointer!important;transition:all .2s!important}
 .dataTables_wrapper .dataTables_paginate .pagination .page-item.active .page-link{background:linear-gradient(135deg,var(--qt) 0%,var(--qt-mid) 100%)!important;border-color:var(--qt)!important;color:#fff!important}
@@ -651,7 +606,34 @@ div.dataTables_wrapper div.dataTables_length select{border-radius:12px!important
 .dt-buttons{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 .dt-buttons .btn{border-radius:12px!important;padding:.45rem .90rem!important;font-size:.82rem!important;font-weight:600!important;display:inline-flex!important;align-items:center!important;gap:4px!important}
 .dt-button-background{display:none!important}
-
+.select2-container{width:100%!important}
+.select2-container--default .select2-selection--single{
+  min-height:46px;
+  border-radius:14px!important;
+  border:1px solid #dfe5ef!important;
+  display:flex!important;
+  align-items:center!important;
+  padding:6px 10px!important;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered{
+  line-height:normal!important;
+  color:#212529!important;
+  padding-left:0!important;
+}
+.select2-container--default .select2-selection--single .select2-selection__arrow{
+  height:44px!important;
+  right:8px!important;
+}
+.select2-dropdown{
+  border:1px solid #dfe5ef!important;
+  border-radius:12px!important;
+  overflow:hidden;
+}
+.select2-search--dropdown .select2-search__field{
+  border:1px solid #dfe5ef!important;
+  border-radius:10px!important;
+  padding:8px 10px!important;
+}
 @media(max-width:991.98px){.qt-stats-grid{grid-template-columns:1fr}}
 </style>
 
@@ -668,14 +650,20 @@ div.dataTables_wrapper div.dataTables_length select{border-radius:12px!important
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
 $(document).ready(function(){
 
+  const itemCatalog = {{ item_catalog_json|safe }};
+  const itemOptions = Object.values(itemCatalog || {}).map(item => ({
+    id: item.descricao,
+    text: item.descricao
+  }));
+
   const qtModal        = new bootstrap.Modal(document.getElementById('qtModal'));
   const qtPreviewModal = new bootstrap.Modal(document.getElementById('qtPreviewModal'));
 
-  /* ── Django messages ─────────────────────────────────────── */
   const mc = document.getElementById('django-messages');
   if(mc){
     mc.querySelectorAll('span[data-tags]').forEach(span => {
@@ -692,11 +680,12 @@ $(document).ready(function(){
     });
   }
 
-  /* ── DataTable ───────────────────────────────────────────── */
   let mostrandoCanceladas = false;
 
   const table = $('#qtTable').DataTable({
-    responsive:true, autoWidth:false, pageLength:10,
+    responsive:true,
+    autoWidth:false,
+    pageLength:10,
     dom:'<"dt-buttons-row d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3"Bf>rtip',
     buttons:[
       {extend:'excelHtml5', text:'<i class="material-symbols-rounded" style="font-size:16px">table_chart</i> Excel', className:'btn btn-outline-success',  title:'Quotações', exportOptions:{columns:[0,1,2,3,4,5,6,7]}},
@@ -706,18 +695,26 @@ $(document).ready(function(){
     ],
     lengthMenu:[[10,25,50,100,-1],[10,25,50,100,'Todos']],
     language:{
-      search:'Pesquisar:', lengthMenu:'Mostrar _MENU_ registos',
+      search:'Pesquisar:',
+      lengthMenu:'Mostrar _MENU_ registos',
       info:'Mostrando _START_ a _END_ de _TOTAL_ registos',
-      infoEmpty:'Mostrando 0 a 0 de 0 registos', infoFiltered:'(filtrado de _MAX_ registos no total)',
-      zeroRecords:'Nenhum registo encontrado', emptyTable:'Sem dados disponíveis',
+      infoEmpty:'Mostrando 0 a 0 de 0 registos',
+      infoFiltered:'(filtrado de _MAX_ registos no total)',
+      zeroRecords:'Nenhum registo encontrado',
+      emptyTable:'Sem dados disponíveis',
       paginate:{first:'Primeiro',last:'Último',next:'Seguinte',previous:'Anterior'},
     },
     columnDefs:[
       {orderable:false, targets:[8]},
-      {targets:7, render:function(data,type,row,meta){
-        if(type==='filter'||type==='sort') return $(row[7]).find('.estado-codigo').text().trim();
-        return data;
-      }}
+      {
+        targets:7,
+        render:function(data,type,row){
+          if(type==='filter'||type==='sort'){
+            return $(row[7]).find('.estado-codigo').text().trim();
+          }
+          return data;
+        }
+      }
     ]
   });
 
@@ -729,37 +726,58 @@ $(document).ready(function(){
   });
   table.draw();
 
-  /* ── Toggle canceladas ───────────────────────────────────── */
   $('#btnToggleCanceladas').on('click',function(){
     mostrandoCanceladas = !mostrandoCanceladas;
     $(this).toggleClass('pill-active', mostrandoCanceladas);
     $('#lblToggleCanceladas').text(mostrandoCanceladas ? 'Ocultar Canceladas' : 'Ver Canceladas');
-    if(mostrandoCanceladas){ table.column(7).search('').draw(); $('.stat-filter').removeClass('stat-active'); $('.stat-all').addClass('stat-active'); }
-    else table.draw();
+
+    if(mostrandoCanceladas){
+      table.column(7).search('').draw();
+      $('.stat-filter').removeClass('stat-active');
+      $('.stat-all').addClass('stat-active');
+    } else {
+      table.draw();
+    }
   });
 
-  /* ── Stat filter cards ───────────────────────────────────── */
   $(document).on('click','.stat-filter',function(){
-    const f=$(this).data('filter');
-    if(f==='cancelada'&&!mostrandoCanceladas){
+    const f = $(this).data('filter');
+
+    if(f === 'cancelada' && !mostrandoCanceladas){
       $('#btnToggleCanceladas').trigger('click');
-      setTimeout(()=>{ table.column(7).search('cancelada').draw(); $('.stat-filter').removeClass('stat-active'); $(this).addClass('stat-active'); },0);
+      setTimeout(() => {
+        table.column(7).search('cancelada').draw();
+        $('.stat-filter').removeClass('stat-active');
+        $(this).addClass('stat-active');
+      }, 0);
       return;
     }
+
     table.column(7).search(f).draw();
-    $('.stat-filter').removeClass('stat-active'); $(this).addClass('stat-active');
+    $('.stat-filter').removeClass('stat-active');
+    $(this).addClass('stat-active');
   });
 
-  /* ── Helpers ─────────────────────────────────────────────── */
-  function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-  function fmt(n){ return parseFloat(n||0).toLocaleString('pt-MZ',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  function esc(s){
+    return String(s||'')
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
 
-  /* ── Dados bancários: dropdown com checkboxes ───────────── */
+  function fmt(n){
+    return parseFloat(n||0).toLocaleString('pt-MZ',{minimumFractionDigits:2,maximumFractionDigits:2});
+  }
+
+  function normalizeItemText(value){
+    return String(value || '').replace(/\s+/g, ' ').trim().toLowerCase();
+  }
+
   const $trigger   = $('#btnBancoDropdown');
   const $panel     = $('#bancoPanelDropdown');
   const $chips     = $('#bancoChips');
 
-  // Construir mapa de labels dos bancos a partir do DOM
   const bancoLabels = {};
   $('.qt-banco-option').each(function(){
     const id  = $(this).find('.qt-banco-check').val();
@@ -771,9 +789,10 @@ $(document).ready(function(){
   function updateBancoChips(){
     $chips.html('');
     let count = 0;
+
     $('.qt-banco-check:checked').each(function(){
       const id  = $(this).val();
-      const lbl = bancoLabels[id]||id;
+      const lbl = bancoLabels[id] || id;
       $chips.append(
         `<span class="qt-banco-chip">
            ${lbl}
@@ -784,14 +803,14 @@ $(document).ready(function(){
       );
       count++;
     });
+
     $trigger.find('#bancoTriggerLabel').text(
       count === 0 ? 'Seleccione dados bancários…' :
       count === 1 ? '1 dado bancário seleccionado' :
-                    `${count} dados bancários seleccionados`
+      `${count} dados bancários seleccionados`
     );
   }
 
-  // Abrir/fechar dropdown
   $trigger.on('click', function(e){
     e.stopPropagation();
     const isOpen = $panel.hasClass('open');
@@ -799,7 +818,6 @@ $(document).ready(function(){
     $trigger.toggleClass('open', !isOpen);
   });
 
-  // Fechar ao clicar fora
   $(document).on('click', function(e){
     if(!$(e.target).closest('.qt-banco-dropdown-wrap').length){
       $panel.removeClass('open');
@@ -807,25 +825,22 @@ $(document).ready(function(){
     }
   });
 
-  // Toggle checkbox ao clicar na opção
   $(document).on('change', '.qt-banco-check', function(){
-    const lbl = $('#banco_label_'+$(this).val());
+    const lbl = $('#banco_label_' + $(this).val());
     lbl.toggleClass('checked', $(this).is(':checked'));
     updateBancoChips();
   });
 
-  // Remover chip → desmarcar checkbox
   $(document).on('click', '.qt-banco-chip button', function(){
     const id = $(this).data('id');
-    $('#banco_'+id).prop('checked', false);
-    $('#banco_label_'+id).removeClass('checked');
+    $('#banco_' + id).prop('checked', false);
+    $('#banco_label_' + id).removeClass('checked');
     updateBancoChips();
   });
 
-  /* ── Condições de pagamento: mostrar termos ─────────────── */
   function mostrarTermos(){
     const opt   = $('#qt_condicao_id option:selected');
-    const texto = opt.data('descricao')||'';
+    const texto = opt.data('descricao') || '';
     if(texto){
       $('#termos_texto').text(texto);
       $('#termos_preview').removeClass('d-none');
@@ -833,59 +848,110 @@ $(document).ready(function(){
       $('#termos_preview').addClass('d-none');
     }
   }
+
   $('#qt_condicao_id').on('change', mostrarTermos);
   $('#btnVerTermos').on('click', mostrarTermos);
 
-  /* ── Recalcular totais ───────────────────────────────────── */
   function recalcularTotais(){
-    let subtotal=0, totalIva=0;
+    let subtotal = 0;
+    let totalIva = 0;
+
     $('#qtItemsBody .qt-item-row').each(function(){
-      const qtd   = parseFloat($(this).find('[name="item_quantidade[]"]').val())||0;
-      const preco = parseFloat($(this).find('[name="item_preco_unitario[]"]').val())||0;
-      const pct   = parseFloat($(this).find('[name="item_percentagem_iva[]"]').val())||0;
-      const tl    = qtd*preco;
+      const qtd   = parseFloat($(this).find('[name="item_quantidade[]"]').val()) || 0;
+      const preco = parseFloat($(this).find('[name="item_preco_unitario[]"]').val()) || 0;
+      const pct   = parseFloat($(this).find('[name="item_percentagem_iva[]"]').val()) || 0;
+      const tl    = qtd * preco;
+
       $(this).find('.item-total-liquido').text(fmt(tl));
       $(this).find('[name^="item_total_liquido"]').val(tl.toFixed(2));
+
       subtotal += tl;
-      totalIva += tl*pct/100;
+      totalIva += tl * pct / 100;
     });
-    const total = subtotal+totalIva;
+
+    const total = subtotal + totalIva;
     $('#lblSubtotal').text(fmt(subtotal));
     $('#lblIva').text(fmt(totalIva));
     $('#lblTotal, #lblTotalFooter').text(fmt(total));
   }
 
-  /* ── Construtor de linha ─────────────────────────────────── */
+  function initItemSelect2($select, selectedValue = '') {
+    selectedValue = selectedValue || '';
+
+    if ($select.hasClass('select2-hidden-accessible')) {
+      $select.select2('destroy');
+    }
+
+    $select.empty();
+    $select.append('<option value=""></option>');
+
+    itemOptions.forEach(function(opt) {
+      const option = new Option(opt.text, opt.id, false, false);
+      $select.append(option);
+    });
+
+    if (selectedValue) {
+      const exists = $select.find('option').filter(function () {
+        return $(this).val() === selectedValue;
+      }).length > 0;
+
+      if (!exists) {
+        const newOption = new Option(selectedValue, selectedValue, true, true);
+        $select.append(newOption);
+      }
+
+      $select.val(selectedValue);
+    }
+
+    $select.select2({
+      theme: 'default',
+      width: '100%',
+      dropdownParent: $('#qtModal'),
+      placeholder: 'Pesquisar ou escrever item',
+      tags: true,
+      allowClear: true,
+      data: itemOptions,
+      createTag: function (params) {
+        const term = $.trim(params.term);
+        if (!term) return null;
+        return {
+          id: term,
+          text: term,
+          newTag: true
+        };
+      }
+    });
+  }
+
   function buildItemRow(index, data){
-    data = data||{};
-    const ivaG = $('#qt_iva').val()||'16';
+    data = data || {};
+    const ivaG = $('#qt_iva').val() || '16';
+
     let unidadeOpts = '<option value="">— —</option>';
     {% for u in unidades %}
-      unidadeOpts += `<option value="{{ u.id }}">{{ u.nome }} ({{ u.sigla }})</option>`;
+      unidadeOpts += `<option value="{{ u.id }}">{{ u.nome }}{% if u.sigla %} ({{ u.sigla }}){% endif %}</option>`;
     {% endfor %}
 
     return `
       <tr class="qt-item-row">
         <td class="item-index fw-bold text-muted">${index}</td>
         <td>
-          <input type="text" name="item_descricao[]" list="dl_descricoes"
-                 class="form-control modern-input" value="${esc(data.descricao||'')}" required
-                 placeholder="Descrição do artigo…">
+          <select name="item_descricao[]" class="form-select modern-input item-descricao-select" required></select>
         </td>
         <td>
           <input type="number" name="item_quantidade[]" class="form-control modern-input item-calc"
-                 value="${esc(String(data.quantidade||'1'))}" min="0.01" step="0.01" required>
+                 value="${esc(String(data.quantidade || '1'))}" min="0.01" step="0.01" required>
         </td>
         <td>
           <select name="item_unidade_id[]" class="form-select modern-input">${unidadeOpts}</select>
         </td>
         <td>
           <input type="number" name="item_preco_unitario[]" class="form-control modern-input item-calc"
-                 value="${esc(String(data.preco_unitario||'0'))}" min="0" step="0.01" placeholder="0.00">
+                 value="${esc(String(data.preco_unitario || '0'))}" min="0" step="0.01" placeholder="0.00">
         </td>
         <td>
           <input type="number" name="item_percentagem_iva[]" class="form-control modern-input item-calc"
-                 value="${esc(String(data.percentagem_iva||ivaG))}" min="0" step="0.01">
+                 value="${esc(String(data.percentagem_iva || ivaG))}" min="0" step="0.01">
         </td>
         <td>
           <span class="item-total-liquido fw-semibold">0.00</span>
@@ -899,41 +965,89 @@ $(document).ready(function(){
       </tr>`;
   }
 
-  function refreshIndexes(){ $('#qtItemsBody .qt-item-row').each(function(i){ $(this).find('.item-index').text(i+1); }); }
+  function refreshIndexes(){
+    $('#qtItemsBody .qt-item-row').each(function(i){
+      $(this).find('.item-index').text(i + 1);
+    });
+  }
+
+  function applySuggestedItemData($row){
+    const descricao = $row.find('select[name="item_descricao[]"]').val();
+    const key = normalizeItemText(descricao);
+
+    if (!key || !itemCatalog[key]) return;
+
+    const item = itemCatalog[key];
+    const $unidade = $row.find('select[name="item_unidade_id[]"]');
+    const $preco = $row.find('input[name="item_preco_unitario[]"]');
+    const $iva = $row.find('input[name="item_percentagem_iva[]"]');
+
+    if (!$unidade.val() && item.unidade_id) {
+      $unidade.val(String(item.unidade_id));
+    }
+
+    if ((!$preco.val() || parseFloat($preco.val()) === 0) && item.preco_unitario) {
+      $preco.val(item.preco_unitario);
+    }
+
+    if ((!$iva.val() || parseFloat($iva.val()) === 0) && item.percentagem_iva) {
+      $iva.val(item.percentagem_iva);
+    }
+
+    recalcularTotais();
+  }
 
   function addItemRow(data){
-    const next = $('#qtItemsBody .qt-item-row').length+1;
+    data = data || {};
+
+    const next = $('#qtItemsBody .qt-item-row').length + 1;
     $('#qtItemsBody').append(buildItemRow(next, data));
-    if(data&&data.unidade_id)
-      $('#qtItemsBody .qt-item-row').last().find('select[name="item_unidade_id[]"]').val(String(data.unidade_id));
+
+    const $lastRow = $('#qtItemsBody .qt-item-row').last();
+    const $descricao = $lastRow.find('select[name="item_descricao[]"]');
+
+    initItemSelect2($descricao, data.descricao || '');
+
+    if (data.unidade_id) {
+      $lastRow.find('select[name="item_unidade_id[]"]').val(String(data.unidade_id));
+    }
+
+    if (data.descricao) {
+      applySuggestedItemData($lastRow);
+    }
+
     recalcularTotais();
   }
 
   $(document).on('input change','.item-calc', recalcularTotais);
 
+  $(document).on('change', 'select[name="item_descricao[]"]', function () {
+    const $row = $(this).closest('tr');
+    applySuggestedItemData($row);
+  });
+
   $('#qt_iva').on('change input',function(){
-    const pct=$(this).val();
+    const pct = $(this).val();
     $('#qtItemsBody .qt-item-row [name="item_percentagem_iva[]"]').val(pct);
     recalcularTotais();
   });
 
-  /* ── Dados bancários: resetar para predefinidos ─────────── */
   const dbPredefinidos = {{ db_predefinidos|safe }};
+
   function resetDadosBancarios(){
     $('.qt-banco-check').each(function(){
       const checked = dbPredefinidos.includes(parseInt($(this).val()));
       $(this).prop('checked', checked);
-      $('#banco_label_'+$(this).val()).toggleClass('checked', checked);
+      $('#banco_label_' + $(this).val()).toggleClass('checked', checked);
     });
     updateBancoChips();
   }
 
-  /* ── Reset form ─────────────────────────────────────────── */
   function resetForm(){
     $('#qtForm')[0].reset();
     $('#qt_id').val('');
     $('#qtModalLabel').text('Nova Quotação');
-    $('#qtForm').attr('action',"{% url 'procurement:quotacoes_create' %}");
+    $('#qtForm').attr('action', "{% url 'procurement:quotacoes_create' %}");
     $('#qt_numero_preview').val('{{ default_numero }}');
     $('#qt_data').val('{{ today }}');
     $('#qt_iva').val('16');
@@ -941,25 +1055,32 @@ $(document).ready(function(){
     $('#qtItemsBody').html('');
     $('#termos_preview').addClass('d-none');
     resetDadosBancarios();
-    addItemRow();
+    addItemRow({});
     recalcularTotais();
   }
 
-  /* ── Abrir novo ─────────────────────────────────────────── */
-  $('#btnOpenCreateQt').on('click',function(){ resetForm(); qtModal.show(); });
+  $('#btnOpenCreateQt').on('click',function(){
+    resetForm();
+    qtModal.show();
+  });
 
-  /* ── Seleccionar RFQ: importar dados ────────────────────── */
   $('#qt_rfq_id').on('change',function(){
-    const rfqId=$(this).val();
+    const rfqId = $(this).val();
     if(!rfqId) return;
+
     Swal.fire({
       title:'Importar itens do RFQ?',
       text:'Os itens actuais serão substituídos pelos itens do RFQ seleccionado.',
-      icon:'question', showCancelButton:true,
-      confirmButtonText:'Sim, importar', cancelButtonText:'Não',
-      confirmButtonColor:'#2E3E82', cancelButtonColor:'#6c757d', reverseButtons:true,
+      icon:'question',
+      showCancelButton:true,
+      confirmButtonText:'Sim, importar',
+      cancelButtonText:'Não',
+      confirmButtonColor:'#2E3E82',
+      cancelButtonColor:'#6c757d',
+      reverseButtons:true,
     }).then(result=>{
       if(!result.isConfirmed) return;
+
       $.get(`/rfqs/${rfqId}/itens-json/`,function(r){
         if(r.cliente_id) $('#qt_cliente_id').val(r.cliente_id).trigger('change');
         if(r.local_entrega)    $('#qt_local_entrega').val(r.local_entrega);
@@ -967,42 +1088,65 @@ $(document).ready(function(){
         if(r.pessoa_contacto)  $('#qt_pessoa_contacto').val(r.pessoa_contacto);
         if(r.email_cliente)    $('#qt_email').val(r.email_cliente);
         if(r.telefone_cliente) $('#qt_telefone').val(r.telefone_cliente);
+
         $('#qtItemsBody').html('');
-        (r.itens&&r.itens.length ? r.itens : [{}]).forEach(item=>addItemRow(item));
+        (r.itens && r.itens.length ? r.itens : [{}]).forEach(item => {
+          addItemRow({
+            descricao: item.descricao || '',
+            quantidade: item.quantidade || '1',
+            unidade_id: item.unidade_id || '',
+            preco_unitario: '0',
+            percentagem_iva: $('#qt_iva').val() || '16'
+          });
+        });
       });
     });
   });
 
-  /* ── Auto-fill cliente ───────────────────────────────────── */
   $('#qt_cliente_id').on('change',function(){
-    const opt=$(this).find('option:selected');
+    const opt = $(this).find('option:selected');
     $('#qt_email').val(opt.data('email')||'');
     $('#qt_telefone').val(opt.data('telefone')||'');
     $('#qt_pessoa_contacto').val(opt.data('contacto')||'');
   });
 
-  /* ── Adicionar / remover linha ───────────────────────────── */
-  $('#btnAddQtItem').on('click',function(){ addItemRow(); });
-  $(document).on('click','.btn-remove-item',function(){
-    if($('#qtItemsBody .qt-item-row').length<=1){
-      Swal.fire({icon:'warning',title:'Atenção',text:'A quotação deve ter pelo menos uma linha.',confirmButtonColor:'#2E3E82'});
-      return;
-    }
-    $(this).closest('tr').remove();
-    refreshIndexes(); recalcularTotais();
+  $('#btnAddQtItem').on('click',function(){
+    addItemRow({});
   });
 
-  /* ── Editar Quotação ─────────────────────────────────────── */
+  $(document).on('click','.btn-remove-item',function(){
+    if($('#qtItemsBody .qt-item-row').length <= 1){
+      Swal.fire({
+        icon:'warning',
+        title:'Atenção',
+        text:'A quotação deve ter pelo menos uma linha.',
+        confirmButtonColor:'#2E3E82'
+      });
+      return;
+    }
+
+    const $row = $(this).closest('tr');
+    const $select2 = $row.find('select[name="item_descricao[]"]');
+
+    if ($select2.hasClass('select2-hidden-accessible')) {
+      $select2.select2('destroy');
+    }
+
+    $row.remove();
+    refreshIndexes();
+    recalcularTotais();
+  });
+
   $(document).on('click','.btn-edit-qt',function(e){
     e.preventDefault();
-    const id=$(this).data('id');
+    const id = $(this).data('id');
     resetForm();
 
     $.get(`/quotacoes/${id}/json/`,function(r){
       $('#qtModalLabel').text('Editar Quotação');
       $('#qt_id').val(r.id);
       $('#qt_numero_preview').val(r.numero);
-      $('#qt_rfq_id').val(r.rfq_id||'');
+      $('#qt_rfq_id').val(r.rfq_id || '');
       $('#qt_cliente_id').val(r.cliente_id);
       $('#qt_data').val(r.data_quotacao);
       $('#qt_validade').val(r.validade);
@@ -1011,69 +1155,98 @@ $(document).ready(function(){
       $('#qt_pessoa_contacto').val(r.pessoa_contacto);
       $('#qt_email').val(r.email_cliente);
       $('#qt_telefone').val(r.telefone_cliente);
-      $('#qt_moeda_id').val(r.moeda_id||'');
+      $('#qt_moeda_id').val(r.moeda_id || '');
       $('#qt_cambio').val(r.cambio);
       $('#qt_iva').val(r.percentagem_iva);
-      $('#qt_condicao_id').val(r.condicao_pagamento_id||'').trigger('change');
+      $('#qt_condicao_id').val(r.condicao_pagamento_id || '').trigger('change');
       $('#qt_ref_cliente').val(r.referencia_cliente);
       $('#qt_observacoes').val(r.observacoes);
 
-      // Dados bancários
-      const dbIds = r.dados_bancarios_ids||[];
+      const dbIds = r.dados_bancarios_ids || [];
       $('.qt-banco-check').each(function(){
         const chk = dbIds.includes(parseInt($(this).val()));
-        $(this).prop('checked',chk);
-        $('#banco_label_'+$(this).val()).toggleClass('checked',chk);
+        $(this).prop('checked', chk);
+        $('#banco_label_' + $(this).val()).toggleClass('checked', chk);
       });
       updateBancoChips();
 
       $('#qtItemsBody').html('');
-      (r.itens&&r.itens.length ? r.itens : [{}]).forEach(item=>addItemRow(item));
+      (r.itens && r.itens.length ? r.itens : [{}]).forEach(item => addItemRow(item));
 
-      $('#qtForm').attr('action',`/quotacoes/${r.id}/update/`);
+      $('#qtForm').attr('action', `/quotacoes/${r.id}/update/`);
       qtModal.show();
     }).fail(()=>{
-      Swal.fire({icon:'error',title:'Erro',text:'Não foi possível carregar os dados.',confirmButtonColor:'#2E3E82'});
+      Swal.fire({
+        icon:'error',
+        title:'Erro',
+        text:'Não foi possível carregar os dados.',
+        confirmButtonColor:'#2E3E82'
+      });
     });
   });
 
-  /* ── Visualizar ─────────────────────────────────────────── */
   $(document).on('click','.btn-view-qt',function(){
-    const id=$(this).data('id');
+    const id = $(this).data('id');
     $('#qtPreviewContent').addClass('d-none').html('');
     $('#qtPreviewLoading').removeClass('d-none');
-    $('#btnDownloadQtPdf').attr('href',`/quotacoes/${id}/download-pdf/`);
+    $('#btnDownloadQtPdf').attr('href', `/quotacoes/${id}/download-pdf/`);
     qtPreviewModal.show();
+
     $.get(`/quotacoes/${id}/preview/`,function(html){
-      $('#qtPreviewContent').html(`<div class="qt-preview-sheet">${html}</div>`).removeClass('d-none');
+      $('#qtPreviewContent')
+        .html(`<div class="qt-preview-sheet">${html}</div>`)
+        .removeClass('d-none');
       $('#qtPreviewLoading').addClass('d-none');
     }).fail(()=>{
       $('#qtPreviewLoading').addClass('d-none');
-      Swal.fire({icon:'error',title:'Erro',text:'Não foi possível carregar o preview.',confirmButtonColor:'#2E3E82'});
+      Swal.fire({
+        icon:'error',
+        title:'Erro',
+        text:'Não foi possível carregar o preview.',
+        confirmButtonColor:'#2E3E82'
+      });
     });
   });
 
-  /* ── Alterar estado ─────────────────────────────────────── */
   $(document).on('click','.btn-change-estado',function(e){
     e.preventDefault();
-    const id=$(this).data('id'), estadoId=$(this).data('estado-id'), label=$(this).data('label');
+    const id = $(this).data('id');
+    const estadoId = $(this).data('estado-id');
+    const label = $(this).data('label');
+
     Swal.fire({
       title:`Alterar para "${label}"?`,
-      icon:'question', showCancelButton:true,
-      confirmButtonText:'Sim, alterar', cancelButtonText:'Cancelar',
-      confirmButtonColor:'#2E3E82', cancelButtonColor:'#6c757d', reverseButtons:true,
+      icon:'question',
+      showCancelButton:true,
+      confirmButtonText:'Sim, alterar',
+      cancelButtonText:'Cancelar',
+      confirmButtonColor:'#2E3E82',
+      cancelButtonColor:'#6c757d',
+      reverseButtons:true,
     }).then(result=>{
       if(!result.isConfirmed) return;
-      const form=document.createElement('form');
-      form.method='POST'; form.action=`/quotacoes/${id}/estado/`;
-      const csrf=document.createElement('input'); csrf.type='hidden'; csrf.name='csrfmiddlewaretoken'; csrf.value='{{ csrf_token }}';
-      const est=document.createElement('input');  est.type='hidden';  est.name='estado_id'; est.value=estadoId;
-      form.appendChild(csrf); form.appendChild(est);
-      document.body.appendChild(form); form.submit();
+
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = `/quotacoes/${id}/estado/`;
+
+      const csrf = document.createElement('input');
+      csrf.type = 'hidden';
+      csrf.name = 'csrfmiddlewaretoken';
+      csrf.value = '{{ csrf_token }}';
+
+      const est = document.createElement('input');
+      est.type = 'hidden';
+      est.name = 'estado_id';
+      est.value = estadoId;
+
+      form.appendChild(csrf);
+      form.appendChild(est);
+      document.body.appendChild(form);
+      form.submit();
     });
   });
 
-  /* ── Init ───────────────────────────────────────────────── */
   resetForm();
 
 });
