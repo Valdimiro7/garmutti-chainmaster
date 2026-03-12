@@ -108,10 +108,6 @@
           </div>
 
           <div class="px-4 pb-4">
-
-            <!-- Export buttons rendered here by DataTables (dom: 'B...') -->
-            <!-- The dt-buttons div will appear above the table -->
-
             <div class="table-responsive mt-3">
               <table id="rfqsTable" class="table align-items-center mb-0 rfq-table w-100">
                 <thead>
@@ -181,7 +177,6 @@
                     </td>
 
                     <td>
-                      <!-- hidden span for DataTable search/filter -->
                       <span class="estado-codigo d-none">{{ rfq.estado.codigo }}</span>
                       <span class="status-pill"
                             style="background-color: {{ rfq.estado.cor }}15; color: {{ rfq.estado.cor }}; border: 1px solid {{ rfq.estado.cor }}40;">
@@ -203,19 +198,16 @@
                             <i class="material-symbols-rounded">more_vert</i>
                           </button>
                           <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm">
-
                             <li>
                               <a class="dropdown-item btn-edit-rfq" href="#" data-id="{{ rfq.id }}">
                                 <i class="material-symbols-rounded me-2 align-middle">edit</i>Editar
                               </a>
                             </li>
-
                             <li>
                               <a class="dropdown-item" href="{% url 'procurement:rfqs_download_pdf' rfq.id %}" target="_blank">
                                 <i class="material-symbols-rounded me-2 align-middle">download</i>Download PDF
                               </a>
                             </li>
-
                             {% if rfq.estado_id == 1 %}
                             <li><hr class="dropdown-divider"></li>
                             <li>
@@ -226,7 +218,6 @@
                               </a>
                             </li>
                             {% endif %}
-
                           </ul>
                         </div>
                       </div>
@@ -485,6 +476,31 @@
   .modern-input{border-radius:14px !important;border:1px solid #dfe5ef !important;min-height:46px;box-shadow:none !important}
   .modern-input:focus{border-color:#2E3E82 !important;box-shadow:0 0 0 .2rem rgba(46,62,130,0.10) !important}
 
+  /* ─── Modal scroll vertical ─────────────────────────────── */
+  .modal-dialog-scrollable .modal-content {
+    max-height: 90vh !important;
+  }
+  .modal-dialog-scrollable .modal-body {
+    overflow-y: auto !important;
+    max-height: calc(90vh - 130px) !important;
+    scrollbar-width: thin;
+    scrollbar-color: #dae3ff #f8f9ff;
+  }
+  .modal-dialog-scrollable .modal-body::-webkit-scrollbar {
+    width: 6px;
+  }
+  .modal-dialog-scrollable .modal-body::-webkit-scrollbar-track {
+    background: #f8f9ff;
+    border-radius: 10px;
+  }
+  .modal-dialog-scrollable .modal-body::-webkit-scrollbar-thumb {
+    background: #c5d0f0;
+    border-radius: 10px;
+  }
+  .modal-dialog-scrollable .modal-body::-webkit-scrollbar-thumb:hover {
+    background: #2E3E82;
+  }
+
   /* ─── Items table ───────────────────────────────────────── */
   .rfq-items-table thead th{background:#f8faff;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:#6c757d;border-bottom:1px solid #e8edf7 !important}
   .rfq-items-table tbody td{border-bottom:1px solid #f1f4fa !important;vertical-align:middle}
@@ -570,10 +586,7 @@ $(document).ready(function () {
 
   /* ─────────────────────────────────────────────────────────
      DataTable
-     - dom: 'Blfrtip'  →  Buttons | Length | Filter | Table | Info | Pagination
-     - columnDefs col 7: renderiza só o texto do .estado-codigo (oculto) para search
   ───────────────────────────────────────────────────────── */
-  // Estado interno do toggle
   let mostrandoCancelados = false;
 
   const table = $('#rfqsTable').DataTable({
@@ -626,10 +639,6 @@ $(document).ready(function () {
     },
     columnDefs: [
       { orderable: false, targets: [8] },
-      /*
-        Col 7 = Estado: usa o texto do span .estado-codigo (hidden) como dado de pesquisa,
-        assim o filtro dos mini-stat cards funciona pelo código (novo, cancelado, fechado…)
-      */
       {
         targets: 7,
         render: function (data, type, row, meta) {
@@ -643,7 +652,7 @@ $(document).ready(function () {
     ]
   });
 
-  // Ocultar cancelados ao iniciar — lê o span.estado-codigo do DOM da linha
+  // Ocultar cancelados ao iniciar
   $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
     if (settings.nTable.id !== 'rfqsTable') return true;
     if (mostrandoCancelados) return true;
@@ -661,7 +670,6 @@ $(document).ready(function () {
     $(this).toggleClass('pill-active', mostrandoCancelados);
     $('#lblToggleCancelados').text(mostrandoCancelados ? 'Ocultar Cancelados' : 'Ver Cancelados');
 
-    // Se está a mostrar cancelados, reseta filtros dos stat cards para "Todos"
     if (mostrandoCancelados) {
       table.column(7).search('').draw();
       $('.stat-filter').removeClass('stat-active');
@@ -673,15 +681,12 @@ $(document).ready(function () {
 
   /* ─────────────────────────────────────────────────────────
      Mini-stat cards → filtrar tabela por estado
-     (card Cancelados não faz sentido sem o toggle activo)
   ───────────────────────────────────────────────────────── */
   $(document).on('click', '.stat-filter', function () {
-    const filter = $(this).data('filter'); // '' | 'novo' | 'fechado' | 'cancelado'
+    const filter = $(this).data('filter');
 
-    // Card "Cancelados" activa automaticamente o toggle
     if (filter === 'cancelado' && !mostrandoCancelados) {
       $('#btnToggleCancelados').trigger('click');
-      // Após activar, filtra só cancelados
       setTimeout(function () {
         table.column(7).search('cancelado').draw();
         $('.stat-filter').removeClass('stat-active');
@@ -774,15 +779,12 @@ $(document).ready(function () {
   });
 
   /* ─────────────────────────────────────────────────────────
-     Adicionar linha de item
+     Adicionar / remover linha de item
   ───────────────────────────────────────────────────────── */
   $('#btnAddItem').on('click', function () {
     addItemRow();
   });
 
-  /* ─────────────────────────────────────────────────────────
-     Remover linha de item
-  ───────────────────────────────────────────────────────── */
   $(document).on('click', '.btn-remove-item', function () {
     const rows = $('#rfqItemsBody .rfq-item-row').length;
     if (rows <= 1) {
@@ -887,7 +889,7 @@ $(document).ready(function () {
   });
 
   /* ─────────────────────────────────────────────────────────
-     Cancelar RFQ  (só disponível quando estado_id == 1)
+     Cancelar RFQ
   ───────────────────────────────────────────────────────── */
   $(document).on('click', '.btn-cancel-rfq', function (e) {
     e.preventDefault();
@@ -911,10 +913,10 @@ $(document).ready(function () {
         form.method = 'POST';
         form.action = `/rfqs/${id}/cancel/`;
 
-        const csrf       = document.createElement('input');
-        csrf.type        = 'hidden';
-        csrf.name        = 'csrfmiddlewaretoken';
-        csrf.value       = '{{ csrf_token }}';
+        const csrf   = document.createElement('input');
+        csrf.type    = 'hidden';
+        csrf.name    = 'csrfmiddlewaretoken';
+        csrf.value   = '{{ csrf_token }}';
 
         form.appendChild(csrf);
         document.body.appendChild(form);

@@ -70,7 +70,7 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link text-dark" href="{% url 'procurement:pagamentos_historico' %}">
+              <a class="nav-link {% if 'pagamentos_historico' == segment %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}" href="{% url 'procurement:pagamentos_historico' %}">
                 <span class="sidenav-mini-icon">H</span>
                 <span class="sidenav-normal ms-2 ps-1">Históricos de Pagamentos</span>
               </a>
@@ -94,7 +94,7 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link text-dark" href="{% url 'procurement:recibos' %}">
+              <a class="nav-link {% if 'recibos' == segment %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}" href="{% url 'procurement:recibos' %}">
                 <span class="sidenav-mini-icon">R</span>
                 <span class="sidenav-normal ms-2 ps-1">Recibos</span>
               </a>
@@ -110,20 +110,10 @@
 
       <!-- Guias de Entrega -->
       <li class="nav-item">
-        <a data-bs-toggle="collapse" href="#menu-entregas" class="nav-link text-dark" aria-controls="menu-entregas" role="button" aria-expanded="false">
+        <a class="nav-link {% if 'guias_entrega' == segment %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}" href="{% url 'procurement:guias_entrega' %}">
           <i class="material-symbols-rounded opacity-5">local_shipping</i>
           <span class="nav-link-text ms-2 ps-1">Guias de Entrega</span>
         </a>
-        <div class="collapse" id="menu-entregas">
-          <ul class="nav">
-            <li class="nav-item">
-              <a class="nav-link text-dark" href="{% url 'procurement:guias_entrega' %}">
-                <span class="sidenav-mini-icon">L</span>
-                <span class="sidenav-normal ms-2 ps-1">Lista de Guias</span>
-              </a>
-            </li>
-          </ul>
-        </div>
       </li>
 
       <!-- Secção: Cadastros -->
@@ -206,12 +196,6 @@
               <a class="nav-link {% if 'moedas' == segment %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}" href="{% url 'procurement:moedas' %}">
                 <span class="sidenav-mini-icon">M</span>
                 <span class="sidenav-normal ms-2 ps-1">Moedas</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link {% if 'status_list' == segment %}active bg-gradient-dark text-white{% else %}text-dark{% endif %}" href="#">
-                <span class="sidenav-mini-icon">S</span>
-                <span class="sidenav-normal ms-2 ps-1">Status List</span>
               </a>
             </li>
             <li class="nav-item">

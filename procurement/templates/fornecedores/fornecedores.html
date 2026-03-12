@@ -539,7 +539,34 @@
 
   .icon-xs { font-size: 14px; vertical-align: middle; }
 
+  /* ── Modal ───────────────────────────────────────────────────────────────── */
   .modal-modern { border-radius: 22px; }
+
+  /* ── Modal scroll vertical ───────────────────────────────────────────────── */
+  .modal-dialog-scrollable .modal-content {
+    max-height: 90vh !important;
+  }
+  .modal-dialog-scrollable .modal-body {
+    overflow-y: auto !important;
+    max-height: calc(90vh - 130px) !important;
+    scrollbar-width: thin;
+    scrollbar-color: #dae3ff #f8f9ff;
+  }
+  .modal-dialog-scrollable .modal-body::-webkit-scrollbar {
+    width: 6px;
+  }
+  .modal-dialog-scrollable .modal-body::-webkit-scrollbar-track {
+    background: #f8f9ff;
+    border-radius: 10px;
+  }
+  .modal-dialog-scrollable .modal-body::-webkit-scrollbar-thumb {
+    background: #c5d0f0;
+    border-radius: 10px;
+  }
+  .modal-dialog-scrollable .modal-body::-webkit-scrollbar-thumb:hover {
+    background: #2E3E82;
+  }
+
   .modal-section-title {
     display: flex; align-items: center;
     font-size: 0.78rem; font-weight: 700;
