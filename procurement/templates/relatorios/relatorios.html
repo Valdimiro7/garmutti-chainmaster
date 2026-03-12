@@ -22,7 +22,7 @@
               <div class="d-flex flex-wrap gap-2">
                 <span class="badge rounded-pill rp-soft-badge">WeasyPrint PDF</span>
                 <span class="badge rounded-pill rp-soft-badge">Filtros por período</span>
-                <span class="badge rounded-pill rp-soft-badge">Múltiplos módulos</span>
+                <span class="badge rounded-pill rp-soft-badge">Cliente e Estado</span>
               </div>
             </div>
             <div class="col-lg-5">
@@ -43,13 +43,15 @@
       <div class="card border-0 shadow-sm rp-main-card">
         <div class="card-header bg-transparent border-0 p-4 pb-0">
           <h5 class="mb-1 fw-bold">Escolha o Tipo de Relatório</h5>
-          <p class="text-muted mb-0">Seleccione o relatório, o período e gere o PDF.</p>
+          <p class="text-muted mb-0">Seleccione o relatório, os filtros e gere o PDF.</p>
         </div>
         <div class="card-body p-4">
           <div class="row g-3">
             {% for card in report_cards %}
             <div class="col-md-6">
-              <div class="rp-report-card report-option" data-key="{{ card.key }}" data-title="{{ card.title }}">
+              <div class="rp-report-card report-option"
+                   data-key="{{ card.key }}"
+                   data-title="{{ card.title }}">
                 <div class="rp-report-icon">
                   <i class="material-symbols-rounded">{{ card.icon }}</i>
                 </div>
@@ -70,13 +72,53 @@
               <input type="text" id="rp_selected_label" class="form-control rp-input" readonly placeholder="Seleccione um relatório">
               <input type="hidden" id="rp_report_type">
             </div>
+
             <div class="col-md-3">
               <label class="form-label">Data Início</label>
               <input type="date" id="rp_data_inicio" class="form-control rp-input">
             </div>
+
             <div class="col-md-3">
               <label class="form-label">Data Fim</label>
               <input type="date" id="rp_data_fim" class="form-control rp-input" value="{{ today }}">
+            </div>
+
+            <div class="col-md-6" id="rp_cliente_wrap" style="display:none;">
+              <label class="form-label">Cliente</label>
+              <select id="rp_cliente_id" class="form-select rp-input">
+                <option value="">Todos</option>
+                {% for c in clientes %}
+                <option value="{{ c.id }}">{{ c.nome }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-md-6" id="rp_estado_wrap" style="display:none;">
+              <label class="form-label">Estado</label>
+              <select id="rp_estado_id" class="form-select rp-input">
+                <option value="">Todos</option>
+              </select>
+
+              <div id="rp_estado_options" class="d-none">
+                {% for item in estado_options.quotacoes %}
+                  <span class="estado-option" data-report="quotacoes" data-id="{{ item.id }}">{{ item.nome }}</span>
+                {% endfor %}
+                {% for item in estado_options.purchase_orders %}
+                  <span class="estado-option" data-report="purchase_orders" data-id="{{ item.id }}">{{ item.nome }}</span>
+                {% endfor %}
+                {% for item in estado_options.facturas %}
+                  <span class="estado-option" data-report="facturas" data-id="{{ item.id }}">{{ item.nome }}</span>
+                {% endfor %}
+                {% for item in estado_options.guias %}
+                  <span class="estado-option" data-report="guias" data-id="{{ item.id }}">{{ item.nome }}</span>
+                {% endfor %}
+                {% for item in estado_options.pagamentos %}
+                  <span class="estado-option" data-report="pagamentos" data-id="{{ item.id }}">{{ item.nome }}</span>
+                {% endfor %}
+                {% for item in estado_options.pagamento_historico %}
+                  <span class="estado-option" data-report="pagamento_historico" data-id="{{ item.id }}">{{ item.nome }}</span>
+                {% endfor %}
+              </div>
             </div>
           </div>
 
@@ -254,25 +296,67 @@
 
 <script>
 $(function(){
+  const reportsWithCliente = ['rfqs', 'quotacoes', 'purchase_orders', 'facturas', 'guias', 'pagamentos', 'pagamento_historico', 'recibos'];
+  const reportsWithEstado = ['quotacoes', 'purchase_orders', 'facturas', 'guias', 'pagamentos', 'pagamento_historico'];
+
   function buildQuery(){
+    const params = new URLSearchParams();
+
     const reportType = $('#rp_report_type').val();
     const dataInicio = $('#rp_data_inicio').val();
     const dataFim = $('#rp_data_fim').val();
+    const clienteId = $('#rp_cliente_id').val();
+    const estadoId = $('#rp_estado_id').val();
 
-    const params = new URLSearchParams();
     if(reportType) params.append('report_type', reportType);
     if(dataInicio) params.append('data_inicio', dataInicio);
     if(dataFim) params.append('data_fim', dataFim);
+    if(clienteId) params.append('cliente_id', clienteId);
+    if(estadoId) params.append('estado_id', estadoId);
 
     return params.toString();
+  }
+
+  function resetEstadoOptions(reportType){
+    const $estado = $('#rp_estado_id');
+    $estado.empty().append('<option value="">Todos</option>');
+
+    $('#rp_estado_options .estado-option').each(function(){
+      if($(this).data('report') === reportType){
+        $estado.append(`<option value="${$(this).data('id')}">${$(this).text()}</option>`);
+      }
+    });
+
+    $estado.val('');
+  }
+
+  function toggleExtraFilters(reportType){
+    if(reportsWithCliente.includes(reportType)){
+      $('#rp_cliente_wrap').show();
+      $('#rp_cliente_id').val('');
+    } else {
+      $('#rp_cliente_wrap').hide();
+      $('#rp_cliente_id').val('');
+    }
+
+    if(reportsWithEstado.includes(reportType)){
+      $('#rp_estado_wrap').show();
+      resetEstadoOptions(reportType);
+    } else {
+      $('#rp_estado_wrap').hide();
+      $('#rp_estado_id').empty().append('<option value="">Todos</option>');
+    }
   }
 
   $('.report-option').on('click', function(){
     $('.report-option').removeClass('active');
     $(this).addClass('active');
 
-    $('#rp_report_type').val($(this).data('key'));
+    const reportType = $(this).data('key');
+    $('#rp_report_type').val(reportType);
     $('#rp_selected_label').val($(this).data('title'));
+
+    toggleExtraFilters(reportType);
   });
 
   $('#btnPreviewReport').on('click', function(){

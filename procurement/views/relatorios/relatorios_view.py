@@ -2,7 +2,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from django.contrib.auth.decorators import login_required
-from django.db.models import Sum, Count, Q
+from django.db.models import Sum
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
@@ -13,20 +13,21 @@ from weasyprint import HTML
 from procurement.models import (
     Cliente,
     Factura,
+    FacturaEstado,
     Fornecedor,
     GuiaEntrega,
+    GuiaEstado,
     Pagamento,
+    PagamentoEstado,
     PagamentoHistorico,
+    POEstado,
     PurchaseOrder,
     Quotacao,
+    QuotacaoEstado,
     Recibo,
     RFQ,
 )
 
-
-# ---------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------
 
 def _parse_date(value):
     if not value:
@@ -54,75 +55,123 @@ def _apply_date_filter(qs, field_name, data_inicio=None, data_fim=None):
 
 
 def _get_report_config(report_type):
-    """
-    Define:
-    - queryset base
-    - nome amigável
-    - campo de data
-    """
     reports = {
         'clientes': {
             'title': 'Relatório de Clientes',
             'qs': Cliente.objects.all().order_by('nome'),
             'date_field': 'criado_em',
+            'has_cliente_filter': False,
+            'has_estado_filter': False,
         },
         'fornecedores': {
             'title': 'Relatório de Fornecedores',
             'qs': Fornecedor.objects.all().order_by('nome'),
             'date_field': 'criado_em',
+            'has_cliente_filter': False,
+            'has_estado_filter': False,
         },
         'rfqs': {
             'title': 'Relatório de RFQs',
             'qs': RFQ.objects.select_related('cliente', 'estado').order_by('-id'),
             'date_field': 'data_rfq',
+            'has_cliente_filter': True,
+            'has_estado_filter': False,
         },
         'quotacoes': {
             'title': 'Relatório de Quotações',
             'qs': Quotacao.objects.select_related('cliente', 'estado', 'moeda').order_by('-id'),
             'date_field': 'data_quotacao',
+            'has_cliente_filter': True,
+            'has_estado_filter': True,
+            'estado_model': QuotacaoEstado,
         },
         'purchase_orders': {
             'title': 'Relatório de Purchase Orders',
             'qs': PurchaseOrder.objects.select_related('cliente', 'estado', 'moeda').order_by('-id'),
             'date_field': 'data_po',
+            'has_cliente_filter': True,
+            'has_estado_filter': True,
+            'estado_model': POEstado,
         },
         'facturas': {
             'title': 'Relatório de Facturas',
             'qs': Factura.objects.select_related('cliente', 'estado', 'moeda', 'purchase_order').order_by('-id'),
             'date_field': 'data_emissao',
+            'has_cliente_filter': True,
+            'has_estado_filter': True,
+            'estado_model': FacturaEstado,
         },
         'guias': {
             'title': 'Relatório de Guias de Entrega',
             'qs': GuiaEntrega.objects.select_related('cliente', 'estado', 'moeda', 'factura').order_by('-id'),
             'date_field': 'data_guia',
+            'has_cliente_filter': True,
+            'has_estado_filter': True,
+            'estado_model': GuiaEstado,
         },
         'pagamentos': {
             'title': 'Relatório de Pagamentos',
             'qs': Pagamento.objects.select_related('cliente', 'estado', 'moeda', 'purchase_order').order_by('-id'),
             'date_field': 'data_pagamento_prevista',
+            'has_cliente_filter': True,
+            'has_estado_filter': True,
+            'estado_model': PagamentoEstado,
         },
         'pagamento_historico': {
             'title': 'Relatório de Histórico de Pagamentos',
             'qs': PagamentoHistorico.objects.select_related(
-                'pagamento', 'pagamento__cliente', 'factura', 'dado_bancario'
+                'pagamento', 'pagamento__cliente', 'pagamento__estado', 'factura', 'dado_bancario'
             ).order_by('-id'),
             'date_field': 'data_pagamento',
+            'has_cliente_filter': True,
+            'has_estado_filter': True,
+            'estado_model': PagamentoEstado,
         },
         'recibos': {
             'title': 'Relatório de Recibos',
             'qs': Recibo.objects.select_related('cliente', 'factura', 'moeda').order_by('-id'),
             'date_field': 'data_recibo',
+            'has_cliente_filter': True,
+            'has_estado_filter': False,
         },
     }
     return reports.get(report_type)
 
 
-def _build_report_data(report_type, data_inicio=None, data_fim=None):
+def _apply_extra_filters(qs, report_type, cliente_id=None, estado_id=None):
+    if cliente_id:
+        if report_type == 'pagamento_historico':
+            qs = qs.filter(pagamento__cliente_id=cliente_id)
+        else:
+            qs = qs.filter(cliente_id=cliente_id)
+
+    if estado_id:
+        if report_type == 'pagamento_historico':
+            qs = qs.filter(pagamento__estado_id=estado_id)
+        else:
+            qs = qs.filter(estado_id=estado_id)
+
+    return qs
+
+
+def _get_estado_options():
+    return {
+        'quotacoes': QuotacaoEstado.objects.all().order_by('ordem'),
+        'purchase_orders': POEstado.objects.filter(activo=True).order_by('ordem', 'nome'),
+        'facturas': FacturaEstado.objects.filter(activo=True).order_by('ordem', 'nome'),
+        'guias': GuiaEstado.objects.filter(activo=True).order_by('ordem', 'nome'),
+        'pagamentos': PagamentoEstado.objects.filter(activo=True).order_by('ordem', 'nome'),
+        'pagamento_historico': PagamentoEstado.objects.filter(activo=True).order_by('ordem', 'nome'),
+    }
+
+
+def _build_report_data(report_type, data_inicio=None, data_fim=None, cliente_id=None, estado_id=None):
     config = _get_report_config(report_type)
     if not config:
         return None
 
     qs = _apply_date_filter(config['qs'], config['date_field'], data_inicio, data_fim)
+    qs = _apply_extra_filters(qs, report_type, cliente_id, estado_id)
 
     rows = []
     summary = {
@@ -186,10 +235,6 @@ def _build_report_data(report_type, data_inicio=None, data_fim=None):
     }
 
 
-# ---------------------------------------------------------------------
-# Views
-# ---------------------------------------------------------------------
-
 @login_required
 @require_GET
 def reports_view(request):
@@ -212,6 +257,8 @@ def reports_view(request):
         'segment': 'relatorios',
         'today': today.isoformat(),
         'report_cards': report_cards,
+        'clientes': Cliente.objects.filter(estado=True).order_by('nome'),
+        'estado_options': _get_estado_options(),
     }
     return render(request, 'relatorios/relatorios.html', context)
 
@@ -222,14 +269,16 @@ def reports_preview_json_view(request):
     report_type = request.GET.get('report_type', '').strip()
     data_inicio = _parse_date(request.GET.get('data_inicio'))
     data_fim = _parse_date(request.GET.get('data_fim'))
+    cliente_id = request.GET.get('cliente_id') or None
+    estado_id = request.GET.get('estado_id') or None
 
-    report_data = _build_report_data(report_type, data_inicio, data_fim)
+    report_data = _build_report_data(report_type, data_inicio, data_fim, cliente_id, estado_id)
     if not report_data:
         return JsonResponse({'success': False, 'message': 'Tipo de relatório inválido.'}, status=400)
 
-    rows = report_data['rows'][:10]  # preview limitado
-
+    rows = report_data['rows'][:10]
     preview_rows = []
+
     for row in rows:
         if report_type == 'clientes':
             preview_rows.append({
@@ -326,8 +375,10 @@ def reports_pdf_view(request):
     report_type = request.GET.get('report_type', '').strip()
     data_inicio = _parse_date(request.GET.get('data_inicio'))
     data_fim = _parse_date(request.GET.get('data_fim'))
+    cliente_id = request.GET.get('cliente_id') or None
+    estado_id = request.GET.get('estado_id') or None
 
-    report_data = _build_report_data(report_type, data_inicio, data_fim)
+    report_data = _build_report_data(report_type, data_inicio, data_fim, cliente_id, estado_id)
     if not report_data:
         return HttpResponse('Tipo de relatório inválido.', status=400)
 

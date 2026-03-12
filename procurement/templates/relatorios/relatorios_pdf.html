@@ -6,9 +6,39 @@
 <title>{{ report.title }}</title>
 <style>
 @page{size:A4 landscape;margin:14mm 14mm 18mm 14mm}
+
+@font-face{
+  font-family:"DejaVu Sans Custom";
+  src:url("{% static 'assets/fonts/DejaVuSans.ttf' %}") format("truetype");
+  font-weight:400;
+  font-style:normal;
+}
+@font-face{
+  font-family:"DejaVu Sans Custom";
+  src:url("{% static 'assets/fonts/DejaVuSans-Bold.ttf' %}") format("truetype");
+  font-weight:700;
+  font-style:normal;
+}
+
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#1a1a1a;background:#fff}
-.wm{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:82px;font-weight:900;color:rgba(46,62,130,0.04);white-space:nowrap;z-index:0;letter-spacing:4px}
+body{
+  font-family:"DejaVu Sans Custom", Arial, Helvetica, sans-serif;
+  font-size:10px;
+  color:#1a1a1a;
+  background:#fff;
+}
+.wm{
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%) rotate(-35deg);
+  font-size:82px;
+  font-weight:700;
+  color:rgba(46,62,130,0.04);
+  white-space:nowrap;
+  z-index:0;
+  letter-spacing:4px;
+}
 .pg{position:relative;z-index:1}
 .hdr{margin-bottom:22px}
 .hdr img{height:50px;width:auto}
@@ -17,17 +47,29 @@ body{font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#1a1a1a;backgro
 .org .n{font-size:11px;font-weight:700;margin-bottom:3px}
 .org .l{font-size:9px;color:#333;line-height:1.4;margin-bottom:2px}
 .meta{width:320px;text-align:right}
-.meta .t{font-size:16px;font-weight:800;margin-bottom:8px}
+.meta .t{font-size:16px;font-weight:700;margin-bottom:8px}
 .meta .m{font-size:9.5px;color:#444;margin-bottom:3px}
 .kpis{display:flex;gap:12px;margin:14px 0 18px}
 .kpi{flex:1;border:1px solid #dde4ff;border-radius:8px;padding:10px 12px;background:#f8faff}
 .kpi .kl{font-size:8px;text-transform:uppercase;color:#6b7280;font-weight:700;margin-bottom:4px}
-.kpi .kv{font-size:14px;font-weight:800;color:#2E3E82}
+.kpi .kv{font-size:14px;font-weight:700;color:#2E3E82}
 table{width:100%;border-collapse:collapse}
 th,td{padding:7px 8px;border-bottom:1px solid #e9edf7;text-align:left;vertical-align:top}
-th{font-size:8px;text-transform:uppercase;letter-spacing:.04em;color:#6b7280;background:#f8faff}
+th{font-size:8px;text-transform:uppercase;letter-spacing:.04em;color:#6b7280;background:#f8faff;font-weight:700}
 td{font-size:9.3px}
-.footer{position:fixed;bottom:0;left:0;right:0;border-top:1px solid #ccc;padding:5px 14mm;display:flex;justify-content:space-between;font-size:8px;color:#999;background:#fff}
+.footer{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  border-top:1px solid #ccc;
+  padding:5px 14mm;
+  display:flex;
+  justify-content:space-between;
+  font-size:8px;
+  color:#999;
+  background:#fff;
+}
 </style>
 </head>
 <body>
@@ -51,7 +93,8 @@ td{font-size:9.3px}
     <div class="meta">
       <div class="t">{{ report.title }}</div>
       <div class="m">Gerado em: {{ gerado_em|date:"d/m/Y H:i" }}</div>
-      <div class="m">Período:
+      <div class="m">
+        Período:
         {% if data_inicio %}{{ data_inicio|date:"d/m/Y" }}{% else %}Início{% endif %}
         —
         {% if data_fim %}{{ data_fim|date:"d/m/Y" }}{% else %}Hoje{% endif %}
