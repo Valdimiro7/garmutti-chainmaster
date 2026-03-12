@@ -263,6 +263,7 @@ def rfqs_view(request):
 
     clientes = Cliente.objects.filter(estado=True).order_by('nome')
     unidades = Unidade.objects.filter(activo=True).order_by('ordem', 'nome')
+    item_catalog, item_suggestions = _get_existing_item_catalog()
 
     total = rfqs.count()
     total_novos = rfqs.filter(estado__codigo='novo').count()
@@ -280,6 +281,9 @@ def rfqs_view(request):
         'total_cancelados': total_cancelados,
         'default_numero': _generate_rfq_number(),
         'today': date.today().isoformat(),
+
+        'item_suggestions': item_suggestions,
+        'item_catalog_json': json.dumps(item_catalog, ensure_ascii=False),
     }
     return render(request, 'rfq/rfqs.html', context)
 
@@ -759,7 +763,47 @@ def _send_rfq_emails(rfq, nome, email, telefone, payload, itens_validos):
 #============================================================
 
 #============================================================
+def _normalize_item_text(value):
+    return ' '.join((value or '').split()).strip()
 
+
+def _get_existing_item_catalog(limit=2000):
+    """
+    Monta um catálogo de itens já usados em RFQs anteriores
+    para sugerir no formulário de criação/edição.
+    """
+    catalog = {}
+
+    qs = (
+        RFQItem.objects
+        .select_related('unidade')
+        .exclude(descricao__isnull=True)
+        .exclude(descricao__exact='')
+        .order_by('-id')
+    )
+
+    for item in qs[:limit]:
+        descricao = _normalize_item_text(item.descricao)
+        if not descricao:
+            continue
+
+        key = descricao.lower()
+        if key in catalog:
+            continue
+
+        catalog[key] = {
+            'descricao': descricao,
+            'unidade_id': item.unidade_id or '',
+            'comentarios': item.comentarios or '',
+            'especificacoes': item.especificacoes or '',
+        }
+
+    suggestions = sorted(
+        [item['descricao'] for item in catalog.values()],
+        key=lambda x: x.lower()
+    )
+
+    return catalog, suggestions
 
 #============================================================
 

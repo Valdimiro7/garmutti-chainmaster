@@ -13,7 +13,6 @@
   </div>
   {% endif %}
 
-  <!-- ===== HERO CARD ===== -->
   <div class="row mb-4">
     <div class="col-12">
       <div class="card border-0 shadow-sm rfq-hero-card">
@@ -34,12 +33,12 @@
                 <span class="badge rounded-pill rfq-soft-badge">Preview</span>
                 <span class="badge rounded-pill rfq-soft-badge">PDF</span>
                 <span class="badge rounded-pill rfq-soft-badge">Itens Dinâmicos</span>
+                <span class="badge rounded-pill rfq-soft-badge">Sugestões Select2</span>
               </div>
             </div>
 
             <div class="col-lg-4">
               <div class="rfq-stats-grid">
-
                 <div class="mini-stat-card stat-filter stat-all stat-active" data-filter="" data-col="7">
                   <span class="mini-stat-label">
                     <i class="material-symbols-rounded me-1" style="font-size:14px;vertical-align:-2px">list_alt</i>
@@ -71,7 +70,6 @@
                   </span>
                   <h4 class="mb-0 text-danger">{{ total_cancelados }}</h4>
                 </div>
-
               </div>
             </div>
           </div>
@@ -81,7 +79,6 @@
     </div>
   </div>
 
-  <!-- ===== MAIN TABLE CARD ===== -->
   <div class="row">
     <div class="col-12">
       <div class="card border-0 shadow-sm rfq-main-card">
@@ -127,7 +124,6 @@
                   {% for rfq in rfqs %}
                   <tr>
                     <td>{{ forloop.counter }}</td>
-
                     <td>
                       <div class="d-flex flex-column">
                         <span class="fw-semibold text-dark">{{ rfq.numero }}</span>
@@ -141,7 +137,6 @@
                         </span>
                       </div>
                     </td>
-
                     <td>
                       <div class="d-flex align-items-center gap-2">
                         <div class="avatar-circle-rfq">{{ rfq.cliente.iniciais }}</div>
@@ -153,7 +148,6 @@
                         </div>
                       </div>
                     </td>
-
                     <td>
                       {% if rfq.origem == 'api' %}
                         <span class="origem-pill origem-website">Website</span>
@@ -161,9 +155,7 @@
                         <span class="origem-pill origem-manual">Manual</span>
                       {% endif %}
                     </td>
-
                     <td>{{ rfq.data_rfq|date:"d/m/Y" }}</td>
-
                     <td>
                       {% if rfq.prazo_entrega %}
                         {{ rfq.prazo_entrega|date:"d/m/Y" }}
@@ -171,11 +163,9 @@
                         <span class="text-muted">—</span>
                       {% endif %}
                     </td>
-
                     <td>
                       <span class="nuit-pill">{{ rfq.itens.count }} item(ns)</span>
                     </td>
-
                     <td>
                       <span class="estado-codigo d-none">{{ rfq.estado.codigo }}</span>
                       <span class="status-pill"
@@ -183,7 +173,6 @@
                         {{ rfq.estado.nome }}
                       </span>
                     </td>
-
                     <td class="text-center">
                       <div class="d-flex align-items-center justify-content-center gap-2 flex-wrap">
                         <button type="button"
@@ -237,8 +226,6 @@
   {% include "includes/pro_footer.html" %}
 </div>
 
-
-<!-- ===== MODAL: CRIAR / EDITAR RFQ ===== -->
 <div class="modal fade" id="rfqModal" tabindex="-1" aria-labelledby="rfqModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content border-0 shadow-lg modal-modern">
@@ -256,7 +243,6 @@
 
         <div class="modal-body pt-3">
 
-          <!-- Dados Gerais -->
           <div class="modal-section-title mb-3">
             <i class="material-symbols-rounded me-2">description</i>Dados Gerais
           </div>
@@ -321,7 +307,6 @@
             </div>
           </div>
 
-          <!-- Itens -->
           <div class="modal-section-title mb-3 d-flex justify-content-between align-items-center">
             <div>
               <i class="material-symbols-rounded me-2">inventory_2</i>Itens Solicitados
@@ -336,7 +321,7 @@
               <thead>
                 <tr>
                   <th style="width:50px;">#</th>
-                  <th>Descrição</th>
+                  <th style="min-width: 280px;">Descrição</th>
                   <th style="width:130px;">Quantidade</th>
                   <th style="width:170px;">Unidade</th>
                   <th>Comentários</th>
@@ -348,7 +333,6 @@
             </table>
           </div>
 
-          <!-- Anexos -->
           <div class="modal-section-title mb-3">
             <i class="material-symbols-rounded me-2">attach_file</i>Anexos
           </div>
@@ -360,7 +344,6 @@
             </div>
           </div>
 
-          <!-- Observações -->
           <div class="modal-section-title mb-3">
             <i class="material-symbols-rounded me-2">notes</i>Observações
           </div>
@@ -386,8 +369,6 @@
   </div>
 </div>
 
-
-<!-- ===== MODAL: PREVIEW RFQ ===== -->
 <div class="modal fade" id="rfqPreviewModal" tabindex="-1"
      aria-labelledby="rfqPreviewModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-fullscreen-lg-down modal-xl modal-dialog-centered modal-dialog-scrollable">
@@ -418,106 +399,56 @@
 
 {% endblock content %}
 
-
 {% block extra_js %}
 
-<!-- DataTables CSS -->
 <link href="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.8/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/datatables.net-responsive-bs5@2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/datatables.net-buttons-bs5@2.4.2/css/buttons.bootstrap5.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
 
 <style>
-  /* ─── Hero ─────────────────────────────────────────────── */
   .rfq-hero-card{position:relative;overflow:hidden;border-radius:22px;background:linear-gradient(135deg,#ffffff 0%,#f8f9ff 100%)}
   .rfq-hero-accent{position:absolute;right:-60px;top:-60px;width:220px;height:220px;background:radial-gradient(circle,rgba(46,62,130,0.16) 0%,rgba(46,62,130,0) 70%);pointer-events:none}
   .rfq-hero-icon{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#2E3E82 0%,#4256ad 100%);color:#fff;box-shadow:0 12px 30px rgba(46,62,130,0.20)}
   .rfq-hero-icon i{font-size:30px}
   .rfq-soft-badge{background:#eef2ff;color:#2E3E82;border:1px solid #dae3ff;font-weight:600;padding:.50rem .90rem}
-
-  /* ─── Stats grid ────────────────────────────────────────── */
   .rfq-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   .mini-stat-card{background:#fff;border:1px solid #edf0f7;border-radius:18px;padding:18px 16px;box-shadow:0 8px 22px rgba(15,23,42,0.04)}
   .mini-stat-label{display:block;font-size:.78rem;color:#6c757d;margin-bottom:6px}
-
-  /* ─── Stat filter (clickable cards) ────────────────────── */
   .stat-filter{cursor:pointer;transition:border-color .18s ease, box-shadow .18s ease, background .18s ease}
   .stat-filter:hover{border-color:#2E3E82 !important;box-shadow:0 6px 20px rgba(46,62,130,0.14) !important}
   .stat-filter.stat-active{border-color:#2E3E82 !important;background:#eef2ff !important}
   .stat-filter.stat-active .mini-stat-label{color:#2E3E82}
-
-  /* ─── Main card ─────────────────────────────────────────── */
   .rfq-main-card{border-radius:22px;overflow:hidden}
   .rfq-topbar{border-bottom:1px solid #edf0f7;background:linear-gradient(180deg,#ffffff 0%,#fbfcff 100%)}
-
-  /* ─── Buttons ───────────────────────────────────────────── */
   .btn-modern{border-radius:14px !important;padding:.75rem 1.1rem !important;font-weight:600 !important;box-shadow:none !important;text-transform:none !important}
   .btn-rfq{background:linear-gradient(135deg,#2E3E82 0%,#4256ad 100%) !important;border:none !important;color:#fff !important;box-shadow:0 10px 24px rgba(46,62,130,0.22) !important}
-
-  /* ─── Table ─────────────────────────────────────────────── */
   .rfq-table thead th{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#6c757d;font-weight:700;border-bottom:1px solid #eef1f6 !important;padding-top:1rem !important;padding-bottom:1rem !important;background:#fbfcfe}
   .rfq-table tbody td{vertical-align:middle;border-bottom:1px solid #f3f5f9 !important;padding-top:.85rem !important;padding-bottom:.85rem !important}
   .table-subtext{font-size:.77rem;color:#8a93a2}
-
-  /* ─── Badges / pills ────────────────────────────────────── */
   .avatar-circle-rfq{width:42px;height:42px;min-width:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#eef2ff;color:#2E3E82;font-weight:700;font-size:.85rem}
   .nuit-pill{display:inline-flex;align-items:center;background:#eef2ff;color:#2E3E82;border:1px solid #dae3ff;border-radius:8px;padding:3px 10px;font-size:.78rem;font-weight:700}
   .origem-pill{display:inline-flex;align-items:center;border-radius:999px;padding:.35rem .75rem;font-size:.74rem;font-weight:700}
   .origem-manual{background:#eef2ff;color:#2E3E82;border:1px solid #dae3ff}
   .origem-website{background:#e9f7ef;color:#198754;border:1px solid #bfe3cd}
   .status-pill{display:inline-flex;align-items:center;padding:.42rem .80rem;border-radius:999px;font-size:.74rem;font-weight:700}
-
-  /* ─── Action menu ───────────────────────────────────────── */
   .btn-action-menu{width:38px;height:38px;border-radius:12px !important;border:1px solid #e9edf5 !important;background:#fff !important;color:#495057 !important;display:inline-flex;align-items:center;justify-content:center}
   .btn-view-rfq{border-radius:12px !important}
-
-  /* ─── Modal ─────────────────────────────────────────────── */
   .modal-modern{border-radius:22px}
   .modal-section-title{display:flex;align-items:center;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#2E3E82;border-bottom:1px solid #dae3ff;padding-bottom:8px}
   .modern-input{border-radius:14px !important;border:1px solid #dfe5ef !important;min-height:46px;box-shadow:none !important}
   .modern-input:focus{border-color:#2E3E82 !important;box-shadow:0 0 0 .2rem rgba(46,62,130,0.10) !important}
-
-  /* ─── Modal scroll vertical ─────────────────────────────── */
-  .modal-dialog-scrollable .modal-content {
-    max-height: 90vh !important;
-  }
-  .modal-dialog-scrollable .modal-body {
-    overflow-y: auto !important;
-    max-height: calc(90vh - 130px) !important;
-    scrollbar-width: thin;
-    scrollbar-color: #dae3ff #f8f9ff;
-  }
-  .modal-dialog-scrollable .modal-body::-webkit-scrollbar {
-    width: 6px;
-  }
-  .modal-dialog-scrollable .modal-body::-webkit-scrollbar-track {
-    background: #f8f9ff;
-    border-radius: 10px;
-  }
-  .modal-dialog-scrollable .modal-body::-webkit-scrollbar-thumb {
-    background: #c5d0f0;
-    border-radius: 10px;
-  }
-  .modal-dialog-scrollable .modal-body::-webkit-scrollbar-thumb:hover {
-    background: #2E3E82;
-  }
-
-  /* ─── Items table ───────────────────────────────────────── */
+  .modal-dialog-scrollable .modal-content {max-height: 90vh !important;}
+  .modal-dialog-scrollable .modal-body {overflow-y: auto !important;max-height: calc(90vh - 130px) !important;scrollbar-width: thin;scrollbar-color: #dae3ff #f8f9ff;}
   .rfq-items-table thead th{background:#f8faff;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:#6c757d;border-bottom:1px solid #e8edf7 !important}
   .rfq-items-table tbody td{border-bottom:1px solid #f1f4fa !important;vertical-align:middle}
   .btn-remove-item{width:38px;height:38px;border-radius:12px !important;border:none !important;background:#fff1f1 !important;color:#dc3545 !important}
-
-  /* ─── Preview ───────────────────────────────────────────── */
   .rfq-preview-wrap{background:#e9ecef;padding:18px;border-radius:18px}
   .rfq-preview-sheet{max-width:980px;margin:0 auto;background:#fff;border-radius:8px;box-shadow:0 10px 30px rgba(15,23,42,.10);overflow:hidden}
-
-  /* ─── DataTables pagination ─────────────────────────────── */
   .dataTables_wrapper .dataTables_paginate .pagination{display:flex !important;gap:4px !important;flex-wrap:wrap !important}
   .dataTables_wrapper .dataTables_paginate .pagination .page-item .page-link{all:unset !important;display:inline-flex !important;align-items:center !important;justify-content:center !important;min-width:36px !important;height:36px !important;padding:0 10px !important;border-radius:10px !important;border:1px solid #e7ebf3 !important;background:#fff !important;color:#495057 !important;font-size:.85rem !important;font-weight:600 !important;cursor:pointer !important;transition:all .2s ease !important}
   .dataTables_wrapper .dataTables_paginate .pagination .page-item.active .page-link{background:linear-gradient(135deg,#2E3E82 0%,#4256ad 100%) !important;border-color:#2E3E82 !important;color:#fff !important}
-  div.dataTables_wrapper div.dataTables_filter input,
-  div.dataTables_wrapper div.dataTables_length select{border-radius:12px !important;border:1px solid #dfe5ef !important;min-height:38px;box-shadow:none !important}
-
-  /* ─── Pill toggle: Ver Cancelados ───────────────────────── */
+  div.dataTables_wrapper div.dataTables_filter input, div.dataTables_wrapper div.dataTables_length select{border-radius:12px !important;border:1px solid #dfe5ef !important;min-height:38px;box-shadow:none !important}
   .pill-toggle-cancelados{display:inline-flex;align-items:center;gap:6px;padding:.42rem .90rem;border-radius:999px;border:1.5px solid #f5c6cb;background:#fff5f5;color:#842029;font-size:.80rem;font-weight:700;cursor:pointer;transition:all .20s ease;white-space:nowrap;line-height:1}
   .pill-toggle-cancelados i{font-size:15px}
   .pill-toggle-cancelados:hover{background:#f8d7da;border-color:#dc3545;box-shadow:0 4px 14px rgba(220,53,69,.16)}
@@ -525,20 +456,43 @@
   .pill-toggle-cancelados.pill-active:hover{background:#bb2d3b;border-color:#bb2d3b}
   .pill-count-badge{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;border-radius:999px;background:rgba(220,53,69,.18);color:inherit;font-size:.72rem;font-weight:800;padding:0 5px}
   .pill-toggle-cancelados.pill-active .pill-count-badge{background:rgba(255,255,255,.30)}
-
-  /* ─── DataTables export buttons ─────────────────────────── */
   .dt-buttons{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
   .dt-buttons .btn{border-radius:12px !important;padding:.45rem .90rem !important;font-size:.82rem !important;font-weight:600 !important;display:inline-flex !important;align-items:center !important;gap:4px !important}
   .dt-button-background{display:none !important}
 
-  /* ─── Responsive ────────────────────────────────────────── */
+  .select2-container{width:100% !important}
+  .select2-container--default .select2-selection--single{
+    min-height:46px;
+    border-radius:14px !important;
+    border:1px solid #dfe5ef !important;
+    display:flex !important;
+    align-items:center !important;
+    padding:6px 10px !important;
+  }
+  .select2-container--default .select2-selection--single .select2-selection__rendered{
+    line-height:normal !important;
+    color:#212529 !important;
+    padding-left:0 !important;
+  }
+  .select2-container--default .select2-selection--single .select2-selection__arrow{
+    height:44px !important;
+    right:8px !important;
+  }
+  .select2-dropdown{
+    border:1px solid #dfe5ef !important;
+    border-radius:12px !important;
+    overflow:hidden;
+  }
+  .select2-search--dropdown .select2-search__field{
+    border:1px solid #dfe5ef !important;
+    border-radius:10px !important;
+    padding:8px 10px !important;
+  }
+
   @media (max-width:991.98px){.rfq-stats-grid{grid-template-columns:1fr}}
 </style>
 
-<!-- JS: jQuery -->
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
-
-<!-- JS: DataTables core + BS5 + Responsive + Buttons -->
 <script src="https://cdn.jsdelivr.net/npm/datatables.net@1.13.8/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.8/js/dataTables.bootstrap5.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/datatables.net-responsive@2.5.0/js/dataTables.responsive.min.js"></script>
@@ -547,27 +501,24 @@
 <script src="https://cdn.jsdelivr.net/npm/datatables.net-buttons-bs5@2.4.2/js/buttons.bootstrap5.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/datatables.net-buttons@2.4.2/js/buttons.html5.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/datatables.net-buttons@2.4.2/js/buttons.print.min.js"></script>
-
-<!-- JS: Export libs -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-
-<!-- JS: SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
 $(document).ready(function () {
 
-  /* ─────────────────────────────────────────────────────────
-     Bootstrap modals
-  ───────────────────────────────────────────────────────── */
+  const itemCatalog = {{ item_catalog_json|safe }};
+  const itemOptions = Object.values(itemCatalog).map(item => ({
+    id: item.descricao,
+    text: item.descricao
+  }));
+
   const rfqModal        = new bootstrap.Modal(document.getElementById('rfqModal'));
   const rfqPreviewModal = new bootstrap.Modal(document.getElementById('rfqPreviewModal'));
 
-  /* ─────────────────────────────────────────────────────────
-     Django messages → SweetAlert
-  ───────────────────────────────────────────────────────── */
   const msgContainer = document.getElementById('django-messages');
   if (msgContainer) {
     msgContainer.querySelectorAll('span[data-tags]').forEach(function (span) {
@@ -584,9 +535,6 @@ $(document).ready(function () {
     });
   }
 
-  /* ─────────────────────────────────────────────────────────
-     DataTable
-  ───────────────────────────────────────────────────────── */
   let mostrandoCancelados = false;
 
   const table = $('#rfqsTable').DataTable({
@@ -634,14 +582,13 @@ $(document).ready(function () {
       infoFiltered: '(filtrado de _MAX_ registos no total)',
       zeroRecords: 'Nenhum registo encontrado',
       emptyTable: 'Sem dados disponíveis',
-      paginate: { first: 'Primeiro', last: 'Último', next: 'Seguinte', previous: 'Anterior' },
-      buttons: { copyTitle: 'Copiado!', copySuccess: { 1: '1 linha copiada', _: '%d linhas copiadas' } }
+      paginate: { first: 'Primeiro', last: 'Último', next: 'Seguinte', previous: 'Anterior' }
     },
     columnDefs: [
       { orderable: false, targets: [8] },
       {
         targets: 7,
-        render: function (data, type, row, meta) {
+        render: function (data, type, row) {
           if (type === 'filter' || type === 'sort') {
             const cell = $(row[7]);
             return cell.find('.estado-codigo').text().trim();
@@ -652,19 +599,15 @@ $(document).ready(function () {
     ]
   });
 
-  // Ocultar cancelados ao iniciar
   $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
     if (settings.nTable.id !== 'rfqsTable') return true;
     if (mostrandoCancelados) return true;
-    const row  = table.row(dataIndex).node();
+    const row = table.row(dataIndex).node();
     const code = $(row).find('.estado-codigo').text().trim().toLowerCase();
     return code !== 'cancelado';
   });
   table.draw();
 
-  /* ─────────────────────────────────────────────────────────
-     Pill toggle: mostrar / ocultar cancelados
-  ───────────────────────────────────────────────────────── */
   $('#btnToggleCancelados').on('click', function () {
     mostrandoCancelados = !mostrandoCancelados;
     $(this).toggleClass('pill-active', mostrandoCancelados);
@@ -679,9 +622,6 @@ $(document).ready(function () {
     }
   });
 
-  /* ─────────────────────────────────────────────────────────
-     Mini-stat cards → filtrar tabela por estado
-  ───────────────────────────────────────────────────────── */
   $(document).on('click', '.stat-filter', function () {
     const filter = $(this).data('filter');
 
@@ -700,30 +640,97 @@ $(document).ready(function () {
     $(this).addClass('stat-active');
   });
 
-  /* ─────────────────────────────────────────────────────────
-     Construtor de linhas de itens
-  ───────────────────────────────────────────────────────── */
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function normalizeItemText(value) {
+    return String(value || '').replace(/\s+/g, ' ').trim().toLowerCase();
+  }
+
+  function initItemSelect2($select, selectedValue = '') {
+    if ($select.hasClass('select2-hidden-accessible')) {
+      $select.select2('destroy');
+    }
+
+    $select.empty();
+    $select.append('<option value=""></option>');
+
+    itemOptions.forEach(function(opt) {
+      const option = new Option(opt.text, opt.id, false, false);
+      $select.append(option);
+    });
+
+    if (selectedValue) {
+      const exists = $select.find(`option[value="${selectedValue.replace(/"/g, '\\"')}"]`).length > 0;
+      if (!exists) {
+        const newOption = new Option(selectedValue, selectedValue, true, true);
+        $select.append(newOption);
+      }
+      $select.val(selectedValue);
+    }
+
+    $select.select2({
+      theme: 'default',
+      width: '100%',
+      dropdownParent: $('#rfqModal'),
+      placeholder: 'Pesquisar ou escrever item',
+      tags: true,
+      allowClear: true,
+      data: itemOptions,
+      createTag: function (params) {
+        const term = $.trim(params.term);
+        if (!term) return null;
+        return {
+          id: term,
+          text: term,
+          newTag: true
+        };
+      }
+    });
+  }
+
   function buildItemRow(index, data) {
     data = data || {};
     return `
       <tr class="rfq-item-row">
         <td class="item-index fw-bold text-muted">${index}</td>
-        <td><input type="text" name="item_descricao[]" class="form-control modern-input"
-                   value="${escHtml(data.descricao || '')}" required></td>
-        <td><input type="number" name="item_quantidade[]" class="form-control modern-input"
-                   value="${escHtml(String(data.quantidade || '1'))}" min="0.01" step="0.01" required></td>
+        <td>
+          <select name="item_descricao[]" class="form-select modern-input item-descricao-select" required></select>
+        </td>
+        <td>
+          <input type="number"
+                 name="item_quantidade[]"
+                 class="form-control modern-input"
+                 value="${escHtml(String(data.quantidade || '1'))}"
+                 min="0.01"
+                 step="0.01"
+                 required>
+        </td>
         <td>
           <select name="item_unidade_id[]" class="form-select modern-input">
             <option value="">— Unidade —</option>
             {% for unidade in unidades %}
-              <option value="{{ unidade.id }}">{{ unidade.nome }} ({{ unidade.sigla }})</option>
+              <option value="{{ unidade.id }}">{{ unidade.nome }}{% if unidade.sigla %} ({{ unidade.sigla }}){% endif %}</option>
             {% endfor %}
           </select>
         </td>
-        <td><input type="text" name="item_comentarios[]" class="form-control modern-input"
-                   value="${escHtml(data.comentarios || '')}"></td>
-        <td><input type="text" name="item_especificacoes[]" class="form-control modern-input"
-                   value="${escHtml(data.especificacoes || '')}"></td>
+        <td>
+          <input type="text"
+                 name="item_comentarios[]"
+                 class="form-control modern-input"
+                 value="${escHtml(data.comentarios || '')}">
+        </td>
+        <td>
+          <input type="text"
+                 name="item_especificacoes[]"
+                 class="form-control modern-input"
+                 value="${escHtml(data.especificacoes || '')}">
+        </td>
         <td class="text-center">
           <button type="button" class="btn btn-remove-item">
             <i class="material-symbols-rounded">delete</i>
@@ -733,32 +740,53 @@ $(document).ready(function () {
     `;
   }
 
-  function escHtml(str) {
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  }
-
   function refreshItemIndexes() {
     $('#rfqItemsBody .rfq-item-row').each(function (index) {
       $(this).find('.item-index').text(index + 1);
     });
   }
 
-  function addItemRow(data) {
-    const nextIndex = $('#rfqItemsBody .rfq-item-row').length + 1;
-    $('#rfqItemsBody').append(buildItemRow(nextIndex, data));
-    if (data && data.unidade_id) {
-      const lastRow = $('#rfqItemsBody .rfq-item-row').last();
-      lastRow.find('select[name="item_unidade_id[]"]').val(String(data.unidade_id));
+  function applySuggestedItemData($row) {
+    const descricao = $row.find('select[name="item_descricao[]"]').val();
+    const key = normalizeItemText(descricao);
+
+    if (!key || !itemCatalog[key]) return;
+
+    const item = itemCatalog[key];
+    const $unidade = $row.find('select[name="item_unidade_id[]"]');
+    const $comentarios = $row.find('input[name="item_comentarios[]"]');
+    const $especificacoes = $row.find('input[name="item_especificacoes[]"]');
+
+    if (!$unidade.val() && item.unidade_id) {
+      $unidade.val(String(item.unidade_id));
+    }
+    if (!$comentarios.val().trim() && item.comentarios) {
+      $comentarios.val(item.comentarios);
+    }
+    if (!$especificacoes.val().trim() && item.especificacoes) {
+      $especificacoes.val(item.especificacoes);
     }
   }
 
-  /* ─────────────────────────────────────────────────────────
-     Reset do formulário
-  ───────────────────────────────────────────────────────── */
+  function addItemRow(data) {
+    data = data || {};
+    const nextIndex = $('#rfqItemsBody .rfq-item-row').length + 1;
+    $('#rfqItemsBody').append(buildItemRow(nextIndex, data));
+
+    const $lastRow = $('#rfqItemsBody .rfq-item-row').last();
+    const $descricao = $lastRow.find('select[name="item_descricao[]"]');
+
+    initItemSelect2($descricao, data.descricao || '');
+
+    if (data.unidade_id) {
+      $lastRow.find('select[name="item_unidade_id[]"]').val(String(data.unidade_id));
+    }
+
+    if (data.descricao) {
+      applySuggestedItemData($lastRow);
+    }
+  }
+
   function resetForm() {
     $('#rfqForm')[0].reset();
     $('#rfq_id').val('');
@@ -770,17 +798,11 @@ $(document).ready(function () {
     addItemRow();
   }
 
-  /* ─────────────────────────────────────────────────────────
-     Abrir modal Novo RFQ
-  ───────────────────────────────────────────────────────── */
   $('#btnOpenCreateRFQ').on('click', function () {
     resetForm();
     rfqModal.show();
   });
 
-  /* ─────────────────────────────────────────────────────────
-     Adicionar / remover linha de item
-  ───────────────────────────────────────────────────────── */
   $('#btnAddItem').on('click', function () {
     addItemRow();
   });
@@ -796,13 +818,22 @@ $(document).ready(function () {
       });
       return;
     }
-    $(this).closest('tr').remove();
+
+    const $row = $(this).closest('tr');
+    const $select2 = $row.find('select[name="item_descricao[]"]');
+    if ($select2.hasClass('select2-hidden-accessible')) {
+      $select2.select2('destroy');
+    }
+
+    $row.remove();
     refreshItemIndexes();
   });
 
-  /* ─────────────────────────────────────────────────────────
-     Auto-fill campos ao seleccionar cliente
-  ───────────────────────────────────────────────────────── */
+  $(document).on('change', 'select[name="item_descricao[]"]', function () {
+    const $row = $(this).closest('tr');
+    applySuggestedItemData($row);
+  });
+
   $('#rfq_cliente_id').on('change', function () {
     const opt = $(this).find('option:selected');
     $('#rfq_email_cliente').val(opt.data('email') || '');
@@ -810,9 +841,6 @@ $(document).ready(function () {
     $('#rfq_pessoa_contacto').val(opt.data('contacto') || '');
   });
 
-  /* ─────────────────────────────────────────────────────────
-     Editar RFQ
-  ───────────────────────────────────────────────────────── */
   $(document).on('click', '.btn-edit-rfq', function (e) {
     e.preventDefault();
     const id = $(this).data('id');
@@ -836,7 +864,9 @@ $(document).ready(function () {
 
         $('#rfqItemsBody').html('');
         if (r.itens && r.itens.length) {
-          r.itens.forEach(function (item) { addItemRow(item); });
+          r.itens.forEach(function (item) {
+            addItemRow(item);
+          });
         } else {
           addItemRow();
         }
@@ -855,9 +885,6 @@ $(document).ready(function () {
     });
   });
 
-  /* ─────────────────────────────────────────────────────────
-     Visualizar RFQ (preview modal)
-  ───────────────────────────────────────────────────────── */
   $(document).on('click', '.btn-view-rfq', function () {
     const id = $(this).data('id');
 
@@ -888,9 +915,6 @@ $(document).ready(function () {
     });
   });
 
-  /* ─────────────────────────────────────────────────────────
-     Cancelar RFQ
-  ───────────────────────────────────────────────────────── */
   $(document).on('click', '.btn-cancel-rfq', function (e) {
     e.preventDefault();
     const id   = $(this).data('id');
@@ -898,8 +922,7 @@ $(document).ready(function () {
 
     Swal.fire({
       title: 'Cancelar RFQ?',
-      html: `Tem a certeza que deseja cancelar <strong>${nome}</strong>?<br>
-             <small class="text-muted">Esta acção não pode ser desfeita.</small>`,
+      html: `Tem a certeza que deseja cancelar <strong>${nome}</strong>?<br><small class="text-muted">Esta acção não pode ser desfeita.</small>`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Sim, cancelar RFQ',
@@ -909,14 +932,14 @@ $(document).ready(function () {
       reverseButtons: true,
     }).then((result) => {
       if (result.isConfirmed) {
-        const form  = document.createElement('form');
+        const form = document.createElement('form');
         form.method = 'POST';
         form.action = `/rfqs/${id}/cancel/`;
 
-        const csrf   = document.createElement('input');
-        csrf.type    = 'hidden';
-        csrf.name    = 'csrfmiddlewaretoken';
-        csrf.value   = '{{ csrf_token }}';
+        const csrf = document.createElement('input');
+        csrf.type = 'hidden';
+        csrf.name = 'csrfmiddlewaretoken';
+        csrf.value = '{{ csrf_token }}';
 
         form.appendChild(csrf);
         document.body.appendChild(form);
@@ -925,11 +948,7 @@ $(document).ready(function () {
     });
   });
 
-  /* ─────────────────────────────────────────────────────────
-     Init: adicionar primeira linha de item
-  ───────────────────────────────────────────────────────── */
   resetForm();
-
 });
 </script>
 
