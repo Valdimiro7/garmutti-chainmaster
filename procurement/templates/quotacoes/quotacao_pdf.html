@@ -27,10 +27,23 @@
       background: #fff
     }
 
-    .wm { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%) rotate(-35deg); font-size: 84px; font-weight: 900; color: rgba(46,62,130,0.04); white-space: nowrap; z-index: 0; letter-spacing: 4px; pointer-events: none }
+    .wm {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%,-50%);
+      opacity: 0.08;
+      z-index: 0;
+      pointer-events: none
+    }
+    .wm img {
+      width: 500px;
+      height: auto
+    }
+
     .pg { position: relative; z-index: 1 }
     .hdr { margin-bottom: 26px }
-    .hdr img { height: 52px; width: auto }
+    .hdr img { height: 68px; width: auto }
     .split { display: flex; justify-content: space-between; gap: 28px; margin-bottom: 20px }
     .org { flex: 1 }
     .org .on { font-weight: 700; font-size: 10.5px; margin-bottom: 3px }
@@ -79,7 +92,9 @@
 </head>
 <body>
 
-<div class="wm">GARMUTTI</div>
+<div class="wm">
+  <img src="{% static 'assets/img/watermark.png' %}" alt="Watermark">
+</div>
 
 <div class="pg">
   <div class="hdr">
