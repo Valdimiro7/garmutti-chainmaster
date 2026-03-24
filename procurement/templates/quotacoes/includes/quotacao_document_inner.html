@@ -1,4 +1,4 @@
-{% load static %}
+{% load static report_filters %}
 <style>
 .qd *{box-sizing:border-box;margin:0;padding:0}
 .qd{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:11px;color:#1a1a1a;background:#fff;padding:32px 40px;position:relative}
@@ -137,10 +137,10 @@
         {% if item.especificacoes %}<div class="ispec">{{ item.especificacoes }}</div>{% endif %}
         {% if item.comentarios %}<div class="icom">{{ item.comentarios }}</div>{% endif %}
       </td>
-      <td>{{ item.preco_unitario|floatformat:"2" }}{% if quotacao.moeda %}{{ quotacao.moeda.simbolo }}{% else %}Mt{% endif %}</td>
+      <td>{{ item.preco_unitario|contabil }}{% if quotacao.moeda %}{{ quotacao.moeda.simbolo }}{% else %}Mt{% endif %}</td>
       <td class="ac">{{ item.quantidade|floatformat:"-2" }}</td>
       <td class="ac">{{ item.percentagem_iva|floatformat:"-2" }}</td>
-      <td>{{ item.total_liquido|floatformat:"2" }}{% if quotacao.moeda %}{{ quotacao.moeda.simbolo }}{% else %}Mt{% endif %}</td>
+      <td>{{ item.total_liquido|contabil }}{% if quotacao.moeda %}{{ quotacao.moeda.simbolo }}{% else %}Mt{% endif %}</td>
     </tr>
     {% empty %}
     <tr><td colspan="6" style="text-align:center;color:#999;padding:20px">Sem itens registados.</td></tr>
@@ -166,8 +166,8 @@
       <tbody>
         <tr>
           <td>{{ quotacao.percentagem_iva|floatformat:"2" }} %</td>
-          <td>{{ quotacao.subtotal|floatformat:"2" }}</td>
-          <td>{{ quotacao.total_iva|floatformat:"2" }}</td>
+          <td>{{ quotacao.subtotal|contabil }}</td>
+          <td>{{ quotacao.total_iva|contabil }}</td>
           <td></td>
         </tr>
         <tr><td style="height:18px"></td><td></td><td></td><td></td></tr>
@@ -205,13 +205,13 @@
     <table class="t-sum">
       <tbody>
         {% with sym=quotacao.moeda.simbolo|default:"Mt" %}
-        <tr><td>Subtotal</td>        <td>{{ quotacao.subtotal|floatformat:"2" }}{{ sym }}</td></tr>
-        <tr><td>Descontos</td>       <td>0.00{{ sym }}</td></tr>
-        <tr><td>S/IVA</td>           <td>{{ quotacao.subtotal|floatformat:"2" }}{{ sym }}</td></tr>
-        <tr><td>IVA</td>             <td>{{ quotacao.total_iva|floatformat:"2" }}{{ sym }}</td></tr>
-        <tr><td>Total</td>           <td>{{ quotacao.total|floatformat:"2" }}{{ sym }}</td></tr>
-        <tr><td>Valor arredondado</td><td>0.00{{ sym }}</td></tr>
-        <tr class="sf"><td>Total a pagar</td><td>{{ quotacao.total|floatformat:"2" }}{{ sym }}</td></tr>
+        <tr><td>Subtotal</td>        <td>{{ quotacao.subtotal|contabil }}{{ sym }}</td></tr>
+        <tr><td>Descontos</td>       <td>{{ 0|contabil }}{{ sym }}</td></tr>
+        <tr><td>S/IVA</td>           <td>{{ quotacao.subtotal|contabil }}{{ sym }}</td></tr>
+        <tr><td>IVA</td>             <td>{{ quotacao.total_iva|contabil }}{{ sym }}</td></tr>
+        <tr><td>Total</td>           <td>{{ quotacao.total|contabil }}{{ sym }}</td></tr>
+        <tr><td>Valor arredondado</td><td>{{ 0|contabil }}{{ sym }}</td></tr>
+        <tr class="sf"><td>Total a pagar</td><td>{{ quotacao.total|contabil }}{{ sym }}</td></tr>
         {% endwith %}
       </tbody>
     </table>

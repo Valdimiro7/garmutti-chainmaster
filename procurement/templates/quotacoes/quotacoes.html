@@ -1,5 +1,5 @@
 {% extends "layouts/pro_base.html" %}
-{% load static %}
+{% load static report_filters %}
 
 {% block content %}
 
@@ -162,7 +162,7 @@
                     <td>
                       <div class="d-flex flex-column">
                         <span class="fw-bold text-dark">
-                          {% if q.moeda %}{{ q.moeda.simbolo }} {% endif %}{{ q.total|floatformat:2 }}
+                          {% if q.moeda %}{{ q.moeda.simbolo }} {% endif %}{{ q.total|contabil }}
                         </span>
                         {% if q.moeda and q.moeda.codigo != 'MZN' %}
                           <span class="table-subtext">câmbio {{ q.cambio }}</span>
