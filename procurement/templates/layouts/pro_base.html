@@ -8,6 +8,29 @@
 
 <head>
     {% include "includes/pro_head.html" %}
+    <style>
+      #sidenav-main {
+        z-index: 1040;
+      }
+
+      .sidebar-brand-text {
+        font-size: 1rem;
+        line-height: 1.1;
+      }
+
+      @media (min-width: 1200px) {
+        #sidenav-main {
+          width: 14rem;
+          max-width: 14rem !important;
+        }
+      }
+
+      @media (max-width: 1199.98px) {
+        #sidenav-main .navbar-brand {
+          padding-right: 3.5rem !important;
+        }
+      }
+    </style>
     {% block extrastyle %}{% endblock extrastyle %}
     {% block extrahead %}{% endblock extrahead %}
 </head>

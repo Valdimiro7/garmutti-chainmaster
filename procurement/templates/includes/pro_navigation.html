@@ -3,11 +3,13 @@
 <nav class="navbar navbar-main navbar-expand-lg px-0 mx-3 shadow-none border-radius-xl" id="navbarBlur" data-scroll="true">
     <div class="container-fluid py-1 px-3">
       <div class="d-flex align-items-center gap-3">
-        <div class="sidenav-toggler sidenav-toggler-inner d-xl-none d-flex align-items-center" id="iconNavbarSidenav" aria-label="Abrir menu lateral" role="button" tabindex="0">
-          <i class="sidenav-toggler-line bg-dark"></i>
-          <i class="sidenav-toggler-line bg-dark"></i>
-          <i class="sidenav-toggler-line bg-dark"></i>
-        </div>
+        <button type="button" class="sidebar-toggle-btn d-xl-none" id="mobileSidenavToggle" aria-label="Abrir menu lateral" aria-controls="sidenav-main" aria-expanded="false">
+          <span class="sidenav-toggler-inner">
+            <span class="sidenav-toggler-line"></span>
+            <span class="sidenav-toggler-line"></span>
+            <span class="sidenav-toggler-line"></span>
+          </span>
+        </button>
 
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0 me-sm-6 me-5">
@@ -66,9 +68,12 @@
 </nav>
 
 <style>
-  #iconNavbarSidenav {
-    min-width: 42px;
-    min-height: 42px;
+  .sidebar-toggle-btn {
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
     justify-content: center;
     border-radius: 12px;
     cursor: pointer;
@@ -77,12 +82,46 @@
     box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
   }
 
-  #iconNavbarSidenav:focus-visible {
+  .sidebar-toggle-btn .sidenav-toggler-inner {
+    width: 18px;
+  }
+
+  .sidebar-toggle-btn .sidenav-toggler-line {
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: #1f2937;
+    border-radius: 999px;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  .sidebar-toggle-btn .sidenav-toggler-line:not(:last-child) {
+    margin-bottom: 4px;
+  }
+
+  body.g-sidenav-pinned .sidebar-toggle-btn .sidenav-toggler-line:first-child {
+    transform: translateX(5px);
+    width: 13px;
+  }
+
+  body.g-sidenav-pinned .sidebar-toggle-btn .sidenav-toggler-line:last-child {
+    transform: translateX(5px);
+    width: 13px;
+  }
+
+  .sidebar-toggle-btn:focus-visible {
     outline: 2px solid rgba(46, 62, 130, 0.35);
     outline-offset: 2px;
   }
 
   @media (max-width: 1199.98px) {
+    #navbarBlur {
+      position: sticky;
+      top: 0;
+      z-index: 1045;
+      background: transparent;
+    }
+
     #navbarBlur .container-fluid {
       gap: 0.75rem;
     }
@@ -91,17 +130,65 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    const mobileSidenavToggle = document.getElementById('iconNavbarSidenav');
+    const mobileSidenavToggle = document.getElementById('mobileSidenavToggle');
+    const sidenav = document.getElementById('sidenav-main');
+    const closeIcon = document.getElementById('iconSidenav');
+    const body = document.body;
+    const mobileBreakpoint = 1200;
 
-    if (!mobileSidenavToggle) {
+    if (!mobileSidenavToggle || !sidenav || !closeIcon) {
       return;
     }
 
-    mobileSidenavToggle.addEventListener('keydown', function (event) {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        mobileSidenavToggle.click();
+    function isMobileViewport() {
+      return window.innerWidth < mobileBreakpoint;
+    }
+
+    function isSidebarOpen() {
+      return body.classList.contains('g-sidenav-pinned');
+    }
+
+    function syncSidebarState(open) {
+      mobileSidenavToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      closeIcon.classList.toggle('d-none', !open || !isMobileViewport());
+    }
+
+    function setSidebarOpen(open) {
+      if (!isMobileViewport()) {
+        syncSidebarState(false);
+        return;
+      }
+
+      body.classList.toggle('g-sidenav-pinned', open);
+      syncSidebarState(open);
+    }
+
+    mobileSidenavToggle.addEventListener('click', function () {
+      setSidebarOpen(!isSidebarOpen());
+    });
+
+    closeIcon.addEventListener('click', function () {
+      setSidebarOpen(false);
+    });
+
+    document.addEventListener('click', function (event) {
+      if (!isMobileViewport() || !isSidebarOpen()) {
+        return;
+      }
+
+      if (sidenav.contains(event.target) || mobileSidenavToggle.contains(event.target)) {
+        return;
+      }
+
+      setSidebarOpen(false);
+    });
+
+    window.addEventListener('resize', function () {
+      if (!isMobileViewport()) {
+        syncSidebarState(false);
       }
     });
+
+    syncSidebarState(isSidebarOpen() && isMobileViewport());
   });
 </script>
