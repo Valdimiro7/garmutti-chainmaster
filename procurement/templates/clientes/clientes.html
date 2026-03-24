@@ -702,6 +702,8 @@ $(document).ready(function () {
     $('#cl_moeda option[selected]').prop('selected', true);
     $('#clienteModalLabel').text('Novo Cliente');
     $('#clienteForm').attr('action', "{% url 'procurement:clientes_create' %}");
+    $('#clienteForm').data('submitting', false);
+    $('#clienteForm button[type="submit"]').prop('disabled', false).html('<i class="material-symbols-rounded me-1">save</i>Guardar Cliente');
   }
 
   // ── Abrir modal (criar) ─────────────────────────────────────────────────────
@@ -820,6 +822,16 @@ $(document).ready(function () {
         form.submit();
       }
     });
+  });
+
+  $('#clienteForm').on('submit', function (e) {
+    const $form = $(this);
+    if ($form.data('submitting')) {
+      e.preventDefault();
+      return false;
+    }
+    $form.data('submitting', true);
+    $form.find('button[type="submit"]').prop('disabled', true).html('<i class="material-symbols-rounded me-1">hourglass_top</i>A guardar...');
   });
 
 });

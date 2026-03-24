@@ -516,6 +516,8 @@ $(function(){
   const rcModal    = new bootstrap.Modal('#rcModal');
   const viewModal  = new bootstrap.Modal('#rcViewModal');
   const anularModal= new bootstrap.Modal('#rcAnularModal');
+  const salvarReciboHtml = $('#btnSalvarRecibo').html();
+  const confirmarAnularHtml = $('#btnConfirmarAnular').html();
 
   const $table = $('#rcTable');
   const $tbody = $table.find('tbody');
@@ -523,6 +525,16 @@ $(function(){
   let filtered = [...allRows];
   let currentPage = 1;
   const perPage   = 15;
+  function lockButton($btn, html){
+    if ($btn.data('submitting')) return false;
+    $btn.data('submitting', true);
+    $btn.prop('disabled', true).html(html);
+    return true;
+  }
+  function unlockButton($btn, html){
+    $btn.data('submitting', false);
+    $btn.prop('disabled', false).html(html);
+  }
   let activeFilter = '';
 
   function fmt(v){
@@ -610,6 +622,7 @@ $(function(){
     $('#rc_referencia').val('');
     $('#rc_observacoes').val('');
     $('#rc_factura_info').addClass('d-none');
+    unlockButton($('#btnSalvarRecibo'), salvarReciboHtml);
   }
 
   $('#rc_factura_id').on('change', function(){
@@ -676,6 +689,7 @@ $(function(){
   });
 
   $('#btnSalvarRecibo').on('click', function(){
+    const $btn = $(this);
     const fid   = $('#rc_factura_id').val();
     const valor = $('#rc_valor').val();
     const data  = $('#rc_data').val();
@@ -695,6 +709,7 @@ $(function(){
       allowOutsideClick:false,
       didOpen:()=>Swal.showLoading()
     });
+    if (!lockButton($btn, '<i class="material-symbols-rounded me-1">hourglass_top</i>A guardar...')) return;
 
     $.post('/recibos/create/', {
       csrfmiddlewaretoken : csrf,
@@ -727,6 +742,7 @@ $(function(){
       if(xhr.responseJSON && xhr.responseJSON.message){
         msg = xhr.responseJSON.message;
       }
+      unlockButton($btn, salvarReciboHtml);
       Swal.fire({icon:'error', title:'Erro', text: msg});
     });
   });
@@ -803,11 +819,14 @@ $(function(){
     anularId = $(this).data('id');
     $('#rcAnularNumero').text($(this).data('numero'));
     $('#rc_motivo_anulacao').val('');
+    unlockButton($('#btnConfirmarAnular'), confirmarAnularHtml);
     anularModal.show();
   });
 
   $('#btnConfirmarAnular').on('click', function(){
+    const $btn = $(this);
     if(!anularId) return;
+    if (!lockButton($btn, '<i class="material-symbols-rounded me-1">hourglass_top</i>A anular...')) return;
     Swal.fire({title:'A anular...', allowOutsideClick:false, didOpen:()=>Swal.showLoading()});
     $.post(`/recibos/${anularId}/anular/`, {
       csrfmiddlewaretoken: csrf,
@@ -818,9 +837,13 @@ $(function(){
         Swal.fire({icon:'success', title:'Recibo anulado!', timer:1800, showConfirmButton:false})
           .then(()=>location.reload());
       } else {
+        unlockButton($btn, confirmarAnularHtml);
         Swal.fire({icon:'error', title:'Erro', text:r.message});
       }
-    }).fail(()=>Swal.fire({icon:'error',title:'Erro de comunicação'}));
+    }).fail(()=>{
+      unlockButton($btn, confirmarAnularHtml);
+      Swal.fire({icon:'error',title:'Erro de comunicação'});
+    });
   });
 
 });

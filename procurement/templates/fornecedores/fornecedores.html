@@ -695,6 +695,8 @@ $(document).ready(function () {
     $('#fr_moeda option[selected]').prop('selected', true);
     $('#fornecedorModalLabel').text('Novo Fornecedor');
     $('#fornecedorForm').attr('action', "{% url 'procurement:fornecedores_create' %}");
+    $('#fornecedorForm').data('submitting', false);
+    $('#fornecedorForm button[type="submit"]').prop('disabled', false).html('<i class="material-symbols-rounded me-1">save</i>Guardar Fornecedor');
   }
 
   $('#btnOpenCreateFornecedor').on('click', function () {
@@ -818,6 +820,16 @@ $(document).ready(function () {
         form.submit();
       }
     });
+  });
+
+  $('#fornecedorForm').on('submit', function (e) {
+    const $form = $(this);
+    if ($form.data('submitting')) {
+      e.preventDefault();
+      return false;
+    }
+    $form.data('submitting', true);
+    $form.find('button[type="submit"]').prop('disabled', true).html('<i class="material-symbols-rounded me-1">hourglass_top</i>A guardar...');
   });
 
 });

@@ -624,6 +624,8 @@ $(function(){
   const fcViewModal = new bootstrap.Modal(document.getElementById('fcViewModal'));
   const fcPagModal  = new bootstrap.Modal(document.getElementById('fcPagamentoModal'));
   const CSRF        = $('[name=csrfmiddlewaretoken]').first().val() || getCookie('csrftoken');
+  const guardarFacturaHtml = $('#btnGuardarFactura').html();
+  const confirmarPagamentoHtml = $('#btnConfirmarPagamento').html();
   let editingId     = null;
   let activeFilter  = '';
 
@@ -636,6 +638,16 @@ $(function(){
   function getCookie(n){ const v=document.cookie.match('(^|;) ?'+n+'=([^;]*)(;|$)'); return v?v[2]:null; }
   function fmt(v){ return parseFloat(v||0).toLocaleString('pt-MZ',{minimumFractionDigits:2,maximumFractionDigits:2}); }
   function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function lockButton($btn, html){
+    if ($btn.data('submitting')) return false;
+    $btn.data('submitting', true);
+    $btn.prop('disabled', true).html(html);
+    return true;
+  }
+  function unlockButton($btn, html){
+    $btn.data('submitting', false);
+    $btn.prop('disabled', false).html(html);
+  }
 
   /* ── Select2 ── */
   $('#fc_dado_bancario_ids').select2({theme:'bootstrap-5',width:'100%',placeholder:'Seleccione uma ou várias contas',closeOnSelect:false,dropdownParent:$('#fcModal')});
@@ -714,6 +726,7 @@ $(function(){
     $('#btnImportarPO').prop('disabled',true);
     $('#fc_po_info_wrap').addClass('d-none');
     $('#btn_download_po,#btn_download_quot').addClass('d-none').attr('href','#');
+    $('#btnGuardarFactura').data('submitting', false).prop('disabled', false).html(guardarFacturaHtml);
     addItemRow();recalcularTotais();
   }
 
@@ -792,6 +805,7 @@ $(function(){
 
   /* ── Guardar ── */
   $('#btnGuardarFactura').on('click',function(){
+    const $btn = $(this);
     if(!$('#fc_cliente_id').val()||!$('#fc_data_emissao').val()){
       Swal.fire({icon:'warning',title:'Campos obrigatórios',text:'Preencha o cliente e a data de emissão.'});return;
     }
@@ -810,12 +824,16 @@ $(function(){
     p.append('observacoes',$('#fc_observacoes').val());p.append('termos',$('#fc_termos').val());
     p.append('itens_json',JSON.stringify(itens));
     const url=editingId?`/facturas/${editingId}/update/`:'/facturas/create/';
+    if (!lockButton($btn, '<i class="material-symbols-rounded me-1">hourglass_top</i>A guardar...')) return;
     Swal.fire({title:'A processar...',allowOutsideClick:false,allowEscapeKey:false,didOpen:()=>Swal.showLoading()});
     $.ajax({url,method:'POST',data:p,processData:false,contentType:false,headers:{'X-CSRFToken':CSRF}})
     .done(function(r){
       Swal.fire({icon:'success',title:'Guardado!',text:r.message,timer:2200,showConfirmButton:false,timerProgressBar:true})
       .then(()=>{fcModal.hide();location.reload();});
-    }).fail(function(xhr){Swal.fire({icon:'error',title:'Erro',text:xhr.responseJSON?xhr.responseJSON.message:'Erro inesperado.'});});
+    }).fail(function(xhr){
+      unlockButton($btn, guardarFacturaHtml);
+      Swal.fire({icon:'error',title:'Erro',text:xhr.responseJSON?xhr.responseJSON.message:'Erro inesperado.'});
+    });
   });
 
   /* ── Visualizar ── */
@@ -1006,6 +1024,8 @@ $(function(){
 
   /* Confirmar */
   $('#btnConfirmarPagamento').on('click',function(){
+    const $btn = $(this);
+    if (!lockButton($btn, '<i class="material-symbols-rounded me-1">hourglass_top</i>A processar...')) return;
     fcPagModal.hide();
     _confirmarMudancaEstado();
   });
@@ -1014,7 +1034,7 @@ $(function(){
   document.getElementById('fcPagamentoModal').addEventListener('hidden.bs.modal',function(){
     _selectedHistIds=new Set();
     $('#fcPagSelCount').addClass('d-none');
-    $('#btnConfirmarPagamento').prop('disabled',true);
+    $('#btnConfirmarPagamento').data('submitting', false).prop('disabled',true).html(confirmarPagamentoHtml);
   });
 
   /* Função central */
@@ -1028,6 +1048,7 @@ $(function(){
       Swal.fire({icon:'success',title:'Estado alterado!',text:r.message,timer:2000,showConfirmButton:false,timerProgressBar:true})
       .then(()=>location.reload());
     }).fail(function(xhr){
+      $('#btnConfirmarPagamento').data('submitting', false).prop('disabled', false).html(confirmarPagamentoHtml);
       Swal.fire({icon:'error',title:'Erro',text:xhr.responseJSON?xhr.responseJSON.message:'Não foi possível alterar o estado.'});
     });
   }

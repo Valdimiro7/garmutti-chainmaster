@@ -616,6 +616,7 @@ $(document).ready(function(){
     $('#poForm').attr('action', "{% url 'procurement:purchase_orders_create' %}");
     $('#po_existing_attachments').html('');
     $('#po_existing_attachments_wrap').addClass('d-none');
+    $('#poForm').data('submitting', false);
     $('#poForm button[type="submit"]').prop('disabled', false).removeClass('btn-secondary').addClass('btn-primary btn-po').html('<i class="material-symbols-rounded me-1">save</i>Guardar PO');
     $('#poForm input, #poForm select, #poForm textarea').prop('disabled', false);
     $('#po_anexos, #email_anexos').prop('disabled', false);
@@ -800,6 +801,17 @@ $(document).ready(function(){
       document.body.appendChild(form);
       form.submit();
     });
+  });
+
+  $('#poForm').on('submit', function(e){
+    const $form = $(this);
+    const $button = $form.find('button[type="submit"]');
+    if ($form.data('submitting') || $button.prop('disabled')) {
+      e.preventDefault();
+      return false;
+    }
+    $form.data('submitting', true);
+    $button.prop('disabled', true).removeClass('btn-primary btn-po').addClass('btn-secondary').html('<i class="material-symbols-rounded me-1">hourglass_top</i>A guardar...');
   });
 
 });

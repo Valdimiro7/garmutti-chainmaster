@@ -529,9 +529,21 @@ $(function(){
   const pgModal      = new bootstrap.Modal(document.getElementById('pgModal'));
   const pgViewModal  = new bootstrap.Modal(document.getElementById('pgViewModal'));
   const CSRF         = $('[name=csrfmiddlewaretoken]').val() || getCookie('csrftoken');
+  const guardarPgLivreHtml = $('#btnGuardarPagamentoLivre').html();
+  const guardarPgFormHtml = $('#btn_guardar_pg').html();
 
   function getCookie(n){ const v=document.cookie.match('(^|;) ?'+n+'=([^;]*)(;|$)'); return v?v[2]:null; }
   function fmt(v){ return parseFloat(v||0).toLocaleString('pt-MZ',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  function lockButton($btn, html){
+    if ($btn.data('submitting')) return false;
+    $btn.data('submitting', true);
+    $btn.prop('disabled', true).html(html);
+    return true;
+  }
+  function unlockButton($btn, html){
+    $btn.data('submitting', false);
+    $btn.prop('disabled', false).html(html);
+  }
 
   /* ── DataTable ── */
   const table = $('#pgTable').DataTable({
@@ -605,11 +617,13 @@ $(function(){
     $('#pl_dado_bancario_id').val('');
     $('#pl_referencia,#pl_banco_origem,#pl_numero_transaccao,#pl_observacoes').val('');
     $('#pl_pop_anexos,#pl_outros_anexos').val('');
+    unlockButton($('#btnGuardarPagamentoLivre'), guardarPgLivreHtml);
     pgLivreModal.show();
   });
 
   /* Guardar */
   $('#btnGuardarPagamentoLivre').on('click',function(){
+    const $btn = $(this);
     const clienteId = $('#pl_cliente_id').val();
     const data      = $('#pl_data_pagamento').val();
     const valor     = parseFloat($('#pl_valor_pago').val())||0;
@@ -641,6 +655,7 @@ $(function(){
     const outrosFiles = document.getElementById('pl_outros_anexos').files;
     for(let f of popFiles)    formData.append('pop_anexos', f);
     for(let f of outrosFiles) formData.append('outros_anexos', f);
+    if (!lockButton($btn, '<i class="material-symbols-rounded me-1">hourglass_top</i>A guardar...')) return;
 
     Swal.fire({title:'A processar...',allowOutsideClick:false,allowEscapeKey:false,didOpen:()=>Swal.showLoading()});
 
@@ -658,6 +673,7 @@ $(function(){
       }).then(()=>{ pgLivreModal.hide(); location.reload(); });
     }).fail(function(xhr){
       const msg = xhr.responseJSON ? xhr.responseJSON.message : 'Erro inesperado.';
+      unlockButton($btn, guardarPgLivreHtml);
       Swal.fire({icon:'error',title:'Erro',text:msg});
     });
   });
@@ -711,6 +727,8 @@ $(function(){
 
   $('#pgForm').on('submit',function(e){
     e.preventDefault();
+    const $btn = $('#btn_guardar_pg');
+    if (!lockButton($btn, '<i class="material-symbols-rounded me-1">hourglass_top</i>A guardar...')) return;
     Swal.fire({title:'A processar...',allowOutsideClick:false,allowEscapeKey:false,didOpen:()=>Swal.showLoading()});
     $.ajax({
       url:$(this).attr('action'),method:'POST',data:new FormData(this),
@@ -719,6 +737,7 @@ $(function(){
       Swal.fire({icon:'success',title:'Guardado!',text:res.message||'Pagamento actualizado.',timer:2500,showConfirmButton:false,timerProgressBar:true})
       .then(()=>{pgModal.hide();location.reload();});
     }).fail(function(xhr){
+      unlockButton($btn, guardarPgFormHtml);
       Swal.fire({icon:'error',title:'Erro',text:xhr.responseJSON?xhr.responseJSON.message:'Erro inesperado.'});
     });
   });

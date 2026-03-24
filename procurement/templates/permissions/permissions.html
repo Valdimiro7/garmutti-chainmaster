@@ -904,6 +904,8 @@
       $('#employeeForm').attr('action', "{% url 'procurement:permissions_create_user' %}");
       $('#employee_password').prop('required', true).val('');
       $('#employee_password_confirm').prop('required', true).val('');
+      $('#employeeForm').data('submitting', false);
+      $('#employeeForm button[type="submit"]').prop('disabled', false).text('Guardar Funcionário');
     }
 
     function resetGroupForm() {
@@ -912,6 +914,8 @@
       $('#group_members').val(null).trigger('change');
       $('#groupModalLabel').text('Criar Função');
       $('#groupForm').attr('action', "{% url 'procurement:permissions_create_group' %}");
+      $('#groupForm').data('submitting', false);
+      $('#groupForm button[type="submit"]').prop('disabled', false).text('Guardar Função');
     }
 
     // ─── Abrir modais (criar) ──────────────────────────────────────────────────
@@ -1059,6 +1063,26 @@
           form.submit();
         }
       });
+    });
+
+    $('#employeeForm').on('submit', function (e) {
+      const $form = $(this);
+      if ($form.data('submitting')) {
+        e.preventDefault();
+        return false;
+      }
+      $form.data('submitting', true);
+      $form.find('button[type="submit"]').prop('disabled', true).text('A guardar...');
+    });
+
+    $('#groupForm').on('submit', function (e) {
+      const $form = $(this);
+      if ($form.data('submitting')) {
+        e.preventDefault();
+        return false;
+      }
+      $form.data('submitting', true);
+      $form.find('button[type="submit"]').prop('disabled', true).text('A guardar...');
     });
 
   });

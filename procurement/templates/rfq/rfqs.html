@@ -792,6 +792,8 @@ $(document).ready(function () {
     $('#rfq_id').val('');
     $('#rfqModalLabel').text('Novo RFQ');
     $('#rfqForm').attr('action', "{% url 'procurement:rfqs_create' %}");
+    $('#rfqForm').data('submitting', false);
+    $('#rfqForm button[type="submit"]').prop('disabled', false).html('<i class="material-symbols-rounded me-1">save</i>Guardar RFQ');
     $('#rfq_numero_preview').val('{{ default_numero }}');
     $('#rfq_data_rfq').val('{{ today }}');
     $('#rfqItemsBody').html('');
@@ -946,6 +948,16 @@ $(document).ready(function () {
         form.submit();
       }
     });
+  });
+
+  $('#rfqForm').on('submit', function (e) {
+    const $form = $(this);
+    if ($form.data('submitting')) {
+      e.preventDefault();
+      return false;
+    }
+    $form.data('submitting', true);
+    $form.find('button[type="submit"]').prop('disabled', true).html('<i class="material-symbols-rounded me-1">hourglass_top</i>A guardar...');
   });
 
   resetForm();

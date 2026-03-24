@@ -406,6 +406,7 @@
 $(function(){
   const geModal = new bootstrap.Modal(document.getElementById('geModal'));
   const geViewModal = new bootstrap.Modal(document.getElementById('geViewModal'));
+  const guardarGuiaHtml = $('#btnGuardarGuia').html();
   let editingId = null;
 
   function fmt(v){
@@ -413,6 +414,16 @@ $(function(){
   }
   function esc(s){
     return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function lockButton($btn, html){
+    if ($btn.data('submitting')) return false;
+    $btn.data('submitting', true);
+    $btn.prop('disabled', true).html(html);
+    return true;
+  }
+  function unlockButton($btn, html){
+    $btn.data('submitting', false);
+    $btn.prop('disabled', false).html(html);
   }
 
   const table = $('#geTable').DataTable({
@@ -466,6 +477,7 @@ $(function(){
     $('#ge_data_entrega,#ge_cliente_id,#ge_po_id,#ge_moeda_id,#ge_factura_id,#ge_recebido_por,#ge_contacto_recebedor,#ge_local_entrega,#ge_observacoes').val('');
     $('#btnImportarPOGuia').prop('disabled',true);
     $('#geItemsBody').empty();
+    $('#btnGuardarGuia').data('submitting', false).prop('disabled', false).html(guardarGuiaHtml);
     addItemRow();
   }
 
@@ -565,6 +577,7 @@ $(function(){
   });
 
   $('#btnGuardarGuia').on('click', function(){
+    const $btn = $(this);
     if(!$('#ge_cliente_id').val() || !$('#ge_data_guia').val()){
       Swal.fire({icon:'warning',title:'Campos obrigatórios',text:'Preencha o cliente e a data da guia.'});
       return;
@@ -601,6 +614,7 @@ $(function(){
     p.append('itens_json',JSON.stringify(itens));
 
     const url = editingId ? `/guias-entrega/${editingId}/update/` : `/guias-entrega/create/`;
+    if (!lockButton($btn, '<i class="material-symbols-rounded me-1">hourglass_top</i>A guardar...')) return;
 
     Swal.fire({title:'A processar...',allowOutsideClick:false,allowEscapeKey:false,didOpen:()=>Swal.showLoading()});
 
@@ -615,6 +629,7 @@ $(function(){
       Swal.fire({icon:'success',title:'Guardado!',text:r.message,timer:2200,showConfirmButton:false})
       .then(()=>{ geModal.hide(); location.reload(); });
     }).fail(function(xhr){
+      unlockButton($btn, guardarGuiaHtml);
       Swal.fire({icon:'error',title:'Erro',text:xhr.responseJSON ? xhr.responseJSON.message : 'Erro inesperado.'});
     });
   });
