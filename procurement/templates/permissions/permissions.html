@@ -1026,6 +1026,7 @@
 
           form.appendChild(csrf);
           document.body.appendChild(form);
+          Swal.fire({title:'A processar...',allowOutsideClick:false,allowEscapeKey:false,didOpen:()=>Swal.showLoading()});
           form.submit();
         }
       });
@@ -1060,6 +1061,7 @@
 
           form.appendChild(csrf);
           document.body.appendChild(form);
+          Swal.fire({title:'A remover função...',allowOutsideClick:false,allowEscapeKey:false,didOpen:()=>Swal.showLoading()});
           form.submit();
         }
       });
@@ -1073,6 +1075,7 @@
       }
       $form.data('submitting', true);
       $form.find('button[type="submit"]').prop('disabled', true).text('A guardar...');
+      Swal.fire({title:'A guardar funcionário...',allowOutsideClick:false,allowEscapeKey:false,didOpen:()=>Swal.showLoading()});
     });
 
     $('#groupForm').on('submit', function (e) {
@@ -1083,6 +1086,7 @@
       }
       $form.data('submitting', true);
       $form.find('button[type="submit"]').prop('disabled', true).text('A guardar...');
+      Swal.fire({title:'A guardar função...',allowOutsideClick:false,allowEscapeKey:false,didOpen:()=>Swal.showLoading()});
     });
 
   });

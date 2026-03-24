@@ -788,6 +788,7 @@ $(document).ready(function () {
         csrf.value  = '{{ csrf_token }}';
         form.appendChild(csrf);
         document.body.appendChild(form);
+        Swal.fire({title:'A processar...',allowOutsideClick:false,allowEscapeKey:false,didOpen:()=>Swal.showLoading()});
         form.submit();
       }
     });
@@ -819,6 +820,7 @@ $(document).ready(function () {
         csrf.value  = '{{ csrf_token }}';
         form.appendChild(csrf);
         document.body.appendChild(form);
+        Swal.fire({title:'A remover cliente...',allowOutsideClick:false,allowEscapeKey:false,didOpen:()=>Swal.showLoading()});
         form.submit();
       }
     });
@@ -832,6 +834,7 @@ $(document).ready(function () {
     }
     $form.data('submitting', true);
     $form.find('button[type="submit"]').prop('disabled', true).html('<i class="material-symbols-rounded me-1">hourglass_top</i>A guardar...');
+    Swal.fire({title:'A guardar cliente...',allowOutsideClick:false,allowEscapeKey:false,didOpen:()=>Swal.showLoading()});
   });
 
 });

@@ -799,6 +799,7 @@ $(document).ready(function(){
       form.appendChild(csrf);
       form.appendChild(est);
       document.body.appendChild(form);
+      Swal.fire({title:'A alterar estado...',allowOutsideClick:false,allowEscapeKey:false,didOpen:()=>Swal.showLoading()});
       form.submit();
     });
   });
@@ -812,6 +813,7 @@ $(document).ready(function(){
     }
     $form.data('submitting', true);
     $button.prop('disabled', true).removeClass('btn-primary btn-po').addClass('btn-secondary').html('<i class="material-symbols-rounded me-1">hourglass_top</i>A guardar...');
+    Swal.fire({title:'A guardar Purchase Order...',allowOutsideClick:false,allowEscapeKey:false,didOpen:()=>Swal.showLoading()});
   });
 
 });
