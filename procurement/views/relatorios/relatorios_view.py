@@ -1,5 +1,5 @@
 from datetime import datetime
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
@@ -36,6 +36,41 @@ def _parse_date(value):
         return datetime.strptime(value, "%Y-%m-%d").date()
     except Exception:
         return None
+
+
+def _format_contabil(value):
+    """
+    Formata valores monetários no padrão:
+    1.000,00
+    25.450,75
+    """
+    if value in (None, ""):
+        return "0,00"
+
+    try:
+        value = Decimal(value)
+    except (InvalidOperation, TypeError, ValueError):
+        return "0,00"
+
+    value = value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    negativo = value < 0
+    value = abs(value)
+
+    texto = f"{value:.2f}"
+    inteiro, decimal = texto.split(".")
+
+    grupos = []
+    while inteiro:
+        grupos.append(inteiro[-3:])
+        inteiro = inteiro[:-3]
+
+    inteiro_formatado = ".".join(reversed(grupos))
+    resultado = f"{inteiro_formatado},{decimal}"
+
+    if negativo:
+        resultado = f"-{resultado}"
+
+    return resultado
 
 
 def _get_organizacao():
@@ -226,6 +261,8 @@ def _build_report_data(report_type, data_inicio=None, data_fim=None, cliente_id=
         summary['total_registos'] = len(rows)
         summary['valor_total'] = qs.filter(anulado=False).aggregate(t=Sum('valor_recebido')).get('t') or Decimal('0.00')
 
+    summary['valor_total_formatado'] = _format_contabil(summary['valor_total'])
+
     return {
         'title': config['title'],
         'report_type': report_type,
@@ -308,7 +345,7 @@ def reports_preview_json_view(request):
             preview_rows.append({
                 'col1': row.numero,
                 'col2': row.cliente.nome if row.cliente else '—',
-                'col3': f'{row.total:.2f}',
+                'col3': _format_contabil(row.total),
                 'col4': row.estado.nome if row.estado else '—',
             })
 
@@ -316,7 +353,7 @@ def reports_preview_json_view(request):
             preview_rows.append({
                 'col1': row.numero,
                 'col2': row.cliente.nome if row.cliente else '—',
-                'col3': f'{row.valor_total:.2f}',
+                'col3': _format_contabil(row.valor_total),
                 'col4': row.estado.nome if row.estado else '—',
             })
 
@@ -324,7 +361,7 @@ def reports_preview_json_view(request):
             preview_rows.append({
                 'col1': row.numero,
                 'col2': row.cliente.nome if row.cliente else '—',
-                'col3': f'{row.total:.2f}',
+                'col3': _format_contabil(row.total),
                 'col4': row.estado.nome if row.estado else '—',
             })
 
@@ -340,7 +377,7 @@ def reports_preview_json_view(request):
             preview_rows.append({
                 'col1': row.numero,
                 'col2': row.cliente.nome if row.cliente else '—',
-                'col3': f'{row.valor_recebido:.2f}',
+                'col3': _format_contabil(row.valor_recebido),
                 'col4': row.estado.nome if row.estado else '—',
             })
 
@@ -348,7 +385,7 @@ def reports_preview_json_view(request):
             preview_rows.append({
                 'col1': row.pagamento.numero if row.pagamento else '—',
                 'col2': row.factura.numero if row.factura else '—',
-                'col3': f'{row.valor_pago:.2f}',
+                'col3': _format_contabil(row.valor_pago),
                 'col4': row.data_pagamento.strftime('%d/%m/%Y') if row.data_pagamento else '—',
             })
 
@@ -356,7 +393,7 @@ def reports_preview_json_view(request):
             preview_rows.append({
                 'col1': row.numero,
                 'col2': row.factura.numero if row.factura else '—',
-                'col3': f'{row.valor_recebido:.2f}',
+                'col3': _format_contabil(row.valor_recebido),
                 'col4': 'Anulado' if row.anulado else 'Activo',
             })
 
@@ -364,7 +401,7 @@ def reports_preview_json_view(request):
         'success': True,
         'title': report_data['title'],
         'total_registos': report_data['summary']['total_registos'],
-        'valor_total': f"{report_data['summary']['valor_total']:.2f}",
+        'valor_total': report_data['summary']['valor_total_formatado'],
         'rows': preview_rows,
     })
 

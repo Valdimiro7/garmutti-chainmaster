@@ -1,4 +1,5 @@
 {% load static %}
+{% load report_filters %}
 <!DOCTYPE html>
 <html lang="pt">
 <head>
@@ -42,7 +43,7 @@ body{
 .pg{position:relative;z-index:1}
 .hdr{margin-bottom:22px}
 .hdr img{
-  height:65px;
+  height:98px;
   width:auto;
 }
 .top{display:flex;justify-content:space-between;gap:30px;margin-bottom:18px}
@@ -60,6 +61,7 @@ table{width:100%;border-collapse:collapse}
 th,td{padding:7px 8px;border-bottom:1px solid #e9edf7;text-align:left;vertical-align:top}
 th{font-size:8px;text-transform:uppercase;letter-spacing:.04em;color:#6b7280;background:#f8faff;font-weight:700}
 td{font-size:9.3px}
+.valor{text-align:right;white-space:nowrap}
 .footer{
   position:fixed;
   bottom:0;
@@ -114,7 +116,7 @@ td{font-size:9.3px}
     </div>
     <div class="kpi">
       <div class="kl">Valor Total</div>
-      <div class="kv">{{ report.summary.valor_total|floatformat:2 }}</div>
+      <div class="kv">{{ report.summary.valor_total|contabil }}</div>
     </div>
   </div>
 
@@ -127,19 +129,19 @@ td{font-size:9.3px}
       {% elif report.report_type == 'rfqs' %}
       <tr><th>Número</th><th>Cliente</th><th>Data RFQ</th><th>Prazo</th><th>Estado</th></tr>
       {% elif report.report_type == 'quotacoes' %}
-      <tr><th>Número</th><th>Cliente</th><th>Data</th><th>Total</th><th>Estado</th></tr>
+      <tr><th>Número</th><th>Cliente</th><th>Data</th><th class="valor">Total</th><th>Estado</th></tr>
       {% elif report.report_type == 'purchase_orders' %}
-      <tr><th>Número</th><th>Cliente</th><th>Data PO</th><th>Valor Total</th><th>Estado</th></tr>
+      <tr><th>Número</th><th>Cliente</th><th>Data PO</th><th class="valor">Valor Total</th><th>Estado</th></tr>
       {% elif report.report_type == 'facturas' %}
-      <tr><th>Número</th><th>Cliente</th><th>Data Emissão</th><th>Vencimento</th><th>Total</th><th>Estado</th></tr>
+      <tr><th>Número</th><th>Cliente</th><th>Data Emissão</th><th>Vencimento</th><th class="valor">Total</th><th>Estado</th></tr>
       {% elif report.report_type == 'guias' %}
-      <tr><th>Número</th><th>Cliente</th><th>Data Guia</th><th>Data Entrega</th><th>Subtotal</th><th>Estado</th></tr>
+      <tr><th>Número</th><th>Cliente</th><th>Data Guia</th><th>Data Entrega</th><th class="valor">Subtotal</th><th>Estado</th></tr>
       {% elif report.report_type == 'pagamentos' %}
-      <tr><th>Número</th><th>Cliente</th><th>PO</th><th>Valor Recebido</th><th>Saldo</th><th>Estado</th></tr>
+      <tr><th>Número</th><th>Cliente</th><th>PO</th><th class="valor">Valor Recebido</th><th class="valor">Saldo</th><th>Estado</th></tr>
       {% elif report.report_type == 'pagamento_historico' %}
-      <tr><th>Pagamento</th><th>Factura</th><th>Data</th><th>Valor Pago</th><th>Referência</th></tr>
+      <tr><th>Pagamento</th><th>Factura</th><th>Data</th><th class="valor">Valor Pago</th><th>Referência</th></tr>
       {% elif report.report_type == 'recibos' %}
-      <tr><th>Número</th><th>Factura</th><th>Cliente</th><th>Data Recibo</th><th>Valor</th><th>Estado</th></tr>
+      <tr><th>Número</th><th>Factura</th><th>Cliente</th><th>Data Recibo</th><th class="valor">Valor</th><th>Estado</th></tr>
       {% endif %}
     </thead>
     <tbody>
@@ -178,7 +180,7 @@ td{font-size:9.3px}
           <td>{{ row.numero }}</td>
           <td>{{ row.cliente.nome|default:"—" }}</td>
           <td>{{ row.data_quotacao|date:"d/m/Y" }}</td>
-          <td>{{ row.total|floatformat:2 }}</td>
+          <td class="valor">{{ row.total|contabil }}</td>
           <td>{{ row.estado.nome|default:"—" }}</td>
         </tr>
 
@@ -187,7 +189,7 @@ td{font-size:9.3px}
           <td>{{ row.numero }}</td>
           <td>{{ row.cliente.nome|default:"—" }}</td>
           <td>{{ row.data_po|date:"d/m/Y" }}</td>
-          <td>{{ row.valor_total|floatformat:2 }}</td>
+          <td class="valor">{{ row.valor_total|contabil }}</td>
           <td>{{ row.estado.nome|default:"—" }}</td>
         </tr>
 
@@ -197,7 +199,7 @@ td{font-size:9.3px}
           <td>{{ row.cliente.nome|default:"—" }}</td>
           <td>{{ row.data_emissao|date:"d/m/Y" }}</td>
           <td>{{ row.data_vencimento|date:"d/m/Y"|default:"—" }}</td>
-          <td>{{ row.total|floatformat:2 }}</td>
+          <td class="valor">{{ row.total|contabil }}</td>
           <td>{{ row.estado.nome|default:"—" }}</td>
         </tr>
 
@@ -207,7 +209,7 @@ td{font-size:9.3px}
           <td>{{ row.cliente.nome|default:"—" }}</td>
           <td>{{ row.data_guia|date:"d/m/Y" }}</td>
           <td>{{ row.data_entrega|date:"d/m/Y"|default:"—" }}</td>
-          <td>{{ row.subtotal|floatformat:2 }}</td>
+          <td class="valor">{{ row.subtotal|contabil }}</td>
           <td>{{ row.estado.nome|default:"—" }}</td>
         </tr>
 
@@ -216,8 +218,8 @@ td{font-size:9.3px}
           <td>{{ row.numero }}</td>
           <td>{{ row.cliente.nome|default:"—" }}</td>
           <td>{% if row.purchase_order %}{{ row.purchase_order.numero }}{% else %}—{% endif %}</td>
-          <td>{{ row.valor_recebido|floatformat:2 }}</td>
-          <td>{{ row.saldo_pendente|floatformat:2 }}</td>
+          <td class="valor">{{ row.valor_recebido|contabil }}</td>
+          <td class="valor">{{ row.saldo_pendente|contabil }}</td>
           <td>{{ row.estado.nome|default:"—" }}</td>
         </tr>
 
@@ -226,7 +228,7 @@ td{font-size:9.3px}
           <td>{% if row.pagamento %}{{ row.pagamento.numero }}{% else %}—{% endif %}</td>
           <td>{% if row.factura %}{{ row.factura.numero }}{% else %}—{% endif %}</td>
           <td>{{ row.data_pagamento|date:"d/m/Y" }}</td>
-          <td>{{ row.valor_pago|floatformat:2 }}</td>
+          <td class="valor">{{ row.valor_pago|contabil }}</td>
           <td>{{ row.referencia|default:"—" }}</td>
         </tr>
 
@@ -236,7 +238,7 @@ td{font-size:9.3px}
           <td>{% if row.factura %}{{ row.factura.numero }}{% else %}—{% endif %}</td>
           <td>{% if row.cliente %}{{ row.cliente.nome }}{% else %}—{% endif %}</td>
           <td>{{ row.data_recibo|date:"d/m/Y" }}</td>
-          <td>{{ row.valor_recebido|floatformat:2 }}</td>
+          <td class="valor">{{ row.valor_recebido|contabil }}</td>
           <td>{% if row.anulado %}Anulado{% else %}Activo{% endif %}</td>
         </tr>
         {% endif %}
