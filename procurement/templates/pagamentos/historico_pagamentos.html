@@ -1,5 +1,5 @@
 {% extends "layouts/pro_base.html" %}
-{% load static %}
+{% load static report_filters %}
 
 {% block content %}
 <div class="container-fluid py-3">
@@ -63,25 +63,25 @@
             <div class="col-md-3">
               <div class="ph-value-card">
                 <div class="ph-value-label">Valor Total</div>
-                <div class="ph-value-amount">{{ total_valor|floatformat:2 }}</div>
+                <div class="ph-value-amount">{{ total_valor|contabil }}</div>
               </div>
             </div>
             <div class="col-md-3">
               <div class="ph-value-card">
                 <div class="ph-value-label">Hoje</div>
-                <div class="ph-value-amount">{{ total_hoje|floatformat:2 }}</div>
+                <div class="ph-value-amount">{{ total_hoje|contabil }}</div>
               </div>
             </div>
             <div class="col-md-3">
               <div class="ph-value-card">
                 <div class="ph-value-label">Esta Semana</div>
-                <div class="ph-value-amount">{{ total_semana|floatformat:2 }}</div>
+                <div class="ph-value-amount">{{ total_semana|contabil }}</div>
               </div>
             </div>
             <div class="col-md-3">
               <div class="ph-value-card">
                 <div class="ph-value-label">Este Mês</div>
-                <div class="ph-value-amount">{{ total_mes|floatformat:2 }}</div>
+                <div class="ph-value-amount">{{ total_mes|contabil }}</div>
               </div>
             </div>
           </div>
@@ -171,7 +171,7 @@
                 </td>
                 <td>
                   {% if h.pagamento.moeda %}{{ h.pagamento.moeda.simbolo }} {% endif %}
-                  {{ h.valor_pago|floatformat:2 }}
+                  {{ h.valor_pago|contabil }}
                 </td>
                 <td>{{ h.data_pagamento|date:"d/m/Y" }}</td>
                 <td>

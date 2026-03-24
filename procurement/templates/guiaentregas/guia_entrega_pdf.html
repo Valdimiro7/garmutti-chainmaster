@@ -1,4 +1,4 @@
-{% load static %}
+{% load static report_filters %}
 <!DOCTYPE html>
 <html lang="pt">
 <head>
@@ -158,8 +158,8 @@ table.tsum tr.sf td { font-weight: 800; font-size: 10.3px; border-top: 1.5px sol
         <td class="al">{{ item.descricao }}</td>
         <td class="ac">{{ item.unidade|default:"—" }}</td>
         <td>{{ item.quantidade|floatformat:"-2" }}</td>
-        <td>{{ item.preco_unit|floatformat:"2" }} {% if guia.moeda %}{{ guia.moeda.simbolo }}{% else %}MT{% endif %}</td>
-        <td>{{ item.total_linha|floatformat:"2" }} {% if guia.moeda %}{{ guia.moeda.simbolo }}{% else %}MT{% endif %}</td>
+        <td>{{ item.preco_unit|contabil }} {% if guia.moeda %}{{ guia.moeda.simbolo }}{% else %}MT{% endif %}</td>
+        <td>{{ item.total_linha|contabil }} {% if guia.moeda %}{{ guia.moeda.simbolo }}{% else %}MT{% endif %}</td>
       </tr>
       {% empty %}
       <tr><td colspan="6" style="text-align:center;color:#999;padding:14px">Sem itens.</td></tr>
@@ -180,8 +180,8 @@ table.tsum tr.sf td { font-weight: 800; font-size: 10.3px; border-top: 1.5px sol
       <div class="st">Sumário</div>
       <table class="tsum">
         {% with sym=guia.moeda.simbolo|default:"MT" %}
-        <tr><td>Total</td><td>{{ guia.subtotal|floatformat:"2" }} {{ sym }}</td></tr>
-        <tr class="sf"><td>Total da Guia</td><td>{{ guia.subtotal|floatformat:"2" }} {{ sym }}</td></tr>
+        <tr><td>Total</td><td>{{ guia.subtotal|contabil }} {{ sym }}</td></tr>
+        <tr class="sf"><td>Total da Guia</td><td>{{ guia.subtotal|contabil }} {{ sym }}</td></tr>
         {% endwith %}
       </table>
     </div>

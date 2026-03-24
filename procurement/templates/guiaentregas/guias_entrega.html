@@ -1,5 +1,5 @@
 {% extends "layouts/pro_base.html" %}
-{% load static %}
+{% load static report_filters %}
 
 {% block content %}
 <div class="container-fluid py-3 ge-page">
@@ -52,13 +52,13 @@
             <div class="col-md-6">
               <div class="ge-value-card">
                 <div class="ge-value-label">Valor Total</div>
-                <div class="ge-value-amount">{{ valor_total|floatformat:2 }}</div>
+                <div class="ge-value-amount">{{ valor_total|contabil }}</div>
               </div>
             </div>
             <div class="col-md-6">
               <div class="ge-value-card">
                 <div class="ge-value-label">Valor Entregue</div>
-                <div class="ge-value-amount text-success">{{ valor_entregue|floatformat:2 }}</div>
+                <div class="ge-value-amount text-success">{{ valor_entregue|contabil }}</div>
               </div>
             </div>
           </div>
@@ -112,7 +112,7 @@
                 <td>{% if g.factura %}{{ g.factura.numero }}{% else %}—{% endif %}</td>
                 <td>{{ g.data_guia|date:"d/m/Y" }}</td>
                 <td>{% if g.data_entrega %}{{ g.data_entrega|date:"d/m/Y" }}{% else %}—{% endif %}</td>
-                <td>{% if g.moeda %}{{ g.moeda.simbolo }} {% endif %}{{ g.subtotal|floatformat:2 }}</td>
+                <td>{% if g.moeda %}{{ g.moeda.simbolo }} {% endif %}{{ g.subtotal|contabil }}</td>
                 <td>
                   <span class="status-pill"
                         style="background-color:{{ g.estado.cor }}18;color:{{ g.estado.cor }};border:1px solid {{ g.estado.cor }}40;">

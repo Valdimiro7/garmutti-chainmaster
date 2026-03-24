@@ -1,5 +1,5 @@
 {% extends "layouts/pro_base.html" %}
-{% load static %}
+{% load static report_filters %}
 
 {% block content %}
 <div class="container-fluid py-3 fc-page">
@@ -61,13 +61,13 @@
             <div class="col-md-6">
               <div class="fc-value-card">
                 <div class="fc-value-label">Valor Total Facturado</div>
-                <div class="fc-value-amount">{{ valor_total_emitido|floatformat:2 }}</div>
+                <div class="fc-value-amount">{{ valor_total_emitido|contabil }}</div>
               </div>
             </div>
             <div class="col-md-6">
               <div class="fc-value-card">
                 <div class="fc-value-label">Valor Total Recebido</div>
-                <div class="fc-value-amount text-success">{{ valor_total_pago|floatformat:2 }}</div>
+                <div class="fc-value-amount text-success">{{ valor_total_pago|contabil }}</div>
               </div>
             </div>
           </div>
@@ -124,7 +124,7 @@
                 </td>
                 <td>{{ f.data_emissao|date:"d/m/Y" }}</td>
                 <td>{% if f.data_vencimento %}{{ f.data_vencimento|date:"d/m/Y" }}{% else %}—{% endif %}</td>
-                <td>{% if f.moeda %}{{ f.moeda.simbolo }} {% endif %}{{ f.total|floatformat:2 }}</td>
+                <td>{% if f.moeda %}{{ f.moeda.simbolo }} {% endif %}{{ f.total|contabil }}</td>
                 <td>
                   <span class="estado-codigo d-none">{{ f.estado.codigo }}</span>
                   <span class="status-pill"
@@ -236,7 +236,7 @@
                       data-valor="{{ po.valor_total|floatformat:2 }}">
                 {{ po.numero }}{% if po.po_cliente_numero %} / {{ po.po_cliente_numero }}{% endif %}
                 — {{ po.cliente.nome }}
-                — Total PO: {{ po.valor_total|floatformat:2 }}
+                — Total PO: {{ po.valor_total|contabil }}
               </option>
               {% endfor %}
             </select>

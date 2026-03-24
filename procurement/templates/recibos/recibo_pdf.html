@@ -1,4 +1,4 @@
-{% load static %}
+{% load static report_filters %}
 <!DOCTYPE html>
 <html lang="pt">
 <head>
@@ -143,12 +143,12 @@ table.tdet tr td:first-child { font-weight: 700; width: 220px; color: #444; back
     <tr>
       <td>Valor Recebido</td>
       <td>
-        <strong>{{ recibo.valor_recebido|floatformat:"2" }} {{ recibo.moeda.simbolo|default:"Mt" }}</strong>
+        <strong>{{ recibo.valor_recebido|contabil }} {{ recibo.moeda.simbolo|default:"Mt" }}</strong>
         {% if recibo.moeda and recibo.moeda.nome %} — {{ recibo.moeda.nome }}{% endif %}
       </td>
     </tr>
     {% if recibo.factura.total %}
-    <tr><td>Total da Factura</td><td>{{ recibo.factura.total|floatformat:"2" }} {{ recibo.moeda.simbolo|default:"Mt" }}</td></tr>
+    <tr><td>Total da Factura</td><td>{{ recibo.factura.total|contabil }} {{ recibo.moeda.simbolo|default:"Mt" }}</td></tr>
     {% endif %}
     {% if recibo.referencia %}
     <tr><td>Referência / Nº Transacção</td><td>{{ recibo.referencia }}</td></tr>
@@ -172,7 +172,7 @@ table.tdet tr td:first-child { font-weight: 700; width: 220px; color: #444; back
 
   <div class="decl">
     Pela presente, confirmamos o recebimento da quantia de
-    <strong>{{ recibo.valor_recebido|floatformat:"2" }} {{ recibo.moeda.simbolo|default:"Mt" }}</strong>,
+    <strong>{{ recibo.valor_recebido|contabil }} {{ recibo.moeda.simbolo|default:"Mt" }}</strong>,
     referente à Factura <strong>{{ recibo.factura.numero }}</strong>,
     emitida a <strong>{{ recibo.cliente.nome }}</strong>,
     com data de recibo <strong>{{ recibo.data_recibo|date:"d/m/Y" }}</strong>.

@@ -1,5 +1,5 @@
 {% extends "layouts/pro_base.html" %}
-{% load static %}
+{% load static report_filters %}
 
 {% block content %}
 
@@ -249,7 +249,7 @@ tr.recibo-anulado td {
         </div>
         <div class="mini-stat-card stat-no-filter" style="grid-column:span 2">
           <span class="mini-stat-label">Total Recebido</span>
-          <h4 class="mb-0 text-white">{{ valor_total|floatformat:2 }}</h4>
+          <h4 class="mb-0 text-white">{{ valor_total|contabil }}</h4>
         </div>
       </div>
     </div>
@@ -296,7 +296,7 @@ tr.recibo-anulado td {
             <td>{{ r.cliente.nome }}</td>
             <td>{{ r.factura.numero }}</td>
             <td>{{ r.factura.purchase_order.po_cliente_numero|default:"—" }}</td>
-            <td class="fw-600">{{ r.valor_recebido|floatformat:2 }} {{ r.moeda.simbolo|default:"Mt" }}</td>
+            <td class="fw-600">{{ r.valor_recebido|contabil }} {{ r.moeda.simbolo|default:"Mt" }}</td>
             <td>{{ r.forma_pagamento|default:"—" }}</td>
             <td>
               <span class="estado-badge"
@@ -362,8 +362,8 @@ tr.recibo-anulado td {
                         data-total="{{ f.total|floatformat:2 }}"
                         data-po="{{ f.purchase_order.po_cliente_numero|default:'' }}"
                         data-disponivel="{{ f.valor_disponivel_para_recibo|floatformat:2 }}">
-                {{ f.numero }} — {{ f.cliente.nome }} — {{ f.total|floatformat:2 }} {{ f.moeda.simbolo|default:"Mt" }}
-                ({{ f.estado.nome }}) — Disponível: {{ f.valor_disponivel_para_recibo|floatformat:2 }}
+                {{ f.numero }} — {{ f.cliente.nome }} — {{ f.total|contabil }} {{ f.moeda.simbolo|default:"Mt" }}
+                ({{ f.estado.nome }}) — Disponível: {{ f.valor_disponivel_para_recibo|contabil }}
                 </option>
                 {% endfor %}
             </select>

@@ -1,4 +1,4 @@
-{% load static %}
+{% load static report_filters %}
 <!DOCTYPE html>
 <html lang="pt">
 <head>
@@ -168,8 +168,8 @@ table.tsum tr.sf td{font-weight:800;font-size:10.3px;border-top:1.5px solid #1a1
         <td class="al">{{ item.descricao }}</td>
         <td class="ac">{{ item.unidade|default:"—" }}</td>
         <td>{{ item.quantidade|floatformat:"-2" }}</td>
-        <td>{{ item.preco_unit|floatformat:"2" }}{% if factura.moeda %} {{ factura.moeda.simbolo }}{% else %} MT{% endif %}</td>
-        <td>{{ item.total_linha|floatformat:"2" }}{% if factura.moeda %} {{ factura.moeda.simbolo }}{% else %} MT{% endif %}</td>
+        <td>{{ item.preco_unit|contabil }}{% if factura.moeda %} {{ factura.moeda.simbolo }}{% else %} MT{% endif %}</td>
+        <td>{{ item.total_linha|contabil }}{% if factura.moeda %} {{ factura.moeda.simbolo }}{% else %} MT{% endif %}</td>
       </tr>
       {% empty %}
       <tr><td colspan="6" style="text-align:center;color:#999;padding:14px">Sem itens.</td></tr>
@@ -193,8 +193,8 @@ table.tsum tr.sf td{font-weight:800;font-size:10.3px;border-top:1.5px solid #1a1
         <tbody>
           <tr>
             <td>{{ factura.iva_pct|floatformat:"2" }} %</td>
-            <td>{{ factura.subtotal|floatformat:"2" }}</td>
-            <td>{{ factura.iva_valor|floatformat:"2" }}</td>
+            <td>{{ factura.subtotal|contabil }}</td>
+            <td>{{ factura.iva_valor|contabil }}</td>
             <td></td>
           </tr>
         </tbody>
@@ -258,17 +258,17 @@ table.tsum tr.sf td{font-weight:800;font-size:10.3px;border-top:1.5px solid #1a1
       <div class="st">Sumário</div>
       <table class="tsum">
         {% with sym=factura.moeda.simbolo|default:"MT" %}
-        <tr><td>Subtotal</td><td>{{ factura.subtotal|floatformat:"2" }} {{ sym }}</td></tr>
+        <tr><td>Subtotal</td><td>{{ factura.subtotal|contabil }} {{ sym }}</td></tr>
         {% if factura.desconto and factura.desconto > 0 %}
-        <tr><td>Desconto ({{ factura.desconto_pct|floatformat:"2" }}%)</td><td>-{{ factura.desconto|floatformat:"2" }} {{ sym }}</td></tr>
+        <tr><td>Desconto ({{ factura.desconto_pct|floatformat:"2" }}%)</td><td>-{{ factura.desconto|contabil }} {{ sym }}</td></tr>
         {% else %}
-        <tr><td>Descontos</td><td>0.00 {{ sym }}</td></tr>
+        <tr><td>Descontos</td><td>{{ 0|contabil }} {{ sym }}</td></tr>
         {% endif %}
-        <tr><td>S/IVA</td><td>{{ factura.subtotal|floatformat:"2" }} {{ sym }}</td></tr>
-        <tr><td>IVA ({{ factura.iva_pct|floatformat:"0" }}%)</td><td>{{ factura.iva_valor|floatformat:"2" }} {{ sym }}</td></tr>
-        <tr><td>Total</td><td>{{ factura.total|floatformat:"2" }} {{ sym }}</td></tr>
-        <tr><td>Valor arredondado</td><td>0.00 {{ sym }}</td></tr>
-        <tr class="sf"><td>Total a pagar</td><td>{{ factura.total|floatformat:"2" }} {{ sym }}</td></tr>
+        <tr><td>S/IVA</td><td>{{ factura.subtotal|contabil }} {{ sym }}</td></tr>
+        <tr><td>IVA ({{ factura.iva_pct|floatformat:"0" }}%)</td><td>{{ factura.iva_valor|contabil }} {{ sym }}</td></tr>
+        <tr><td>Total</td><td>{{ factura.total|contabil }} {{ sym }}</td></tr>
+        <tr><td>Valor arredondado</td><td>{{ 0|contabil }} {{ sym }}</td></tr>
+        <tr class="sf"><td>Total a pagar</td><td>{{ factura.total|contabil }} {{ sym }}</td></tr>
         {% endwith %}
       </table>
     </div>

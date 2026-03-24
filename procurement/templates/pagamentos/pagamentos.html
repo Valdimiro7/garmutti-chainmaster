@@ -1,5 +1,5 @@
 {% extends "layouts/pro_base.html" %}
-{% load static %}
+{% load static report_filters %}
 
 {% block content %}
 <div class="container-fluid py-3">
@@ -48,11 +48,11 @@
                 </div>
                 <div class="mini-stat-card stat-no-filter">
                   <span class="mini-stat-label">Diário</span>
-                  <h4 class="mb-0 text-dark">{{ valor_diario|floatformat:2 }}</h4>
+                  <h4 class="mb-0 text-dark">{{ valor_diario|contabil }}</h4>
                 </div>
                 <div class="mini-stat-card stat-no-filter">
                   <span class="mini-stat-label">Semanal</span>
-                  <h4 class="mb-0 text-dark">{{ valor_semanal|floatformat:2 }}</h4>
+                  <h4 class="mb-0 text-dark">{{ valor_semanal|contabil }}</h4>
                 </div>
               </div>
             </div>
@@ -62,13 +62,13 @@
             <div class="col-md-6">
               <div class="pg-value-card">
                 <div class="pg-value-label">Valor Recebido no Mês</div>
-                <div class="pg-value-amount">{{ valor_mensal|floatformat:2 }}</div>
+                <div class="pg-value-amount">{{ valor_mensal|contabil }}</div>
               </div>
             </div>
             <div class="col-md-6">
               <div class="pg-value-card">
                 <div class="pg-value-label">Saldo Pendente Total</div>
-                <div class="pg-value-amount">{{ total_saldo_pendente|floatformat:2 }}</div>
+                <div class="pg-value-amount">{{ total_saldo_pendente|contabil }}</div>
               </div>
             </div>
           </div>
@@ -124,9 +124,9 @@
                 </td>
                 <td>{% if p.purchase_order %}{{ p.purchase_order.numero }}{% else %}—{% endif %}</td>
                 <td>{{ p.cliente.nome }}</td>
-                <td>{% if p.moeda %}{{ p.moeda.simbolo }} {% endif %}{{ p.valor_po|floatformat:2 }}</td>
-                <td>{% if p.moeda %}{{ p.moeda.simbolo }} {% endif %}{{ p.valor_recebido|floatformat:2 }}</td>
-                <td>{% if p.moeda %}{{ p.moeda.simbolo }} {% endif %}{{ p.saldo_pendente|floatformat:2 }}</td>
+                <td>{% if p.moeda %}{{ p.moeda.simbolo }} {% endif %}{{ p.valor_po|contabil }}</td>
+                <td>{% if p.moeda %}{{ p.moeda.simbolo }} {% endif %}{{ p.valor_recebido|contabil }}</td>
+                <td>{% if p.moeda %}{{ p.moeda.simbolo }} {% endif %}{{ p.saldo_pendente|contabil }}</td>
                 <td>{% if p.data_pagamento_recebido %}{{ p.data_pagamento_recebido|date:"d/m/Y" }}{% else %}—{% endif %}</td>
                 <td>
                   <span class="estado-codigo d-none">{{ p.estado.codigo }}</span>
