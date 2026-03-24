@@ -34,7 +34,7 @@ def permissions_view(request):
     users = (
         User.objects
         .prefetch_related('groups')
-        .all()
+        .filter(is_superuser=False)
         .order_by('username')
     )
 
