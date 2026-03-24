@@ -49,10 +49,18 @@
                   <label class="form-label">Palavra-passe</label>
                   <input
                     type="password"
-                    class="form-control"
+                    class="form-control pe-5"
                     name="{{ form.password.name }}"
                     id="{{ form.password.id_for_label }}"
                   >
+                  <button
+                    type="button"
+                    class="btn btn-link text-dark password-toggle-btn mb-0 px-3"
+                    id="togglePasswordVisibility"
+                    aria-label="Mostrar palavra-passe"
+                  >
+                    <i class="material-symbols-rounded" id="togglePasswordIcon">visibility</i>
+                  </button>
                 </div>
 
                 {% if next %}
@@ -102,7 +110,41 @@
 {% endblock content %}
 
 {% block extra_js %}
+<style>
+  .password-toggle-btn {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 5;
+  }
+
+  .password-toggle-btn:hover,
+  .password-toggle-btn:focus {
+    color: #2E3E82 !important;
+  }
+</style>
+
 <script type="application/javascript">
+  document.addEventListener('DOMContentLoaded', function () {
+    const passwordInput = document.getElementById('{{ form.password.id_for_label }}');
+    const togglePasswordButton = document.getElementById('togglePasswordVisibility');
+    const togglePasswordIcon = document.getElementById('togglePasswordIcon');
+
+    if (passwordInput && togglePasswordButton && togglePasswordIcon) {
+      togglePasswordButton.addEventListener('click', function () {
+        const isPasswordHidden = passwordInput.type === 'password';
+
+        passwordInput.type = isPasswordHidden ? 'text' : 'password';
+        togglePasswordIcon.textContent = isPasswordHidden ? 'visibility_off' : 'visibility';
+        togglePasswordButton.setAttribute(
+          'aria-label',
+          isPasswordHidden ? 'Ocultar palavra-passe' : 'Mostrar palavra-passe'
+        );
+      });
+    }
+  });
+
   {% if form.username.errors %}
       notification.danger("{{ form.username.errors|striptags }}", 'top', 'right');
   {% endif %}

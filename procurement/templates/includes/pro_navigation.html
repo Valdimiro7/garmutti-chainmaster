@@ -27,18 +27,32 @@
           
 
           <!-- User / Auth -->
+          {% if request.user.is_authenticated %}
+          <li class="nav-item d-flex align-items-center me-3">
+            <form method="post" action="{% url 'procurement:logout' %}" class="mb-0">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline-danger btn-sm mb-0 d-flex align-items-center gap-1 navbar-logout-btn">
+                <i class="material-symbols-rounded" style="font-size:18px;">logout</i>
+                <span class="d-none d-sm-inline">Logout</span>
+              </button>
+            </form>
+          </li>
+          {% endif %}
+
           <li class="nav-item d-flex align-items-center">
             {% if request.user.is_authenticated %}
             <div class="dropdown">
               <a href="#" class="nav-link text-body font-weight-bold px-0 d-flex align-items-center gap-1"
                  id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="material-symbols-rounded">account_circle</i>
-                <span class="d-none d-sm-inline text-sm">{{ request.user.username }}</span>
+                <span class="d-none d-sm-inline text-sm">
+                  {{ request.user.get_full_name|default:request.user.username }}
+                </span>
               </a>
               <ul class="dropdown-menu dropdown-menu-end px-2 py-2" aria-labelledby="userDropdown">
                 <li>
                   <span class="dropdown-item-text text-xs text-secondary px-2">
-                    Signed in as <strong>{{ request.user.username }}</strong>
+                    Signed in as <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
                   </span>
                 </li>
                 <li><hr class="dropdown-divider"></li>
@@ -112,6 +126,11 @@
   .sidebar-toggle-btn:focus-visible {
     outline: 2px solid rgba(46, 62, 130, 0.35);
     outline-offset: 2px;
+  }
+
+  .navbar-logout-btn {
+    border-radius: 999px;
+    padding-inline: 0.85rem;
   }
 
   @media (max-width: 1199.98px) {
