@@ -34,7 +34,7 @@
               <form method="post" class="text-start">
                 {% csrf_token %}
 
-                <div class="input-group input-group-outline my-3">
+                <div class="input-group input-group-outline my-3 login-field-group {% if form.username.value %}is-filled{% endif %}">
                   <label class="form-label">Utilizador</label>
                   <input
                     type="text"
@@ -45,11 +45,11 @@
                   >
                 </div>
 
-                <div class="input-group input-group-outline my-3">
+                <div class="input-group input-group-outline my-3 login-field-group login-password-group">
                   <label class="form-label">Palavra-passe</label>
                   <input
                     type="password"
-                    class="form-control pe-5"
+                    class="form-control login-password-input"
                     name="{{ form.password.name }}"
                     id="{{ form.password.id_for_label }}"
                   >
@@ -111,12 +111,37 @@
 
 {% block extra_js %}
 <style>
+  .login-field-group {
+    position: relative;
+  }
+
+  .login-field-group .form-control {
+    position: relative;
+    z-index: 1;
+    background: transparent;
+  }
+
+  .login-field-group .form-label {
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .login-password-input {
+    padding-right: 3.5rem !important;
+  }
+
   .password-toggle-btn {
     position: absolute;
-    right: 0;
+    right: 0.4rem;
     top: 50%;
     transform: translateY(-50%);
     z-index: 5;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
   }
 
   .password-toggle-btn:hover,
@@ -127,9 +152,43 @@
 
 <script type="application/javascript">
   document.addEventListener('DOMContentLoaded', function () {
+    const outlinedGroups = document.querySelectorAll('.login-field-group');
     const passwordInput = document.getElementById('{{ form.password.id_for_label }}');
     const togglePasswordButton = document.getElementById('togglePasswordVisibility');
     const togglePasswordIcon = document.getElementById('togglePasswordIcon');
+
+    function syncOutlinedFieldState(group) {
+      const input = group.querySelector('.form-control');
+
+      if (!input) {
+        return;
+      }
+
+      group.classList.toggle('is-filled', Boolean(input.value));
+    }
+
+    outlinedGroups.forEach(function (group) {
+      const input = group.querySelector('.form-control');
+
+      if (!input) {
+        return;
+      }
+
+      syncOutlinedFieldState(group);
+
+      input.addEventListener('focus', function () {
+        group.classList.add('is-focused');
+      });
+
+      input.addEventListener('blur', function () {
+        group.classList.remove('is-focused');
+        syncOutlinedFieldState(group);
+      });
+
+      input.addEventListener('input', function () {
+        syncOutlinedFieldState(group);
+      });
+    });
 
     if (passwordInput && togglePasswordButton && togglePasswordIcon) {
       togglePasswordButton.addEventListener('click', function () {
