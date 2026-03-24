@@ -2,12 +2,20 @@
 
 <nav class="navbar navbar-main navbar-expand-lg px-0 mx-3 shadow-none border-radius-xl" id="navbarBlur" data-scroll="true">
     <div class="container-fluid py-1 px-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="sidenav-toggler sidenav-toggler-inner d-xl-none d-flex align-items-center" id="iconNavbarSidenav" aria-label="Abrir menu lateral" role="button" tabindex="0">
+          <i class="sidenav-toggler-line bg-dark"></i>
+          <i class="sidenav-toggler-line bg-dark"></i>
+          <i class="sidenav-toggler-line bg-dark"></i>
+        </div>
+
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0 me-sm-6 me-5">
           <li class="breadcrumb-item text-sm"><a class="opacity-5 text-dark" href="javascript:;">Pages</a></li>
           <li class="breadcrumb-item text-sm text-dark active" aria-current="page">{{ segment|title }}</li>
         </ol>
       </nav>
+      </div>
       <div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar">
         <div class="ms-md-auto pe-md-3 d-flex align-items-center">
           
@@ -56,3 +64,44 @@
       </div>
     </div>
 </nav>
+
+<style>
+  #iconNavbarSidenav {
+    min-width: 42px;
+    min-height: 42px;
+    justify-content: center;
+    border-radius: 12px;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  }
+
+  #iconNavbarSidenav:focus-visible {
+    outline: 2px solid rgba(46, 62, 130, 0.35);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 1199.98px) {
+    #navbarBlur .container-fluid {
+      gap: 0.75rem;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const mobileSidenavToggle = document.getElementById('iconNavbarSidenav');
+
+    if (!mobileSidenavToggle) {
+      return;
+    }
+
+    mobileSidenavToggle.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        mobileSidenavToggle.click();
+      }
+    });
+  });
+</script>

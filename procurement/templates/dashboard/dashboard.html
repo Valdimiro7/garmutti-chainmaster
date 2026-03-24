@@ -1,5 +1,5 @@
 {% extends "layouts/pro_base.html" %}
-{% load static %}
+{% load static report_filters %}
 
 {% block content %}
 <div class="container-fluid py-3 dbx-page">
@@ -108,7 +108,7 @@
           </div>
           <div class="dbx-kpi-value">{{ total_pos }}</div>
           <div class="dbx-kpi-label">Purchase Orders</div>
-          <div class="dbx-kpi-foot">Valor mês: {{ valor_pos_mes|floatformat:2 }}</div>
+          <div class="dbx-kpi-foot">Valor mês: {{ valor_pos_mes|contabil }}</div>
         </div>
       </div>
     </div>
@@ -171,7 +171,7 @@
             <i class="material-symbols-rounded">trending_up</i>
           </div>
           <div class="dbx-fin-label">Facturado no Mês</div>
-          <div class="dbx-fin-value">{{ valor_facturado_mes|floatformat:2 }}</div>
+          <div class="dbx-fin-value">{{ valor_facturado_mes|contabil }}</div>
           <div class="dbx-fin-bar"><span style="width:82%"></span></div>
         </div>
       </div>
@@ -184,7 +184,7 @@
             <i class="material-symbols-rounded">paid</i>
           </div>
           <div class="dbx-fin-label">Recebido no Mês</div>
-          <div class="dbx-fin-value">{{ valor_recebido_mes|floatformat:2 }}</div>
+          <div class="dbx-fin-value">{{ valor_recebido_mes|contabil }}</div>
           <div class="dbx-fin-bar"><span style="width:74%"></span></div>
         </div>
       </div>
@@ -197,8 +197,8 @@
             <i class="material-symbols-rounded">calendar_month</i>
           </div>
           <div class="dbx-fin-label">Recebido Hoje</div>
-          <div class="dbx-fin-value">{{ total_recebido_hoje|floatformat:2 }}</div>
-          <div class="dbx-fin-sub">Semana: {{ total_recebido_semana|floatformat:2 }}</div>
+          <div class="dbx-fin-value">{{ total_recebido_hoje|contabil }}</div>
+          <div class="dbx-fin-sub">Semana: {{ total_recebido_semana|contabil }}</div>
         </div>
       </div>
     </div>
@@ -210,7 +210,7 @@
             <i class="material-symbols-rounded">assignment_turned_in</i>
           </div>
           <div class="dbx-fin-label">Valor Guias no Mês</div>
-          <div class="dbx-fin-value">{{ valor_guias_mes|floatformat:2 }}</div>
+          <div class="dbx-fin-value">{{ valor_guias_mes|contabil }}</div>
           <div class="dbx-fin-sub">Recibos: {{ total_recibos }}</div>
         </div>
       </div>
@@ -312,7 +312,7 @@
                     </div>
                   </td>
                   <td class="text-end">{{ c.total_facturas }}</td>
-                  <td class="text-end fw-bold text-dark">{{ c.total_facturado|floatformat:2 }}</td>
+                  <td class="text-end fw-bold text-dark">{{ c.total_facturado|contabil }}</td>
                 </tr>
                 {% empty %}
                 <tr>
@@ -436,7 +436,7 @@
                 <tr>
                   <td class="fw-semibold">{{ f.numero }}</td>
                   <td>{{ f.cliente.nome }}</td>
-                  <td class="text-end fw-bold">{% if f.moeda %}{{ f.moeda.simbolo }} {% endif %}{{ f.total|floatformat:2 }}</td>
+                  <td class="text-end fw-bold">{% if f.moeda %}{{ f.moeda.simbolo }} {% endif %}{{ f.total|contabil }}</td>
                 </tr>
                 {% empty %}
                 <tr><td colspan="3" class="text-center text-muted py-4">Sem registos.</td></tr>
@@ -468,7 +468,7 @@
                 <tr>
                   <td class="fw-semibold">{{ p.pagamento.numero }}</td>
                   <td>{{ p.pagamento.cliente.nome }}</td>
-                  <td class="text-end fw-bold">{% if p.pagamento.moeda %}{{ p.pagamento.moeda.simbolo }} {% endif %}{{ p.valor_pago|floatformat:2 }}</td>
+                  <td class="text-end fw-bold">{% if p.pagamento.moeda %}{{ p.pagamento.moeda.simbolo }} {% endif %}{{ p.valor_pago|contabil }}</td>
                 </tr>
                 {% empty %}
                 <tr><td colspan="3" class="text-center text-muted py-4">Sem registos.</td></tr>
