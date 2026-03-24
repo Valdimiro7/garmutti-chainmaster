@@ -244,7 +244,12 @@
             <select id="ge_factura_id" class="form-select modern-input">
               <option value="">—</option>
               {% for f in facturas %}
-              <option value="{{ f.id }}">{{ f.numero }}</option>
+              <option value="{{ f.id }}"
+                      data-cliente="{{ f.cliente_id }}"
+                      data-moeda="{{ f.moeda_id|default:'' }}"
+                      data-po="{{ f.purchase_order_id|default:'' }}">
+                {{ f.numero }} — {{ f.cliente.nome }}{% if f.purchase_order %} — PO: {{ f.purchase_order.numero }}{% endif %}
+              </option>
               {% endfor %}
             </select>
           </div>
@@ -339,6 +344,7 @@
 <link href="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.8/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/datatables.net-responsive-bs5@2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/datatables.net-buttons-bs5@2.4.2/css/buttons.bootstrap5.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
 
 <style>
 :root{
@@ -367,6 +373,43 @@
 .modal-section-title{display:flex;align-items:center;font-size:.80rem;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--ge);border-bottom:1px solid var(--ge-border);padding-bottom:8px;margin-bottom:12px}
 .modern-input{border-radius:14px!important;border:1px solid #dfe5ef!important;min-height:46px;box-shadow:none!important;background:#fff!important}
 .modern-input:focus{border-color:var(--ge)!important;box-shadow:0 0 0 .2rem rgba(46,62,130,.10)!important}
+.select2-container{width:100%!important}
+.select2-container .select2-selection--single{
+  min-height:46px!important;
+  height:46px!important;
+  border-radius:14px!important;
+  border:1px solid #dfe5ef!important;
+  background:#fff!important;
+  box-shadow:none!important;
+  display:flex!important;
+  align-items:center!important;
+  padding:0 38px 0 12px!important;
+}
+.select2-container .select2-selection__rendered{
+  line-height:normal!important;
+  color:#212529!important;
+  padding-left:0!important;
+  padding-right:0!important;
+}
+.select2-container .select2-selection__arrow{
+  height:44px!important;
+  right:8px!important;
+}
+.select2-container--open .select2-selection--single,
+.select2-container--focus .select2-selection--single{
+  border-color:var(--ge)!important;
+  box-shadow:0 0 0 .2rem rgba(46,62,130,.10)!important;
+}
+.select2-dropdown{
+  border:1px solid #dfe5ef!important;
+  border-radius:14px!important;
+  overflow:hidden!important;
+}
+.select2-search--dropdown .select2-search__field{
+  border:1px solid #dfe5ef!important;
+  border-radius:10px!important;
+  padding:8px 10px!important;
+}
 .ge-items-wrap{border:1px solid var(--ge-border-soft);border-radius:18px;overflow:hidden}
 #geItemsTable thead th{font-size:.75rem;font-weight:800;color:#667085;border-bottom:1px solid var(--ge-border-soft);background:#f8faff;white-space:nowrap}
 #geItemsTable tbody td{vertical-align:middle;padding:10px 8px}
@@ -401,6 +444,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
 $(function(){
@@ -424,6 +468,25 @@ $(function(){
   function unlockButton($btn, html){
     $btn.data('submitting', false);
     $btn.prop('disabled', false).html(html);
+  }
+  function initModalSelect2(){
+    ['#ge_moeda_id', '#ge_cliente_id', '#ge_po_id', '#ge_factura_id'].forEach(function(selector){
+      const $el = $(selector);
+      if ($el.hasClass('select2-hidden-accessible')) {
+        $el.select2('destroy');
+      }
+      $el.select2({
+        width: '100%',
+        dropdownParent: $('#geModal'),
+        placeholder: $el.find('option:first').text(),
+        allowClear: true
+      });
+    });
+  }
+  function updateImportButtonState(){
+    const hasPo = !!$('#ge_po_id').val();
+    const hasFactura = !!$('#ge_factura_id').val();
+    $('#btnImportarPOGuia').prop('disabled', !(hasPo || hasFactura));
   }
 
   const table = $('#geTable').DataTable({
@@ -475,10 +538,11 @@ $(function(){
     $('#ge_numero').val('{{ default_numero }}');
     $('#ge_data_guia').val('{{ today }}');
     $('#ge_data_entrega,#ge_cliente_id,#ge_po_id,#ge_moeda_id,#ge_factura_id,#ge_recebido_por,#ge_contacto_recebedor,#ge_local_entrega,#ge_observacoes').val('');
-    $('#btnImportarPOGuia').prop('disabled',true);
+    updateImportButtonState();
     $('#geItemsBody').empty();
     $('#btnGuardarGuia').data('submitting', false).prop('disabled', false).html(guardarGuiaHtml);
     addItemRow();
+    $('#ge_moeda_id,#ge_cliente_id,#ge_po_id,#ge_factura_id').trigger('change.select2');
   }
 
     $(document).on('click', '.btn-change-estado-ge', function(e){
@@ -546,21 +610,34 @@ $(function(){
   $('#ge_po_id').on('change', function(){
     const o=$(this).find('option:selected'), poId=$(this).val();
     if(poId){
-      $('#btnImportarPOGuia').prop('disabled',false);
       const ci=o.data('cliente'), mi=o.data('moeda');
       if(ci) $('#ge_cliente_id').val(ci);
       if(mi) $('#ge_moeda_id').val(mi);
-    }else{
-      $('#btnImportarPOGuia').prop('disabled',true);
     }
+    updateImportButtonState();
+    $('#ge_cliente_id,#ge_moeda_id').trigger('change.select2');
+  });
+
+  $('#ge_factura_id').on('change', function(){
+    const o=$(this).find('option:selected'), facturaId=$(this).val();
+    if(facturaId){
+      const ci=o.data('cliente'), mi=o.data('moeda'), po=o.data('po');
+      if(ci) $('#ge_cliente_id').val(ci);
+      if(mi) $('#ge_moeda_id').val(mi);
+      if(po) $('#ge_po_id').val(po);
+    }
+    updateImportButtonState();
+    $('#ge_cliente_id,#ge_moeda_id,#ge_po_id').trigger('change.select2');
   });
 
   $('#btnImportarPOGuia').on('click', function(){
+    const facturaId=$('#ge_factura_id').val();
     const poId=$('#ge_po_id').val();
-    if(!poId) return;
+    const url = facturaId ? `/guias-entrega/factura/${facturaId}/itens/` : (poId ? `/guias-entrega/po/${poId}/itens/` : '');
+    if(!url) return;
 
     Swal.fire({title:'A importar itens...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
-    $.get(`/guias-entrega/po/${poId}/itens/`, function(r){
+    $.get(url, function(r){
       Swal.close();
       $('#geItemsBody').empty();
       if(r.itens && r.itens.length) r.itens.forEach(it=>addItemRow(it));
@@ -568,11 +645,14 @@ $(function(){
 
       if(r.cliente_id) $('#ge_cliente_id').val(r.cliente_id);
       if(r.moeda_id) $('#ge_moeda_id').val(r.moeda_id);
+      if(r.purchase_order_id) $('#ge_po_id').val(r.purchase_order_id);
+      if(facturaId) $('#ge_factura_id').val(facturaId);
 
       recalcularTotais();
+      $('#ge_cliente_id,#ge_moeda_id,#ge_po_id,#ge_factura_id').trigger('change.select2');
       Swal.fire({icon:'success',title:'Itens importados!',timer:1600,showConfirmButton:false});
     }).fail(function(){
-      Swal.fire({icon:'error',title:'Erro',text:'Não foi possível importar os itens da PO.'});
+      Swal.fire({icon:'error',title:'Erro',text:'Não foi possível importar os itens seleccionados.'});
     });
   });
 
@@ -656,7 +736,8 @@ $(function(){
       $('#ge_observacoes').val(r.observacoes||'');
       $('#geItemsBody').empty();
       if(r.itens && r.itens.length) r.itens.forEach(it=>addItemRow(it)); else addItemRow();
-      $('#btnImportarPOGuia').prop('disabled', !r.purchase_order_id);
+      updateImportButtonState();
+      $('#ge_cliente_id,#ge_po_id,#ge_factura_id,#ge_moeda_id').trigger('change.select2');
       recalcularTotais();
       geModal.show();
     }).fail(function(){
@@ -748,6 +829,8 @@ $(function(){
   }
 
   resetModal();
+  initModalSelect2();
+  updateImportButtonState();
 });
 </script>
 {% endblock extra_js %}

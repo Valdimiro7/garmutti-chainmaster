@@ -431,6 +431,40 @@ def po_itens_para_guia_json_view(request, po_id):
 
 @login_required
 @require_GET
+def factura_itens_para_guia_json_view(request, factura_id):
+    factura = get_object_or_404(
+        Factura.objects.select_related('cliente', 'moeda', 'purchase_order'),
+        id=factura_id,
+    )
+
+    itens = []
+    for it in factura.itens.all().order_by('ordem', 'id'):
+        itens.append({
+            'descricao': it.descricao,
+            'unidade': it.unidade or '',
+            'quantidade': str(it.quantidade),
+            'preco_unit': str(it.preco_unit),
+        })
+
+    if not itens:
+        itens = [{
+            'descricao': f'Entrega referente à Factura {factura.numero}',
+            'unidade': 'un',
+            'quantidade': '1',
+            'preco_unit': str(factura.total or '0'),
+        }]
+
+    return JsonResponse({
+        'factura_numero': factura.numero,
+        'cliente_id': factura.cliente_id,
+        'moeda_id': factura.moeda_id or '',
+        'purchase_order_id': factura.purchase_order_id or '',
+        'itens': itens,
+    })
+
+
+@login_required
+@require_GET
 def guia_entrega_pdf_view(request, guia_id):
     guia = get_object_or_404(
         GuiaEntrega.objects.select_related(
