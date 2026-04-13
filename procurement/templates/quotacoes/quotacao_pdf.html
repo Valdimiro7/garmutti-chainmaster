@@ -1,260 +1,277 @@
 {% load static report_filters %}
 <!DOCTYPE html>
 <html lang="pt">
-<head>
-  <meta charset="UTF-8">
-  <title>Pro-Forma {{ quotacao.numero }}</title>
-  <style>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Pro-Forma {{ quotacao.numero }}</title>
+    <style>
     @font-face {
       font-family: 'DejaVu Sans';
-      src: url('file://{{ font_path }}/DejaVuSans.ttf');
-      font-weight: normal;
-      font-style: normal;
-    }
-    @font-face {
-      font-family: 'DejaVu Sans';
-      src: url('file://{{ font_path }}/DejaVuSans-Bold.ttf');
-      font-weight: bold;
-      font-style: normal;
-    }
-
-    @page { size: A4 portrait; margin: 14mm 16mm 22mm 16mm }
-    * { box-sizing: border-box; margin: 0; padding: 0 }
-    body {
-      font-family: 'DejaVu Sans', sans-serif;
-      font-size: 10.5px;
-      color: #1a1a1a;
-      background: #fff
-    }
-
-    .wm {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%,-50%);
-      opacity: 0.08;
-      z-index: 0;
-      pointer-events: none
-    }
-    .wm img {
-      width: 500px;
-      height: auto
-    }
-
-    .pg { position: relative; z-index: 1 }
-    .hdr { margin-bottom: 26px }
-    .hdr img { height: 153px; width: auto }
-    .split { display: flex; justify-content: space-between; gap: 28px; margin-bottom: 20px }
-    .org { flex: 1 }
-    .org .on { font-weight: 700; font-size: 10.5px; margin-bottom: 3px }
-    .org .ol { font-size: 9.5px; color: #222; margin-bottom: 2px; line-height: 1.4 }
-    .cli { width: 250px }
-    .cli .to { font-size: 9px; color: #555; margin-bottom: 3px }
-    .cli .cn { font-weight: 700; font-size: 11px; margin-bottom: 4px }
-    .cli .cl { font-size: 9.5px; color: #333; margin-bottom: 2px }
-    .dtitle { font-weight: 700; font-size: 15px; margin-bottom: 8px }
-    hr { border: none; border-top: 1.5px solid #1a1a1a; margin: 0 }
-    table.th { width: 100%; border-collapse: collapse; margin-bottom: 10px }
-    table.th th { font-size: 9px; font-weight: 600; padding: 4px 6px; border-bottom: 1px solid #ccc; text-align: left; background: transparent }
-    table.th td { font-size: 9.5px; padding: 4px 6px; color: #1a1a1a }
-    table.ti { width: 100%; border-collapse: collapse; page-break-inside: auto }
-    table.ti thead th { font-size: 9px; font-weight: 600; padding: 5px 7px; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; text-align: right; background: transparent }
-    table.ti thead th.al { text-align: left }
-    table.ti tbody tr { page-break-inside: avoid }
-    table.ti tbody td { font-size: 9.5px; padding: 5px 7px; border-bottom: 1px solid #eee; text-align: right; vertical-align: top }
-    table.ti tbody td.al { text-align: left }
-    table.ti tbody td.ac { text-align: center }
-    .ispec { font-size: 8px; color: #666; margin-top: 2px }
-    .icom { font-size: 8px; color: #888; font-style: italic; margin-top: 1px }
-    .bot { border-top: 1.5px solid #1a1a1a; padding-top: 12px; margin-top: 20px; display: flex; justify-content: space-between; gap: 20px; page-break-inside: avoid }
-    .imp { flex: 1 }
-    .imp .it { font-weight: 700; font-size: 9.5px; margin-bottom: 7px }
-    table.timp { width: 100%; border-collapse: collapse }
-    table.timp th { font-size: 8.5px; font-weight: 700; border-bottom: 1px solid #ccc; padding: 3px 6px; text-align: left; background: transparent }
-    table.timp td { font-size: 9px; padding: 3px 6px; border-bottom: 1px solid #eee; text-align: left }
-    .db { margin-top: 16px; page-break-inside: avoid }
-    .db .dt { font-weight: 700; font-size: 9.5px; margin-bottom: 5px }
-    table.tdb { border-collapse: collapse }
-    table.tdb th { font-size: 8px; font-weight: 600; padding: 3px 14px 3px 0; border-bottom: 1px solid #ccc; text-align: left }
-    table.tdb td { font-size: 9px; padding: 3px 14px 3px 0; border-bottom: 1px solid #eee; white-space: nowrap }
-    table.tdb td:first-child { font-weight: 600 }
-    .sum { width: 230px }
-    .sum .st { font-weight: 700; font-size: 9.5px; margin-bottom: 5px }
-    table.tsum { width: 100%; border-collapse: collapse }
-    table.tsum td { font-size: 9.5px; padding: 2.5px 4px }
-    table.tsum td:last-child { text-align: right; font-weight: 600 }
-    table.tsum tr.sf td { font-weight: 800; font-size: 10.5px; border-top: 1.5px solid #1a1a1a; padding-top: 5px }
-    .cond { margin-top: 12px; border-top: 1.5px solid #1a1a1a; padding-top: 7px; font-size: 9.5px; font-weight: 700 }
-    .cond span { font-weight: 400; color: #333 }
-    .cond .cdesc { font-weight: 400; font-size: 8.5px; color: #555; margin-top: 3px; white-space: pre-line; line-height: 1.5 }
-    .footer { position: fixed; bottom: 0; left: 0; right: 0; border-top: 1px solid #ccc; padding: 5px 16mm; display: flex; justify-content: space-between; font-size: 8px; color: #999; background: #fff; z-index: 10 }
-  </style>
-</head>
-<body>
-
-<div class="wm">
-  <img src="{% static 'assets/img/watermark2.png' %}" alt="Watermark">
-</div>
-
-<div class="pg">
-  <div class="hdr">
-    <img src="{% static 'assets/img/logo-ct-dark.png' %}" alt="Garmutti">
-  </div>
-
-  <div class="split">
-    <div class="org">
-      {% if organizacao %}
-        <div class="on">{{ organizacao.nome }}</div>
-        {% if organizacao.nuit %}<div class="ol">NUIT: <strong>{{ organizacao.nuit }}</strong></div>{% endif %}
-        {% if organizacao.telefone_1 %}<div class="ol">Tel: <strong>{{ organizacao.telefone_1 }}{% if organizacao.telefone_2 %} / {{ organizacao.telefone_2 }}{% endif %}</strong></div>{% endif %}
-        {% if organizacao.email %}<div class="ol">{{ organizacao.email }}</div>{% endif %}
-        {% if organizacao.cidade %}<div class="ol"><strong>{{ organizacao.cidade }}</strong></div>{% endif %}
-        {% if organizacao.endereco %}<div class="ol">{{ organizacao.endereco }}</div>{% endif %}
-      {% endif %}
+      src: url('file://</style>
+  </head>
+  <body>
+    <div class="wm">
+      <img src="{% static 'assets/img/watermark2.png' %}" alt="Watermark" />
     </div>
-    <div class="cli">
-      <div class="to">Exmo. (s) Sr. (s)</div>
-      <div class="cn">{{ quotacao.cliente.nome }}</div>
-      {% if quotacao.cliente.nuit %}<div class="cl" style="margin-top:5px">NUIT: <strong>{{ quotacao.cliente.nuit }}</strong></div>{% endif %}
-      {% if quotacao.cliente.endereco %}<div class="cl" style="margin-top:5px">{{ quotacao.cliente.endereco }}</div>{% endif %}
-      {% if quotacao.cliente.cidade_distrito %}<div class="cl">{{ quotacao.cliente.cidade_distrito }}{% if quotacao.cliente.pais %}, {{ quotacao.cliente.pais }}{% endif %}</div>{% endif %}
-    </div>
-  </div>
 
-  <div style="margin-top:18px"></div>
-  <div class="dtitle">Pro-Forma # {{ quotacao.numero }}&nbsp;&nbsp;<span style="font-weight:400;font-size:11px">(ORIGINAL)</span></div>
-  <hr>
+    <div class="pg">
+      <div class="hdr">
+        <img src="{% static 'assets/img/logo-ct-dark.png' %}" alt="Garmutti" />
+      </div>
 
-  <table class="th">
-    <thead>
-      <tr>
-        <th style="width:130px">Data de Emissão</th>
-        <th style="width:140px">Vencimento</th>
-        <th>Descritivo</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>{{ quotacao.data_quotacao|date:"d/m/Y" }}</td>
-        <td>{% if quotacao.validade %}{{ quotacao.validade|date:"d/m/Y" }}{% else %}—{% endif %}</td>
-        <td>
-          {% if quotacao.rfq %}Pro-forma {{ quotacao.rfq.numero }}
-          {% elif quotacao.referencia_cliente %}{{ quotacao.referencia_cliente }}
-          {% else %}Pro-forma {{ quotacao.numero|cut:"/" }}{% endif %}
-        </td>
-      </tr>
-    </tbody>
-  </table>
+      <div class="split">
+        <div class="org">
+          {% if organizacao %}
+            <div class="on">{{ organizacao.nome }}</div>
+            {% if organizacao.nuit %}
+              <div class="ol">
+                NUIT: <strong>{{ organizacao.nuit }}</strong>
+              </div>
+            {% endif %}
+            {% if organizacao.telefone_1 %}
+              <div class="ol">
+                Tel: <strong>
+                  {{ organizacao.telefone_1 }}{% if organizacao.telefone_2 %}
+                    / {{ organizacao.telefone_2 }}
+                  {% endif %}
+                </strong>
+              </div>
+            {% endif %}
+            {% if organizacao.email %}
+              <div class="ol">{{ organizacao.email }}</div>
+            {% endif %}
+            {% if organizacao.cidade %}
+              <div class="ol">
+                <strong>{{ organizacao.cidade }}</strong>
+              </div>
+            {% endif %}
+            {% if organizacao.endereco %}
+              <div class="ol">{{ organizacao.endereco }}</div>
+            {% endif %}
+          {% endif %}
+        </div>
+        <div class="cli">
+          <div class="to">Exmo. (s) Sr. (s)</div>
+          <div class="cn">{{ quotacao.cliente.nome }}</div>
+          {% if quotacao.cliente.nuit %}
+            <div class="cl" style="margin-top:5px">
+              NUIT: <strong>{{ quotacao.cliente.nuit }}</strong>
+            </div>
+          {% endif %}
+          {% if quotacao.cliente.endereco %}
+            <div class="cl" style="margin-top:5px">{{ quotacao.cliente.endereco }}</div>
+          {% endif %}
+          {% if quotacao.cliente.cidade_distrito %}
+            <div class="cl">
+              {{ quotacao.cliente.cidade_distrito }}{% if quotacao.cliente.pais %}
+                , {{ quotacao.cliente.pais }}
+              {% endif %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
 
-  <div style="min-height:100mm">
-    <table class="ti">
-      <thead>
-        <tr>
-          <th class="al" style="width:34px">#</th>
-          <th class="al">Descrição</th>
-          <th style="width:110px">Valor Unitario</th>
-          <th style="width:44px">Qtd</th>
-          <th style="width:48px">IVA %</th>
-          <th style="width:110px">Total Liquido</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in quotacao.itens.all %}
-        <tr>
-          <td class="al">{{ item.linha }}</td>
-          <td class="al">
-            {{ item.descricao }}
-            {% if item.especificacoes %}<div class="ispec">{{ item.especificacoes }}</div>{% endif %}
-            {% if item.comentarios %}<div class="icom">{{ item.comentarios }}</div>{% endif %}
-          </td>
-          <td>{{ item.preco_unitario|contabil }}{% if quotacao.moeda %}{{ quotacao.moeda.simbolo }}{% else %}Mt{% endif %}</td>
-          <td class="ac">{{ item.quantidade|floatformat:"-2" }}</td>
-          <td class="ac">{{ item.percentagem_iva|floatformat:"-2" }}</td>
-          <td>{{ item.total_liquido|contabil }}{% if quotacao.moeda %}{{ quotacao.moeda.simbolo }}{% else %}Mt{% endif %}</td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="6" style="text-align:center;color:#999;padding:14px">Sem itens.</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+      <div style="margin-top:18px"></div>
+      <div class="dtitle">
+        Pro-Forma # {{ quotacao.numero }}&nbsp;&nbsp;<span style="font-weight:400;font-size:11px">(ORIGINAL)</span>
+      </div>
+      <hr />
 
-  <div class="bot">
-    <div class="imp">
-      <div class="it">Quadro Resumo de Impostos (IVA incluindo à Taxa)</div>
-      <table class="timp">
+      <table class="th">
         <thead>
           <tr>
-            <th>Taxa/Valor</th>
-            <th>Incidência</th>
-            <th>Valor</th>
-            <th>Motivo Isenção</th>
+            <th style="width:130px">Data de Emissão</th>
+            <th style="width:140px">Vencimento</th>
+            <th>Descritivo</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td>{{ quotacao.percentagem_iva|floatformat:"2" }} %</td>
-            <td>{{ quotacao.subtotal|contabil }}</td>
-            <td>{{ quotacao.total_iva|contabil }}</td>
-            <td></td>
+            <td>{{ quotacao.data_quotacao|date:'d/m/Y' }}</td>
+            <td>
+              {% if quotacao.validade %}
+                {{ quotacao.validade|date:'d/m/Y' }}
+              {% else %}
+                —
+              {% endif %}
+            </td>
+            <td>
+              {% if quotacao.rfq %}
+                Pro-forma {{ quotacao.rfq.numero }}
+              {% elif quotacao.referencia_cliente %}
+                {{ quotacao.referencia_cliente }}
+              {% else %}
+                Pro-forma {{ quotacao.numero|cut:'/' }}
+              {% endif %}
+            </td>
           </tr>
-          <tr><td style="height:16px"></td><td></td><td></td><td></td></tr>
         </tbody>
       </table>
 
-      {% with bancos=quotacao.dados_bancarios.all %}{% if bancos %}
-      <div class="db">
-        <div class="dt">Dados Bancários</div>
-        <table class="tdb">
+      <div style="min-height:100mm">
+        <table class="ti">
           <thead>
-            <tr><th></th><th>Numero de Conta</th><th>NIB</th></tr>
+            <tr>
+              <th class="al" style="width:34px">#</th>
+              <th class="al">Descrição</th>
+              <th style="width:110px">Valor Unitario</th>
+              <th style="width:44px">Qtd</th>
+              <th style="width:48px">IVA %</th>
+              <th style="width:110px">Total Liquido</th>
+            </tr>
           </thead>
           <tbody>
-            {% for b in bancos %}
-            <tr>
-              <td>{{ b.banco|truncatechars:24 }} - {{ b.moeda }} Acc</td>
-              <td>{{ b.conta|default:"—" }}</td>
-              <td>{{ b.nib|default:"—" }}</td>
-            </tr>
+            {% for item in quotacao.itens.all %}
+              <tr>
+                <td class="al">{{ item.linha }}</td>
+                <td class="al">
+                  {{ item.descricao }}
+                  {% if item.especificacoes %}
+                    <div class="ispec">{{ item.especificacoes }}</div>
+                  {% endif %}
+                  {% if item.comentarios %}
+                    <div class="icom">{{ item.comentarios }}</div>
+                  {% endif %}
+                </td>
+                <td>
+                  {{ item.preco_unitario|contabil }}{% if quotacao.moeda %}
+                    {{ quotacao.moeda.simbolo }}
+                  {% else %}
+                    Mt
+                  {% endif %}
+                </td>
+                <td class="ac">{{ item.quantidade|floatformat:'-2' }}</td>
+                <td class="ac">{{ item.percentagem_iva|floatformat:'-2' }}</td>
+                <td>
+                  {{ item.total_liquido|contabil }}{% if quotacao.moeda %}
+                    {{ quotacao.moeda.simbolo }}
+                  {% else %}
+                    Mt
+                  {% endif %}
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="6" style="text-align:center;color:#999;padding:14px">Sem itens.</td>
+              </tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
-      {% endif %}{% endwith %}
+
+      <div class="bot">
+        <div class="imp">
+          <div class="it">Quadro Resumo de Impostos (IVA incluindo à Taxa)</div>
+          <table class="timp">
+            <thead>
+              <tr>
+                <th>Taxa/Valor</th>
+                <th>Incidência</th>
+                <th>Valor</th>
+                <th>Motivo Isenção</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{{ quotacao.percentagem_iva|floatformat:'2' }} %</td>
+                <td>{{ quotacao.subtotal|contabil }}</td>
+                <td>{{ quotacao.total_iva|contabil }}</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td style="height:16px"></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+
+          {% with bancos=quotacao.dados_bancarios.all %}
+            {% if bancos %}
+              <div class="db">
+                <div class="dt">Dados Bancários</div>
+                <table class="tdb">
+                  <thead>
+                    <tr>
+                      <th></th>
+                      <th>Numero de Conta</th>
+                      <th>NIB</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for b in bancos %}
+                      <tr>
+                        <td>{{ b.banco|truncatechars:24 }} - {{ b.moeda }} Acc</td>
+                        <td>{{ b.conta|default:'—' }}</td>
+                        <td>{{ b.nib|default:'—' }}</td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            {% endif %}
+          {% endwith %}
+        </div>
+
+        <div class="sum">
+          <div class="st">Sumário</div>
+          <table class="tsum">
+            {% with sym=quotacao.moeda.simbolo|default:'Mt' %}
+              <tr>
+                <td>Subtotal</td> <td>{{ quotacao.subtotal|contabil }}{{ sym }}</td>
+              </tr>
+              <tr>
+                <td>Descontos</td> <td>{{ 0|contabil }}{{ sym }}</td>
+              </tr>
+              <tr>
+                <td>S/IVA</td> <td>{{ quotacao.subtotal|contabil }}{{ sym }}</td>
+              </tr>
+              <tr>
+                <td>IVA</td> <td>{{ quotacao.total_iva|contabil }}{{ sym }}</td>
+              </tr>
+              <tr>
+                <td>Total</td> <td>{{ quotacao.total|contabil }}{{ sym }}</td>
+              </tr>
+              <tr>
+                <td>Valor arredondado</td> <td>{{ 0|contabil }}{{ sym }}</td>
+              </tr>
+              <tr class="sf">
+                <td>Total a pagar</td>
+                <td>{{ quotacao.total|contabil }}{{ sym }}</td>
+              </tr>
+            {% endwith %}
+          </table>
+        </div>
+      </div>
+
+      <div class="cond">
+        Condições de Pagamento:<span>
+          {% if quotacao.condicao_pagamento %}
+            {{ quotacao.condicao_pagamento.nome }}
+          {% else %}
+            —
+          {% endif %}
+        </span>
+        {% if quotacao.condicao_pagamento.descricao %}
+          <div class="cdesc">{{ quotacao.condicao_pagamento.descricao }}</div>
+        {% endif %}
+      </div>
+
+      {% if quotacao.observacoes %}
+        <div style="margin-top:8px;font-size:9px;color:#555">
+          <strong>Observações:</strong> {{ quotacao.observacoes }}
+        </div>
+      {% endif %}
     </div>
 
-    <div class="sum">
-      <div class="st">Sumário</div>
-      <table class="tsum">
-        {% with sym=quotacao.moeda.simbolo|default:"Mt" %}
-        <tr><td>Subtotal</td>          <td>{{ quotacao.subtotal|contabil }}{{ sym }}</td></tr>
-        <tr><td>Descontos</td>         <td>{{ 0|contabil }}{{ sym }}</td></tr>
-        <tr><td>S/IVA</td>             <td>{{ quotacao.subtotal|contabil }}{{ sym }}</td></tr>
-        <tr><td>IVA</td>               <td>{{ quotacao.total_iva|contabil }}{{ sym }}</td></tr>
-        <tr><td>Total</td>             <td>{{ quotacao.total|contabil }}{{ sym }}</td></tr>
-        <tr><td>Valor arredondado</td> <td>{{ 0|contabil }}{{ sym }}</td></tr>
-        <tr class="sf"><td>Total a pagar</td><td>{{ quotacao.total|contabil }}{{ sym }}</td></tr>
-        {% endwith %}
-      </table>
+    <div class="footer">
+      <span>
+        Documento Processado por Computador{% if quotacao.criado_por %}
+          &nbsp;|&nbsp; Operador: {{ quotacao.criado_por.get_full_name|default:quotacao.criado_por.username|upper }}
+        {% endif %}
+      </span>
+      <span>Pro-Forma {{ quotacao.numero }} &nbsp;·&nbsp; {{ quotacao.data_quotacao|date:'d/m/Y' }}</span>
     </div>
-  </div>
-
-  <div class="cond">
-    Condições de Pagamento:<span> {% if quotacao.condicao_pagamento %}{{ quotacao.condicao_pagamento.nome }}{% else %}—{% endif %}</span>
-    {% if quotacao.condicao_pagamento.descricao %}
-      <div class="cdesc">{{ quotacao.condicao_pagamento.descricao }}</div>
-    {% endif %}
-  </div>
-
-  {% if quotacao.observacoes %}
-  <div style="margin-top:8px;font-size:9px;color:#555"><strong>Observações:</strong> {{ quotacao.observacoes }}</div>
-  {% endif %}
-</div>
-
-<div class="footer">
-  <span>Documento Processado por Computador{% if quotacao.criado_por %} &nbsp;|&nbsp; Operador: {{ quotacao.criado_por.get_full_name|default:quotacao.criado_por.username|upper }}{% endif %}</span>
-  <span>Pro-Forma {{ quotacao.numero }} &nbsp;·&nbsp; {{ quotacao.data_quotacao|date:"d/m/Y" }}</span>
-</div>
-
-</body>
+  </body>
 </html>

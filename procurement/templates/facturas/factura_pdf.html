@@ -1,297 +1,319 @@
 {% load static report_filters %}
 <!DOCTYPE html>
 <html lang="pt">
-<head>
-<meta charset="UTF-8">
-<title>Factura {{ factura.numero }}</title>
-<style>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Factura {{ factura.numero }}</title>
+    <style>
 @font-face {
   font-family: 'DejaVu Sans';
-  src: url('file://{{ font_path }}/DejaVuSans.ttf');
-  font-weight: normal;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'DejaVu Sans';
-  src: url('file://{{ font_path }}/DejaVuSans-Bold.ttf');
-  font-weight: bold;
-  font-style: normal;
-}
-
-@page{size:A4 portrait;margin:14mm 16mm 18mm 16mm}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'DejaVu Sans',sans-serif;font-size:10.5px;color:#1a1a1a;background:#fff}
-
-.wm{
-  position:fixed;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  opacity:0.08;
-  z-index:0;
-  pointer-events:none
-}
-.wm img{
-  width:500px;
-  height:auto
-}
-
-.pg{position:relative;z-index:1}
-.hdr{margin-bottom:18px}
-.hdr img{
-  height:135px;
-  width:auto
-}
-.split{display:flex;justify-content:space-between;gap:24px;margin-bottom:14px}
-.org{flex:1}
-.org .on{font-weight:700;font-size:10.5px;margin-bottom:3px}
-.org .ol{font-size:9.2px;color:#222;margin-bottom:2px;line-height:1.35}
-.cli{width:250px}
-.cli .to{font-size:8.8px;color:#555;margin-bottom:3px}
-.cli .cn{font-weight:700;font-size:10.8px;margin-bottom:4px}
-.cli .cl{font-size:9.2px;color:#333;margin-bottom:2px}
-.dtitle{font-weight:700;font-size:15px;margin-bottom:6px}
-hr{border:none;border-top:1.5px solid #1a1a1a;margin:0}
-table.th{width:100%;border-collapse:collapse;margin-bottom:8px}
-table.th th{font-size:8.8px;font-weight:600;padding:4px 6px;border-bottom:1px solid #ccc;text-align:left;background:transparent}
-table.th td{font-size:9.3px;padding:4px 6px;color:#1a1a1a}
-table.ti{width:100%;border-collapse:collapse;page-break-inside:auto}
-table.ti thead th{font-size:8.8px;font-weight:600;padding:5px 7px;border-top:1px solid #ccc;border-bottom:1px solid #ccc;text-align:right;background:transparent}
-table.ti thead th.al{text-align:left}
-table.ti thead th.ac{text-align:center}
-table.ti tbody tr{page-break-inside:avoid}
-table.ti tbody td{font-size:9.3px;padding:5px 7px;border-bottom:1px solid #eee;text-align:right;vertical-align:top}
-table.ti tbody td.al{text-align:left}
-table.ti tbody td.ac{text-align:center}
-.bot{border-top:1.5px solid #1a1a1a;padding-top:10px;margin-top:12px;display:flex;justify-content:space-between;gap:18px;align-items:flex-start;page-break-inside:avoid;break-inside:avoid}
-.imp{flex:1;min-width:0}
-.imp .it{font-weight:700;font-size:9.3px;margin-bottom:6px}
-table.timp{width:100%;border-collapse:collapse}
-table.timp th{font-size:8.3px;font-weight:700;border-bottom:1px solid #ccc;padding:3px 6px;text-align:left;background:transparent}
-table.timp td{font-size:8.8px;padding:3px 6px;border-bottom:1px solid #eee;text-align:left}
-.db{margin-top:12px;page-break-inside:avoid;break-inside:avoid}
-.db .dt{font-weight:700;font-size:9.3px;margin-bottom:5px}
-table.tdb-list{width:100%;border-collapse:collapse;table-layout:fixed}
-table.tdb-list th{font-size:8.4px;font-weight:700;padding:4px 6px;text-align:left;border-bottom:1px solid #ccc;background:transparent;white-space:nowrap}
-table.tdb-list td{font-size:8.5px;padding:4px 6px;border-bottom:1px solid #eee;vertical-align:top;overflow-wrap:anywhere;word-break:break-word}
-table.tdb-list th:nth-child(1),table.tdb-list td:nth-child(1){width:24%}
-table.tdb-list th:nth-child(2),table.tdb-list td:nth-child(2){width:22%}
-table.tdb-list th:nth-child(3),table.tdb-list td:nth-child(3){width:18%}
-table.tdb-list th:nth-child(4),table.tdb-list td:nth-child(4){width:26%}
-table.tdb-list th:nth-child(5),table.tdb-list td:nth-child(5){width:10%;white-space:nowrap;text-align:left}
-.sum{width:250px;flex:0 0 250px}
-.sum .st{font-weight:700;font-size:9.3px;margin-bottom:5px}
-table.tsum{width:100%;border-collapse:collapse}
-table.tsum td{font-size:9.2px;padding:2px 4px}
-table.tsum td:last-child{text-align:right;font-weight:600}
-table.tsum tr.sf td{font-weight:800;font-size:10.3px;border-top:1.5px solid #1a1a1a;padding-top:5px}
-.cond{margin-top:10px;border-top:1.5px solid #1a1a1a;padding-top:6px;font-size:9.3px;font-weight:700;page-break-inside:avoid}
-.cond span{font-weight:400;color:#333}
-.cond .cdesc{font-weight:400;font-size:8.5px;color:#555;margin-top:3px;white-space:pre-line;line-height:1.45}
-.footer{position:fixed;bottom:0;left:0;right:0;border-top:1px solid #ccc;padding:5px 16mm;display:flex;justify-content:space-between;font-size:8px;color:#999;background:#fff;z-index:10}
-</style>
-</head>
-<body>
-
-<div class="wm">
-  <img src="{% static 'assets/img/watermark2.png' %}" alt="Watermark">
-</div>
-
-<div class="pg">
-
-  <div class="hdr">
-    <img src="{% static 'assets/img/logo-ct-dark.png' %}" alt="Garmutti">
-  </div>
-
-  <div class="split">
-    <div class="org">
-      {% if organizacao %}
-        <div class="on">{{ organizacao.nome }}</div>
-        {% if organizacao.nuit %}<div class="ol">NUIT: <strong>{{ organizacao.nuit }}</strong></div>{% endif %}
-        {% if organizacao.telefone_1 %}<div class="ol">Tel: <strong>{{ organizacao.telefone_1 }}{% if organizacao.telefone_2 %} / {{ organizacao.telefone_2 }}{% endif %}</strong></div>{% endif %}
-        {% if organizacao.email %}<div class="ol">{{ organizacao.email }}</div>{% endif %}
-        {% if organizacao.cidade %}<div class="ol"><strong>{{ organizacao.cidade }}</strong></div>{% endif %}
-        {% if organizacao.endereco %}<div class="ol">{{ organizacao.endereco }}</div>{% endif %}
-      {% endif %}
+  src: url('file://</style>
+  </head>
+  <body>
+    <div class="wm">
+      <img src="{% static 'assets/img/watermark2.png' %}" alt="Watermark" />
     </div>
-    <div class="cli">
-      <div class="to">Exmo. (s) Sr. (s)</div>
-      <div class="cn">{{ factura.cliente.nome }}</div>
-      {% if factura.cliente.nuit %}<div class="cl" style="margin-top:5px">NUIT: <strong>{{ factura.cliente.nuit }}</strong></div>{% endif %}
-      {% if factura.cliente.endereco %}<div class="cl" style="margin-top:5px">{{ factura.cliente.endereco }}</div>{% endif %}
-      {% if factura.cliente.cidade_distrito %}<div class="cl">{{ factura.cliente.cidade_distrito }}{% if factura.cliente.pais %}, {{ factura.cliente.pais }}{% endif %}</div>{% endif %}
-    </div>
-  </div>
 
-  <div style="margin-top:10px"></div>
-  <div class="dtitle">Factura # {{ factura.numero }}&nbsp;&nbsp;<span style="font-weight:400;font-size:11px">(ORIGINAL)</span></div>
-  <hr>
+    <div class="pg">
+      <div class="hdr">
+        <img src="{% static 'assets/img/logo-ct-dark.png' %}" alt="Garmutti" />
+      </div>
 
-  <table class="th">
-    <thead>
-      <tr>
-        <th style="width:130px">Data de Emissão</th>
-        <th style="width:140px">Vencimento</th>
-        {% if factura.purchase_order %}
-        <th style="width:160px">PO do Cliente</th>
-        {% endif %}
-        <th>Estado</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>{{ factura.data_emissao|date:"d/m/Y" }}</td>
-        <td>{% if factura.data_vencimento %}{{ factura.data_vencimento|date:"d/m/Y" }}{% else %}—{% endif %}</td>
-        {% if factura.purchase_order %}
-        <td>{{ factura.purchase_order.po_cliente_numero|default:factura.purchase_order.numero }}</td>
-        {% endif %}
-        <td>{{ factura.estado.nome|default:"—" }}</td>
-      </tr>
-    </tbody>
-  </table>
+      <div class="split">
+        <div class="org">
+          {% if organizacao %}
+            <div class="on">{{ organizacao.nome }}</div>
+            {% if organizacao.nuit %}
+              <div class="ol">
+                NUIT: <strong>{{ organizacao.nuit }}</strong>
+              </div>
+            {% endif %}
+            {% if organizacao.telefone_1 %}
+              <div class="ol">
+                Tel: <strong>
+                  {{ organizacao.telefone_1 }}{% if organizacao.telefone_2 %}
+                    / {{ organizacao.telefone_2 }}
+                  {% endif %}
+                </strong>
+              </div>
+            {% endif %}
+            {% if organizacao.email %}
+              <div class="ol">{{ organizacao.email }}</div>
+            {% endif %}
+            {% if organizacao.cidade %}
+              <div class="ol">
+                <strong>{{ organizacao.cidade }}</strong>
+              </div>
+            {% endif %}
+            {% if organizacao.endereco %}
+              <div class="ol">{{ organizacao.endereco }}</div>
+            {% endif %}
+          {% endif %}
+        </div>
+        <div class="cli">
+          <div class="to">Exmo. (s) Sr. (s)</div>
+          <div class="cn">{{ factura.cliente.nome }}</div>
+          {% if factura.cliente.nuit %}
+            <div class="cl" style="margin-top:5px">
+              NUIT: <strong>{{ factura.cliente.nuit }}</strong>
+            </div>
+          {% endif %}
+          {% if factura.cliente.endereco %}
+            <div class="cl" style="margin-top:5px">{{ factura.cliente.endereco }}</div>
+          {% endif %}
+          {% if factura.cliente.cidade_distrito %}
+            <div class="cl">
+              {{ factura.cliente.cidade_distrito }}{% if factura.cliente.pais %}
+                , {{ factura.cliente.pais }}
+              {% endif %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
 
-  <table class="ti">
-    <thead>
-      <tr>
-        <th class="al" style="width:34px">#</th>
-        <th class="al">Descrição</th>
-        <th class="ac" style="width:70px">Unid.</th>
-        <th style="width:50px">Qtd</th>
-        <th style="width:110px">Valor Unitário</th>
-        <th style="width:110px">Total</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for item in factura.itens.all %}
-      <tr>
-        <td class="al">{{ forloop.counter }}</td>
-        <td class="al">{{ item.descricao }}</td>
-        <td class="ac">{{ item.unidade|default:"—" }}</td>
-        <td>{{ item.quantidade|floatformat:"-2" }}</td>
-        <td>{{ item.preco_unit|contabil }}{% if factura.moeda %} {{ factura.moeda.simbolo }}{% else %} MT{% endif %}</td>
-        <td>{{ item.total_linha|contabil }}{% if factura.moeda %} {{ factura.moeda.simbolo }}{% else %} MT{% endif %}</td>
-      </tr>
-      {% empty %}
-      <tr><td colspan="6" style="text-align:center;color:#999;padding:14px">Sem itens.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+      <div style="margin-top:10px"></div>
+      <div class="dtitle">
+        Factura # {{ factura.numero }}&nbsp;&nbsp;<span style="font-weight:400;font-size:11px">(ORIGINAL)</span>
+      </div>
+      <hr />
 
-  <div class="bot">
-
-    <div class="imp">
-      <div class="it">Quadro Resumo de Impostos (IVA incluindo à Taxa)</div>
-      <table class="timp">
+      <table class="th">
         <thead>
           <tr>
-            <th>Taxa/Valor</th>
-            <th>Incidência</th>
-            <th>Valor</th>
-            <th>Motivo Isenção</th>
+            <th style="width:130px">Data de Emissão</th>
+            <th style="width:140px">Vencimento</th>
+            {% if factura.purchase_order %}
+              <th style="width:160px">PO do Cliente</th>
+            {% endif %}
+            <th>Estado</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td>{{ factura.iva_pct|floatformat:"2" }} %</td>
-            <td>{{ factura.subtotal|contabil }}</td>
-            <td>{{ factura.iva_valor|contabil }}</td>
-            <td></td>
+            <td>{{ factura.data_emissao|date:'d/m/Y' }}</td>
+            <td>
+              {% if factura.data_vencimento %}
+                {{ factura.data_vencimento|date:'d/m/Y' }}
+              {% else %}
+                —
+              {% endif %}
+            </td>
+            {% if factura.purchase_order %}
+              <td>{{ factura.purchase_order.po_cliente_numero|default:factura.purchase_order.numero }}</td>
+            {% endif %}
+            <td>{{ factura.estado.nome|default:'—' }}</td>
           </tr>
         </tbody>
       </table>
 
-      {% with contas=factura.factura_dados_bancarios.all %}
-        {% if contas %}
-        <div class="db">
-          <div class="dt">Dados Bancários para Pagamento</div>
-          <table class="tdb-list">
+      <table class="ti">
+        <thead>
+          <tr>
+            <th class="al" style="width:34px">#</th>
+            <th class="al">Descrição</th>
+            <th class="ac" style="width:70px">Unid.</th>
+            <th style="width:50px">Qtd</th>
+            <th style="width:110px">Valor Unitário</th>
+            <th style="width:110px">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in factura.itens.all %}
+            <tr>
+              <td class="al">{{ forloop.counter }}</td>
+              <td class="al">{{ item.descricao }}</td>
+              <td class="ac">{{ item.unidade|default:'—' }}</td>
+              <td>{{ item.quantidade|floatformat:'-2' }}</td>
+              <td>
+                {{ item.preco_unit|contabil }}{% if factura.moeda %}
+                  {{ factura.moeda.simbolo }}
+                {% else %}
+                  MT
+                {% endif %}
+              </td>
+              <td>
+                {{ item.total_linha|contabil }}{% if factura.moeda %}
+                  {{ factura.moeda.simbolo }}
+                {% else %}
+                  MT
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="6" style="text-align:center;color:#999;padding:14px">Sem itens.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div class="bot">
+        <div class="imp">
+          <div class="it">Quadro Resumo de Impostos (IVA incluindo à Taxa)</div>
+          <table class="timp">
             <thead>
               <tr>
-                <th>Banco</th><th>Titular</th><th>Conta</th><th>NIB</th><th>Moeda</th>
+                <th>Taxa/Valor</th>
+                <th>Incidência</th>
+                <th>Valor</th>
+                <th>Motivo Isenção</th>
               </tr>
             </thead>
             <tbody>
-              {% for rel in contas %}
-                {% with b=rel.dado_bancario %}
-                  {% if b %}
-                  <tr>
-                    <td>{{ b.banco|default:"—" }}</td>
-                    <td>{{ b.titular|default:"—" }}</td>
-                    <td>{{ b.conta|default:"—" }}</td>
-                    <td>{{ b.nib|default:"—" }}</td>
-                    <td>{% if b.moeda %}{% if b.moeda.codigo %}{{ b.moeda.codigo }}{% else %}{{ b.moeda }}{% endif %}{% else %}—{% endif %}</td>
-                  </tr>
-                  {% endif %}
-                {% endwith %}
-              {% endfor %}
+              <tr>
+                <td>{{ factura.iva_pct|floatformat:'2' }} %</td>
+                <td>{{ factura.subtotal|contabil }}</td>
+                <td>{{ factura.iva_valor|contabil }}</td>
+                <td></td>
+              </tr>
             </tbody>
           </table>
+
+          {% with contas=factura.factura_dados_bancarios.all %}
+            {% if contas %}
+              <div class="db">
+                <div class="dt">Dados Bancários para Pagamento</div>
+                <table class="tdb-list">
+                  <thead>
+                    <tr>
+                      <th>Banco</th>
+                      <th>Titular</th>
+                      <th>Conta</th>
+                      <th>NIB</th>
+                      <th>Moeda</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for rel in contas %}
+                      {% with b=rel.dado_bancario %}
+                        {% if b %}
+                          <tr>
+                            <td>{{ b.banco|default:'—' }}</td>
+                            <td>{{ b.titular|default:'—' }}</td>
+                            <td>{{ b.conta|default:'—' }}</td>
+                            <td>{{ b.nib|default:'—' }}</td>
+                            <td>
+                              {% if b.moeda %}
+                                {% if b.moeda.codigo %}
+                                  {{ b.moeda.codigo }}
+                                {% else %}
+                                  {{ b.moeda }}
+                                {% endif %}
+                              {% else %}
+                                —
+                              {% endif %}
+                            </td>
+                          </tr>
+                        {% endif %}
+                      {% endwith %}
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            {% elif factura.dado_bancario %}
+              {% with b=factura.dado_bancario %}
+                <div class="db">
+                  <div class="dt">Dados Bancários para Pagamento</div>
+                  <table class="tdb-list">
+                    <thead>
+                      <tr>
+                        <th>Banco</th>
+                        <th>Titular</th>
+                        <th>Conta</th>
+                        <th>NIB</th>
+                        <th>Moeda</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>{{ b.banco|default:'—' }}</td>
+                        <td>{{ b.titular|default:'—' }}</td>
+                        <td>{{ b.conta|default:'—' }}</td>
+                        <td>{{ b.nib|default:'—' }}</td>
+                        <td>
+                          {% if b.moeda %}
+                            {% if b.moeda.codigo %}
+                              {{ b.moeda.codigo }}
+                            {% else %}
+                              {{ b.moeda }}
+                            {% endif %}
+                          {% else %}
+                            —
+                          {% endif %}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              {% endwith %}
+            {% endif %}
+          {% endwith %}
         </div>
 
-        {% elif factura.dado_bancario %}
-          {% with b=factura.dado_bancario %}
-          <div class="db">
-            <div class="dt">Dados Bancários para Pagamento</div>
-            <table class="tdb-list">
-              <thead>
+        <div class="sum">
+          <div class="st">Sumário</div>
+          <table class="tsum">
+            {% with sym=factura.moeda.simbolo|default:'MT' %}
+              <tr>
+                <td>Subtotal</td>
+                <td>{{ factura.subtotal|contabil }} {{ sym }}</td>
+              </tr>
+              {% if factura.desconto and factura.desconto > 0 %}
                 <tr>
-                  <th>Banco</th><th>Titular</th><th>Conta</th><th>NIB</th><th>Moeda</th>
+                  <td>Desconto ({{ factura.desconto_pct|floatformat:'2' }}%)</td>
+                  <td>-{{ factura.desconto|contabil }} {{ sym }}</td>
                 </tr>
-              </thead>
-              <tbody>
+              {% else %}
                 <tr>
-                  <td>{{ b.banco|default:"—" }}</td>
-                  <td>{{ b.titular|default:"—" }}</td>
-                  <td>{{ b.conta|default:"—" }}</td>
-                  <td>{{ b.nib|default:"—" }}</td>
-                  <td>{% if b.moeda %}{% if b.moeda.codigo %}{{ b.moeda.codigo }}{% else %}{{ b.moeda }}{% endif %}{% else %}—{% endif %}</td>
+                  <td>Descontos</td>
+                  <td>{{ 0|contabil }} {{ sym }}</td>
                 </tr>
-              </tbody>
-            </table>
-          </div>
-          {% endwith %}
-        {% endif %}
-      {% endwith %}
+              {% endif %}
+              <tr>
+                <td>S/IVA</td>
+                <td>{{ factura.subtotal|contabil }} {{ sym }}</td>
+              </tr>
+              <tr>
+                <td>IVA ({{ factura.iva_pct|floatformat:'0' }}%)</td>
+                <td>{{ factura.iva_valor|contabil }} {{ sym }}</td>
+              </tr>
+              <tr>
+                <td>Total</td>
+                <td>{{ factura.total|contabil }} {{ sym }}</td>
+              </tr>
+              <tr>
+                <td>Valor arredondado</td>
+                <td>{{ 0|contabil }} {{ sym }}</td>
+              </tr>
+              <tr class="sf">
+                <td>Total a pagar</td>
+                <td>{{ factura.total|contabil }} {{ sym }}</td>
+              </tr>
+            {% endwith %}
+          </table>
+        </div>
+      </div>
+
+      {% if factura.termos %}
+        <div class="cond">
+          Termos e Condições de Pagamento:<div class="cdesc">{{ factura.termos }}</div>
+        </div>
+      {% endif %}
+
+      {% if factura.observacoes %}
+        <div style="margin-top:8px;font-size:9px;color:#555">
+          <strong>Observações:</strong> {{ factura.observacoes }}
+        </div>
+      {% endif %}
     </div>
 
-    <div class="sum">
-      <div class="st">Sumário</div>
-      <table class="tsum">
-        {% with sym=factura.moeda.simbolo|default:"MT" %}
-        <tr><td>Subtotal</td><td>{{ factura.subtotal|contabil }} {{ sym }}</td></tr>
-        {% if factura.desconto and factura.desconto > 0 %}
-        <tr><td>Desconto ({{ factura.desconto_pct|floatformat:"2" }}%)</td><td>-{{ factura.desconto|contabil }} {{ sym }}</td></tr>
-        {% else %}
-        <tr><td>Descontos</td><td>{{ 0|contabil }} {{ sym }}</td></tr>
+    <div class="footer">
+      <span>
+        Documento Processado por Computador{% if factura.criado_por %}
+          &nbsp;|&nbsp; Operador: {{ factura.criado_por.get_full_name|default:factura.criado_por.username|upper }}
         {% endif %}
-        <tr><td>S/IVA</td><td>{{ factura.subtotal|contabil }} {{ sym }}</td></tr>
-        <tr><td>IVA ({{ factura.iva_pct|floatformat:"0" }}%)</td><td>{{ factura.iva_valor|contabil }} {{ sym }}</td></tr>
-        <tr><td>Total</td><td>{{ factura.total|contabil }} {{ sym }}</td></tr>
-        <tr><td>Valor arredondado</td><td>{{ 0|contabil }} {{ sym }}</td></tr>
-        <tr class="sf"><td>Total a pagar</td><td>{{ factura.total|contabil }} {{ sym }}</td></tr>
-        {% endwith %}
-      </table>
+      </span>
+      <span>Factura {{ factura.numero }} &nbsp;·&nbsp; {{ factura.data_emissao|date:'d/m/Y' }}</span>
     </div>
-
-  </div>
-
-  {% if factura.termos %}
-  <div class="cond">
-    Termos e Condições de Pagamento:
-    <div class="cdesc">{{ factura.termos }}</div>
-  </div>
-  {% endif %}
-
-  {% if factura.observacoes %}
-  <div style="margin-top:8px;font-size:9px;color:#555"><strong>Observações:</strong> {{ factura.observacoes }}</div>
-  {% endif %}
-
-</div>
-
-<div class="footer">
-  <span>Documento Processado por Computador{% if factura.criado_por %} &nbsp;|&nbsp; Operador: {{ factura.criado_por.get_full_name|default:factura.criado_por.username|upper }}{% endif %}</span>
-  <span>Factura {{ factura.numero }} &nbsp;·&nbsp; {{ factura.data_emissao|date:"d/m/Y" }}</span>
-</div>
-
-</body>
+  </body>
 </html>

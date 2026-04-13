@@ -1,196 +1,192 @@
 {% load static report_filters %}
 <!DOCTYPE html>
 <html lang="pt">
-<head>
-<meta charset="UTF-8">
-<title>Guia de Entrega {{ guia.numero }}</title>
-<style>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Guia de Entrega {{ guia.numero }}</title>
+    <style>
 @font-face {
   font-family: 'DejaVu Sans';
-  src: url('file://{{ font_path }}/DejaVuSans.ttf');
-  font-weight: normal;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'DejaVu Sans';
-  src: url('file://{{ font_path }}/DejaVuSans-Bold.ttf');
-  font-weight: bold;
-  font-style: normal;
-}
-
-@page { size: A4 portrait; margin: 14mm 16mm 18mm 16mm; }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'DejaVu Sans', sans-serif; font-size: 10px; color: #1a1a1a; }
-
-.wm {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%,-50%);
-  opacity: 0.08;
-  z-index: 0;
-  pointer-events: none;
-}
-.wm img {
-  width: 500px;
-  height: auto;
-}
-
-.pg { position: relative; z-index: 1; }
-.hdr { margin-bottom: 18px; }
-.hdr img {
-  height: 140px;
-  width: auto;
-}
-.split { display: flex; justify-content: space-between; gap: 24px; margin-bottom: 14px; }
-.org { flex: 1; }
-.org .on { font-weight: 700; font-size: 10.5px; margin-bottom: 3px; }
-.org .ol { font-size: 9.2px; margin-bottom: 2px; line-height: 1.35; }
-.cli { width: 250px; }
-.cli .to { font-size: 8.8px; color: #555; margin-bottom: 3px; }
-.cli .cn { font-weight: 700; font-size: 10.8px; margin-bottom: 4px; }
-.cli .cl { font-size: 9.2px; margin-bottom: 2px; }
-.dtitle { font-weight: 700; font-size: 15px; margin-bottom: 6px; }
-hr { border: none; border-top: 1.5px solid #1a1a1a; margin: 0; }
-table.th, table.ti, table.tsum { width: 100%; border-collapse: collapse; }
-table.th th, table.th td { padding: 4px 6px; text-align: left; }
-table.th th { font-size: 8.8px; border-bottom: 1px solid #ccc; }
-table.th td { font-size: 9.3px; }
-table.ti thead th { font-size: 8.8px; padding: 5px 7px; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; text-align: right; }
-table.ti thead th.al { text-align: left; }
-table.ti thead th.ac { text-align: center; }
-table.ti tbody td { font-size: 9.3px; padding: 5px 7px; border-bottom: 1px solid #eee; text-align: right; }
-table.ti tbody td.al { text-align: left; }
-table.ti tbody td.ac { text-align: center; }
-.bot { border-top: 1.5px solid #1a1a1a; padding-top: 10px; margin-top: 12px; display: flex; justify-content: space-between; gap: 18px; }
-.sum { width: 260px; }
-.sum .st { font-weight: 700; font-size: 9.3px; margin-bottom: 5px; }
-table.tsum td { font-size: 9.2px; padding: 2px 4px; }
-table.tsum td:last-child { text-align: right; font-weight: 600; }
-table.tsum tr.sf td { font-weight: 800; font-size: 10.3px; border-top: 1.5px solid #1a1a1a; padding-top: 5px; }
-.obs { margin-top: 12px; border-top: 1.5px solid #1a1a1a; padding-top: 7px; font-size: 9.2px; }
-.footer { position: fixed; bottom: 0; left: 0; right: 0; border-top: 1px solid #ccc; padding: 5px 16mm; display: flex; justify-content: space-between; font-size: 8px; color: #999; background: #fff; }
-</style>
-</head>
-<body>
-
-<div class="wm">
-  <img src="{% static 'assets/img/watermark2.png' %}" alt="Watermark">
-</div>
-
-<div class="pg">
-  <div class="hdr">
-    <img src="{% static 'assets/img/logo-ct-dark.png' %}" alt="Garmutti">
-  </div>
-
-  <div class="split">
-    <div class="org">
-      {% if organizacao %}
-        <div class="on">{{ organizacao.nome }}</div>
-        {% if organizacao.nuit %}<div class="ol">NUIT: <strong>{{ organizacao.nuit }}</strong></div>{% endif %}
-        {% if organizacao.telefone_1 %}<div class="ol">Tel: <strong>{{ organizacao.telefone_1 }}</strong></div>{% endif %}
-        {% if organizacao.email %}<div class="ol">{{ organizacao.email }}</div>{% endif %}
-        {% if organizacao.cidade %}<div class="ol"><strong>{{ organizacao.cidade }}</strong></div>{% endif %}
-        {% if organizacao.endereco %}<div class="ol">{{ organizacao.endereco }}</div>{% endif %}
-      {% endif %}
+  src: url('file://</style>
+  </head>
+  <body>
+    <div class="wm">
+      <img src="{% static 'assets/img/watermark2.png' %}" alt="Watermark" />
     </div>
-    <div class="cli">
-      <div class="to">Exmo. (s) Sr. (s)</div>
-      <div class="cn">{{ guia.cliente.nome }}</div>
-      {% if guia.local_entrega %}<div class="cl">{{ guia.local_entrega }}</div>{% endif %}
-    </div>
-  </div>
 
-  <div class="dtitle">Guia de Entrega # {{ guia.numero }}</div>
-  <hr>
-
-  <table class="th">
-    <thead>
-      <tr>
-        <th>Data da Guia</th>
-        <th>Data de Entrega</th>
-        <th>PO</th>
-        <th>Factura</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>{{ guia.data_guia|date:"d/m/Y" }}</td>
-        <td>{% if guia.data_entrega %}{{ guia.data_entrega|date:"d/m/Y" }}{% else %}—{% endif %}</td>
-        <td>{% if guia.purchase_order %}{{ guia.purchase_order.po_cliente_numero|default:guia.purchase_order.numero }}{% else %}—{% endif %}</td>
-        <td>{% if guia.factura %}{{ guia.factura.numero }}{% else %}—{% endif %}</td>
-      </tr>
-    </tbody>
-  </table>
-
-  <table class="th" style="margin-top:8px">
-    <thead>
-      <tr>
-        <th>Recebido por</th>
-        <th>Contacto</th>
-        <th>Local de Entrega</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>{{ guia.recebido_por|default:"—" }}</td>
-        <td>{{ guia.contacto_recebedor|default:"—" }}</td>
-        <td>{{ guia.local_entrega|default:"—" }}</td>
-      </tr>
-    </tbody>
-  </table>
-
-  <table class="ti" style="margin-top:10px">
-    <thead>
-      <tr>
-        <th class="al" style="width:34px">#</th>
-        <th class="al">Descrição</th>
-        <th class="ac" style="width:70px">Unid.</th>
-        <th style="width:50px">Qtd</th>
-        <th style="width:110px">Preço Unit.</th>
-        <th style="width:110px">Total</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for item in guia.itens.all %}
-      <tr>
-        <td class="al">{{ forloop.counter }}</td>
-        <td class="al">{{ item.descricao }}</td>
-        <td class="ac">{{ item.unidade|default:"—" }}</td>
-        <td>{{ item.quantidade|floatformat:"-2" }}</td>
-        <td>{{ item.preco_unit|contabil }} {% if guia.moeda %}{{ guia.moeda.simbolo }}{% else %}MT{% endif %}</td>
-        <td>{{ item.total_linha|contabil }} {% if guia.moeda %}{{ guia.moeda.simbolo }}{% else %}MT{% endif %}</td>
-      </tr>
-      {% empty %}
-      <tr><td colspan="6" style="text-align:center;color:#999;padding:14px">Sem itens.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-
-  <div class="bot">
-    <div style="flex:1">
-      {% if guia.observacoes %}
-      <div class="obs">
-        <strong>Observações:</strong><br>
-        {{ guia.observacoes }}
+    <div class="pg">
+      <div class="hdr">
+        <img src="{% static 'assets/img/logo-ct-dark.png' %}" alt="Garmutti" />
       </div>
-      {% endif %}
-    </div>
-    <div class="sum">
-      <div class="st">Sumário</div>
-      <table class="tsum">
-        {% with sym=guia.moeda.simbolo|default:"MT" %}
-        <tr><td>Total</td><td>{{ guia.subtotal|contabil }} {{ sym }}</td></tr>
-        <tr class="sf"><td>Total da Guia</td><td>{{ guia.subtotal|contabil }} {{ sym }}</td></tr>
-        {% endwith %}
-      </table>
-    </div>
-  </div>
-</div>
 
-<div class="footer">
-  <span>Documento Processado por Computador{% if guia.criado_por %} &nbsp;|&nbsp; Operador: {{ guia.criado_por.get_full_name|default:guia.criado_por.username|upper }}{% endif %}</span>
-  <span>Guia {{ guia.numero }} &nbsp;·&nbsp; {{ guia.data_guia|date:"d/m/Y" }}</span>
-</div>
-</body>
+      <div class="split">
+        <div class="org">
+          {% if organizacao %}
+            <div class="on">{{ organizacao.nome }}</div>
+            {% if organizacao.nuit %}
+              <div class="ol">
+                NUIT: <strong>{{ organizacao.nuit }}</strong>
+              </div>
+            {% endif %}
+            {% if organizacao.telefone_1 %}
+              <div class="ol">
+                Tel: <strong>{{ organizacao.telefone_1 }}</strong>
+              </div>
+            {% endif %}
+            {% if organizacao.email %}
+              <div class="ol">{{ organizacao.email }}</div>
+            {% endif %}
+            {% if organizacao.cidade %}
+              <div class="ol">
+                <strong>{{ organizacao.cidade }}</strong>
+              </div>
+            {% endif %}
+            {% if organizacao.endereco %}
+              <div class="ol">{{ organizacao.endereco }}</div>
+            {% endif %}
+          {% endif %}
+        </div>
+        <div class="cli">
+          <div class="to">Exmo. (s) Sr. (s)</div>
+          <div class="cn">{{ guia.cliente.nome }}</div>
+          {% if guia.local_entrega %}
+            <div class="cl">{{ guia.local_entrega }}</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="dtitle">Guia de Entrega # {{ guia.numero }}</div>
+      <hr />
+
+      <table class="th">
+        <thead>
+          <tr>
+            <th>Data da Guia</th>
+            <th>Data de Entrega</th>
+            <th>PO</th>
+            <th>Factura</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{{ guia.data_guia|date:'d/m/Y' }}</td>
+            <td>
+              {% if guia.data_entrega %}
+                {{ guia.data_entrega|date:'d/m/Y' }}
+              {% else %}
+                —
+              {% endif %}
+            </td>
+            <td>
+              {% if guia.purchase_order %}
+                {{ guia.purchase_order.po_cliente_numero|default:guia.purchase_order.numero }}
+              {% else %}
+                —
+              {% endif %}
+            </td>
+            <td>
+              {% if guia.factura %}
+                {{ guia.factura.numero }}
+              {% else %}
+                —
+              {% endif %}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="th" style="margin-top:8px">
+        <thead>
+          <tr>
+            <th>Recebido por</th>
+            <th>Contacto</th>
+            <th>Local de Entrega</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{{ guia.recebido_por|default:'—' }}</td>
+            <td>{{ guia.contacto_recebedor|default:'—' }}</td>
+            <td>{{ guia.local_entrega|default:'—' }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="ti" style="margin-top:10px">
+        <thead>
+          <tr>
+            <th class="al" style="width:34px">#</th>
+            <th class="al">Descrição</th>
+            <th class="ac" style="width:70px">Unid.</th>
+            <th style="width:50px">Qtd</th>
+            <th style="width:110px">Preço Unit.</th>
+            <th style="width:110px">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in guia.itens.all %}
+            <tr>
+              <td class="al">{{ forloop.counter }}</td>
+              <td class="al">{{ item.descricao }}</td>
+              <td class="ac">{{ item.unidade|default:'—' }}</td>
+              <td>{{ item.quantidade|floatformat:'-2' }}</td>
+              <td>
+                {{ item.preco_unit|contabil }} {% if guia.moeda %}
+                  {{ guia.moeda.simbolo }}
+                {% else %}
+                  MT
+                {% endif %}
+              </td>
+              <td>
+                {{ item.total_linha|contabil }} {% if guia.moeda %}
+                  {{ guia.moeda.simbolo }}
+                {% else %}
+                  MT
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="6" style="text-align:center;color:#999;padding:14px">Sem itens.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div class="bot">
+        <div style="flex:1">
+          {% if guia.observacoes %}
+            <div class="obs">
+              <strong>Observações:</strong><br />
+              {{ guia.observacoes }}
+            </div>
+          {% endif %}
+        </div>
+        <div class="sum">
+          <div class="st">Sumário</div>
+          <table class="tsum">
+            {% with sym=guia.moeda.simbolo|default:'MT' %}
+              <tr>
+                <td>Total</td>
+                <td>{{ guia.subtotal|contabil }} {{ sym }}</td>
+              </tr>
+              <tr class="sf">
+                <td>Total da Guia</td>
+                <td>{{ guia.subtotal|contabil }} {{ sym }}</td>
+              </tr>
+            {% endwith %}
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span>
+        Documento Processado por Computador{% if guia.criado_por %}
+          &nbsp;|&nbsp; Operador: {{ guia.criado_por.get_full_name|default:guia.criado_por.username|upper }}
+        {% endif %}
+      </span>
+      <span>Guia {{ guia.numero }} &nbsp;·&nbsp; {{ guia.data_guia|date:'d/m/Y' }}</span>
+    </div>
+  </body>
 </html>

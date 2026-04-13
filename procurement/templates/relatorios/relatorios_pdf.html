@@ -2,257 +2,308 @@
 {% load report_filters %}
 <!DOCTYPE html>
 <html lang="pt">
-<head>
-<meta charset="UTF-8">
-<title>{{ report.title }}</title>
-<style>
+  <head>
+    <meta charset="UTF-8" />
+    <title>{{ report.title }}</title>
+    <style>
 @page{size:A4 landscape;margin:14mm 14mm 18mm 14mm}
 
 @font-face{
   font-family:"DejaVu Sans Custom";
-  src:url("{% static 'assets/fonts/DejaVuSans.ttf' %}") format("truetype");
-  font-weight:400;
-  font-style:normal;
-}
-@font-face{
-  font-family:"DejaVu Sans Custom";
-  src:url("{% static 'assets/fonts/DejaVuSans-Bold.ttf' %}") format("truetype");
-  font-weight:700;
-  font-style:normal;
-}
-
-*{box-sizing:border-box;margin:0;padding:0}
-body{
-  font-family:"DejaVu Sans Custom", Arial, Helvetica, sans-serif;
-  font-size:10px;
-  color:#1a1a1a;
-  background:#fff;
-}
-.wm{
-  position:fixed;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  opacity:0.08;
-  z-index:0;
-}
-.wm img{
-  width:500px;
-  height:auto;
-}
-.pg{position:relative;z-index:1}
-.hdr{margin-bottom:22px}
-.hdr img{
-  height:147px;
-  width:auto;
-}
-.top{display:flex;justify-content:space-between;gap:30px;margin-bottom:18px}
-.org{flex:1}
-.org .n{font-size:11px;font-weight:700;margin-bottom:3px}
-.org .l{font-size:9px;color:#333;line-height:1.4;margin-bottom:2px}
-.meta{width:320px;text-align:right}
-.meta .t{font-size:16px;font-weight:700;margin-bottom:8px}
-.meta .m{font-size:9.5px;color:#444;margin-bottom:3px}
-.kpis{display:flex;gap:12px;margin:14px 0 18px}
-.kpi{flex:1;border:1px solid #dde4ff;border-radius:8px;padding:10px 12px;background:#f8faff}
-.kpi .kl{font-size:8px;text-transform:uppercase;color:#6b7280;font-weight:700;margin-bottom:4px}
-.kpi .kv{font-size:14px;font-weight:700;color:#2E3E82}
-table{width:100%;border-collapse:collapse}
-th,td{padding:7px 8px;border-bottom:1px solid #e9edf7;text-align:left;vertical-align:top}
-th{font-size:8px;text-transform:uppercase;letter-spacing:.04em;color:#6b7280;background:#f8faff;font-weight:700}
-td{font-size:9.3px}
-.valor{text-align:right;white-space:nowrap}
-.footer{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  border-top:1px solid #ccc;
-  padding:5px 14mm;
-  display:flex;
-  justify-content:space-between;
-  font-size:8px;
-  color:#999;
-  background:#fff;
-}
-</style>
-</head>
-<body>
-
-<div class="wm">
-  <img src="{% static 'assets/img/watermark2.png' %}" alt="Watermark">
-</div>
-
-<div class="pg">
-  <div class="hdr">
-    <img src="{% static 'assets/img/logo-ct-dark.png' %}" alt="Garmutti">
-  </div>
-
-  <div class="top">
-    <div class="org">
-      {% if organizacao %}
-        <div class="n">{{ organizacao.nome }}</div>
-        {% if organizacao.nuit %}<div class="l">NUIT: {{ organizacao.nuit }}</div>{% endif %}
-        {% if organizacao.telefone_1 %}<div class="l">Tel: {{ organizacao.telefone_1 }}</div>{% endif %}
-        {% if organizacao.email %}<div class="l">{{ organizacao.email }}</div>{% endif %}
-      {% endif %}
+  src:url("</style>
+  </head>
+  <body>
+    <div class="wm">
+      <img src="{% static 'assets/img/watermark2.png' %}" alt="Watermark" />
     </div>
-    <div class="meta">
-      <div class="t">{{ report.title }}</div>
-      <div class="m">Gerado em: {{ gerado_em|date:"d/m/Y H:i" }}</div>
-      <div class="m">
-        Período:
-        {% if data_inicio %}{{ data_inicio|date:"d/m/Y" }}{% else %}Início{% endif %}
-        —
-        {% if data_fim %}{{ data_fim|date:"d/m/Y" }}{% else %}Hoje{% endif %}
+
+    <div class="pg">
+      <div class="hdr">
+        <img src="{% static 'assets/img/logo-ct-dark.png' %}" alt="Garmutti" />
       </div>
+
+      <div class="top">
+        <div class="org">
+          {% if organizacao %}
+            <div class="n">{{ organizacao.nome }}</div>
+            {% if organizacao.nuit %}
+              <div class="l">NUIT: {{ organizacao.nuit }}</div>
+            {% endif %}
+            {% if organizacao.telefone_1 %}
+              <div class="l">Tel: {{ organizacao.telefone_1 }}</div>
+            {% endif %}
+            {% if organizacao.email %}
+              <div class="l">{{ organizacao.email }}</div>
+            {% endif %}
+          {% endif %}
+        </div>
+        <div class="meta">
+          <div class="t">{{ report.title }}</div>
+          <div class="m">Gerado em: {{ gerado_em|date:'d/m/Y H:i' }}</div>
+          <div class="m">
+            Período:{% if data_inicio %}
+              {{ data_inicio|date:'d/m/Y' }}
+            {% else %}
+              Início
+            {% endif %}—{% if data_fim %}
+              {{ data_fim|date:'d/m/Y' }}
+            {% else %}
+              Hoje
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi">
+          <div class="kl">Total de Registos</div>
+          <div class="kv">{{ report.summary.total_registos }}</div>
+        </div>
+        <div class="kpi">
+          <div class="kl">Valor Total</div>
+          <div class="kv">{{ report.summary.valor_total|contabil }}</div>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          {% if report.report_type == 'clientes' %}
+            <tr>
+              <th>Nome</th>
+              <th>NUIT</th>
+              <th>Email</th>
+              <th>Telefone</th>
+              <th>Categoria</th>
+              <th>Estado</th>
+            </tr>
+          {% elif report.report_type == 'fornecedores' %}
+            <tr>
+              <th>Nome</th>
+              <th>NUIT</th>
+              <th>Email</th>
+              <th>Telefone</th>
+              <th>Categoria</th>
+              <th>Estado</th>
+            </tr>
+          {% elif report.report_type == 'rfqs' %}
+            <tr>
+              <th>Número</th>
+              <th>Cliente</th>
+              <th>Data RFQ</th>
+              <th>Prazo</th>
+              <th>Estado</th>
+            </tr>
+          {% elif report.report_type == 'quotacoes' %}
+            <tr>
+              <th>Número</th>
+              <th>Cliente</th>
+              <th>Data</th>
+              <th class="valor">Total</th>
+              <th>Estado</th>
+            </tr>
+          {% elif report.report_type == 'purchase_orders' %}
+            <tr>
+              <th>Número</th>
+              <th>Cliente</th>
+              <th>Data PO</th>
+              <th class="valor">Valor Total</th>
+              <th>Estado</th>
+            </tr>
+          {% elif report.report_type == 'facturas' %}
+            <tr>
+              <th>Número</th>
+              <th>Cliente</th>
+              <th>Data Emissão</th>
+              <th>Vencimento</th>
+              <th class="valor">Total</th>
+              <th>Estado</th>
+            </tr>
+          {% elif report.report_type == 'guias' %}
+            <tr>
+              <th>Número</th>
+              <th>Cliente</th>
+              <th>Data Guia</th>
+              <th>Data Entrega</th>
+              <th class="valor">Subtotal</th>
+              <th>Estado</th>
+            </tr>
+          {% elif report.report_type == 'pagamentos' %}
+            <tr>
+              <th>Número</th>
+              <th>Cliente</th>
+              <th>PO</th>
+              <th class="valor">Valor Recebido</th>
+              <th class="valor">Saldo</th>
+              <th>Estado</th>
+            </tr>
+          {% elif report.report_type == 'pagamento_historico' %}
+            <tr>
+              <th>Pagamento</th>
+              <th>Factura</th>
+              <th>Data</th>
+              <th class="valor">Valor Pago</th>
+              <th>Referência</th>
+            </tr>
+          {% elif report.report_type == 'recibos' %}
+            <tr>
+              <th>Número</th>
+              <th>Factura</th>
+              <th>Cliente</th>
+              <th>Data Recibo</th>
+              <th class="valor">Valor</th>
+              <th>Estado</th>
+            </tr>
+          {% endif %}
+        </thead>
+        <tbody>
+          {% for row in report.rows %}
+            {% if report.report_type == 'clientes' %}
+              <tr>
+                <td>{{ row.nome }}</td>
+                <td>{{ row.nuit|default:'—' }}</td>
+                <td>{{ row.email|default:'—' }}</td>
+                <td>{{ row.telefone|default:'—' }}</td>
+                <td>{{ row.get_categoria_display|default:row.categoria }}</td>
+                <td>
+                  {% if row.estado %}
+                    Activo
+                  {% else %}
+                    Inactivo
+                  {% endif %}
+                </td>
+              </tr>
+            {% elif report.report_type == 'fornecedores' %}
+              <tr>
+                <td>{{ row.nome }}</td>
+                <td>{{ row.nuit|default:'—' }}</td>
+                <td>{{ row.email|default:'—' }}</td>
+                <td>{{ row.telefone|default:'—' }}</td>
+                <td>{{ row.get_categoria_display|default:row.categoria }}</td>
+                <td>
+                  {% if row.estado %}
+                    Activo
+                  {% else %}
+                    Inactivo
+                  {% endif %}
+                </td>
+              </tr>
+            {% elif report.report_type == 'rfqs' %}
+              <tr>
+                <td>{{ row.numero }}</td>
+                <td>{{ row.cliente.nome|default:'—' }}</td>
+                <td>{{ row.data_rfq|date:'d/m/Y' }}</td>
+                <td>{{ row.prazo_entrega|date:'d/m/Y'|default:'—' }}</td>
+                <td>{{ row.estado.nome|default:'—' }}</td>
+              </tr>
+            {% elif report.report_type == 'quotacoes' %}
+              <tr>
+                <td>{{ row.numero }}</td>
+                <td>{{ row.cliente.nome|default:'—' }}</td>
+                <td>{{ row.data_quotacao|date:'d/m/Y' }}</td>
+                <td class="valor">{{ row.total|contabil }}</td>
+                <td>{{ row.estado.nome|default:'—' }}</td>
+              </tr>
+            {% elif report.report_type == 'purchase_orders' %}
+              <tr>
+                <td>{{ row.numero }}</td>
+                <td>{{ row.cliente.nome|default:'—' }}</td>
+                <td>{{ row.data_po|date:'d/m/Y' }}</td>
+                <td class="valor">{{ row.valor_total|contabil }}</td>
+                <td>{{ row.estado.nome|default:'—' }}</td>
+              </tr>
+            {% elif report.report_type == 'facturas' %}
+              <tr>
+                <td>{{ row.numero }}</td>
+                <td>{{ row.cliente.nome|default:'—' }}</td>
+                <td>{{ row.data_emissao|date:'d/m/Y' }}</td>
+                <td>{{ row.data_vencimento|date:'d/m/Y'|default:'—' }}</td>
+                <td class="valor">{{ row.total|contabil }}</td>
+                <td>{{ row.estado.nome|default:'—' }}</td>
+              </tr>
+            {% elif report.report_type == 'guias' %}
+              <tr>
+                <td>{{ row.numero }}</td>
+                <td>{{ row.cliente.nome|default:'—' }}</td>
+                <td>{{ row.data_guia|date:'d/m/Y' }}</td>
+                <td>{{ row.data_entrega|date:'d/m/Y'|default:'—' }}</td>
+                <td class="valor">{{ row.subtotal|contabil }}</td>
+                <td>{{ row.estado.nome|default:'—' }}</td>
+              </tr>
+            {% elif report.report_type == 'pagamentos' %}
+              <tr>
+                <td>{{ row.numero }}</td>
+                <td>{{ row.cliente.nome|default:'—' }}</td>
+                <td>
+                  {% if row.purchase_order %}
+                    {{ row.purchase_order.numero }}
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+                <td class="valor">{{ row.valor_recebido|contabil }}</td>
+                <td class="valor">{{ row.saldo_pendente|contabil }}</td>
+                <td>{{ row.estado.nome|default:'—' }}</td>
+              </tr>
+            {% elif report.report_type == 'pagamento_historico' %}
+              <tr>
+                <td>
+                  {% if row.pagamento %}
+                    {{ row.pagamento.numero }}
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+                <td>
+                  {% if row.factura %}
+                    {{ row.factura.numero }}
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+                <td>{{ row.data_pagamento|date:'d/m/Y' }}</td>
+                <td class="valor">{{ row.valor_pago|contabil }}</td>
+                <td>{{ row.referencia|default:'—' }}</td>
+              </tr>
+            {% elif report.report_type == 'recibos' %}
+              <tr>
+                <td>{{ row.numero }}</td>
+                <td>
+                  {% if row.factura %}
+                    {{ row.factura.numero }}
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+                <td>
+                  {% if row.cliente %}
+                    {{ row.cliente.nome }}
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+                <td>{{ row.data_recibo|date:'d/m/Y' }}</td>
+                <td class="valor">{{ row.valor_recebido|contabil }}</td>
+                <td>
+                  {% if row.anulado %}
+                    Anulado
+                  {% else %}
+                    Activo
+                  {% endif %}
+                </td>
+              </tr>
+            {% endif %}
+          {% empty %}
+            <tr>
+              <td colspan="10" style="text-align:center;padding:18px;color:#777">Sem dados para o período seleccionado.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-  </div>
 
-  <div class="kpis">
-    <div class="kpi">
-      <div class="kl">Total de Registos</div>
-      <div class="kv">{{ report.summary.total_registos }}</div>
+    <div class="footer">
+      <span>Documento Processado por Computador</span>
+      <span>{{ report.title }}</span>
     </div>
-    <div class="kpi">
-      <div class="kl">Valor Total</div>
-      <div class="kv">{{ report.summary.valor_total|contabil }}</div>
-    </div>
-  </div>
-
-  <table>
-    <thead>
-      {% if report.report_type == 'clientes' %}
-      <tr><th>Nome</th><th>NUIT</th><th>Email</th><th>Telefone</th><th>Categoria</th><th>Estado</th></tr>
-      {% elif report.report_type == 'fornecedores' %}
-      <tr><th>Nome</th><th>NUIT</th><th>Email</th><th>Telefone</th><th>Categoria</th><th>Estado</th></tr>
-      {% elif report.report_type == 'rfqs' %}
-      <tr><th>Número</th><th>Cliente</th><th>Data RFQ</th><th>Prazo</th><th>Estado</th></tr>
-      {% elif report.report_type == 'quotacoes' %}
-      <tr><th>Número</th><th>Cliente</th><th>Data</th><th class="valor">Total</th><th>Estado</th></tr>
-      {% elif report.report_type == 'purchase_orders' %}
-      <tr><th>Número</th><th>Cliente</th><th>Data PO</th><th class="valor">Valor Total</th><th>Estado</th></tr>
-      {% elif report.report_type == 'facturas' %}
-      <tr><th>Número</th><th>Cliente</th><th>Data Emissão</th><th>Vencimento</th><th class="valor">Total</th><th>Estado</th></tr>
-      {% elif report.report_type == 'guias' %}
-      <tr><th>Número</th><th>Cliente</th><th>Data Guia</th><th>Data Entrega</th><th class="valor">Subtotal</th><th>Estado</th></tr>
-      {% elif report.report_type == 'pagamentos' %}
-      <tr><th>Número</th><th>Cliente</th><th>PO</th><th class="valor">Valor Recebido</th><th class="valor">Saldo</th><th>Estado</th></tr>
-      {% elif report.report_type == 'pagamento_historico' %}
-      <tr><th>Pagamento</th><th>Factura</th><th>Data</th><th class="valor">Valor Pago</th><th>Referência</th></tr>
-      {% elif report.report_type == 'recibos' %}
-      <tr><th>Número</th><th>Factura</th><th>Cliente</th><th>Data Recibo</th><th class="valor">Valor</th><th>Estado</th></tr>
-      {% endif %}
-    </thead>
-    <tbody>
-      {% for row in report.rows %}
-        {% if report.report_type == 'clientes' %}
-        <tr>
-          <td>{{ row.nome }}</td>
-          <td>{{ row.nuit|default:"—" }}</td>
-          <td>{{ row.email|default:"—" }}</td>
-          <td>{{ row.telefone|default:"—" }}</td>
-          <td>{{ row.get_categoria_display|default:row.categoria }}</td>
-          <td>{% if row.estado %}Activo{% else %}Inactivo{% endif %}</td>
-        </tr>
-
-        {% elif report.report_type == 'fornecedores' %}
-        <tr>
-          <td>{{ row.nome }}</td>
-          <td>{{ row.nuit|default:"—" }}</td>
-          <td>{{ row.email|default:"—" }}</td>
-          <td>{{ row.telefone|default:"—" }}</td>
-          <td>{{ row.get_categoria_display|default:row.categoria }}</td>
-          <td>{% if row.estado %}Activo{% else %}Inactivo{% endif %}</td>
-        </tr>
-
-        {% elif report.report_type == 'rfqs' %}
-        <tr>
-          <td>{{ row.numero }}</td>
-          <td>{{ row.cliente.nome|default:"—" }}</td>
-          <td>{{ row.data_rfq|date:"d/m/Y" }}</td>
-          <td>{{ row.prazo_entrega|date:"d/m/Y"|default:"—" }}</td>
-          <td>{{ row.estado.nome|default:"—" }}</td>
-        </tr>
-
-        {% elif report.report_type == 'quotacoes' %}
-        <tr>
-          <td>{{ row.numero }}</td>
-          <td>{{ row.cliente.nome|default:"—" }}</td>
-          <td>{{ row.data_quotacao|date:"d/m/Y" }}</td>
-          <td class="valor">{{ row.total|contabil }}</td>
-          <td>{{ row.estado.nome|default:"—" }}</td>
-        </tr>
-
-        {% elif report.report_type == 'purchase_orders' %}
-        <tr>
-          <td>{{ row.numero }}</td>
-          <td>{{ row.cliente.nome|default:"—" }}</td>
-          <td>{{ row.data_po|date:"d/m/Y" }}</td>
-          <td class="valor">{{ row.valor_total|contabil }}</td>
-          <td>{{ row.estado.nome|default:"—" }}</td>
-        </tr>
-
-        {% elif report.report_type == 'facturas' %}
-        <tr>
-          <td>{{ row.numero }}</td>
-          <td>{{ row.cliente.nome|default:"—" }}</td>
-          <td>{{ row.data_emissao|date:"d/m/Y" }}</td>
-          <td>{{ row.data_vencimento|date:"d/m/Y"|default:"—" }}</td>
-          <td class="valor">{{ row.total|contabil }}</td>
-          <td>{{ row.estado.nome|default:"—" }}</td>
-        </tr>
-
-        {% elif report.report_type == 'guias' %}
-        <tr>
-          <td>{{ row.numero }}</td>
-          <td>{{ row.cliente.nome|default:"—" }}</td>
-          <td>{{ row.data_guia|date:"d/m/Y" }}</td>
-          <td>{{ row.data_entrega|date:"d/m/Y"|default:"—" }}</td>
-          <td class="valor">{{ row.subtotal|contabil }}</td>
-          <td>{{ row.estado.nome|default:"—" }}</td>
-        </tr>
-
-        {% elif report.report_type == 'pagamentos' %}
-        <tr>
-          <td>{{ row.numero }}</td>
-          <td>{{ row.cliente.nome|default:"—" }}</td>
-          <td>{% if row.purchase_order %}{{ row.purchase_order.numero }}{% else %}—{% endif %}</td>
-          <td class="valor">{{ row.valor_recebido|contabil }}</td>
-          <td class="valor">{{ row.saldo_pendente|contabil }}</td>
-          <td>{{ row.estado.nome|default:"—" }}</td>
-        </tr>
-
-        {% elif report.report_type == 'pagamento_historico' %}
-        <tr>
-          <td>{% if row.pagamento %}{{ row.pagamento.numero }}{% else %}—{% endif %}</td>
-          <td>{% if row.factura %}{{ row.factura.numero }}{% else %}—{% endif %}</td>
-          <td>{{ row.data_pagamento|date:"d/m/Y" }}</td>
-          <td class="valor">{{ row.valor_pago|contabil }}</td>
-          <td>{{ row.referencia|default:"—" }}</td>
-        </tr>
-
-        {% elif report.report_type == 'recibos' %}
-        <tr>
-          <td>{{ row.numero }}</td>
-          <td>{% if row.factura %}{{ row.factura.numero }}{% else %}—{% endif %}</td>
-          <td>{% if row.cliente %}{{ row.cliente.nome }}{% else %}—{% endif %}</td>
-          <td>{{ row.data_recibo|date:"d/m/Y" }}</td>
-          <td class="valor">{{ row.valor_recebido|contabil }}</td>
-          <td>{% if row.anulado %}Anulado{% else %}Activo{% endif %}</td>
-        </tr>
-        {% endif %}
-      {% empty %}
-      <tr><td colspan="10" style="text-align:center;padding:18px;color:#777">Sem dados para o período seleccionado.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
-
-<div class="footer">
-  <span>Documento Processado por Computador</span>
-  <span>{{ report.title }}</span>
-</div>
-
-</body>
+  </body>
 </html>
