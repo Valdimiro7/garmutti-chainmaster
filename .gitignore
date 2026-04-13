@@ -14,16 +14,8 @@ venv/
 env/
 ENV/
 
-# Distribution / packaging
-build/
-dist/
-*.egg-info/
-.eggs/
-*.egg
-
-# Logs
-*.log
-logs/
+# Python version
+.python-version
 
 # =====================================================
 # DJANGO
@@ -32,9 +24,9 @@ logs/
 db.sqlite3
 db.sqlite3-journal
 
-# Static & Media (production)
+# Static & Media (collected files)
 staticfiles/
-
+media/
 
 # =====================================================
 # ENVIRONMENT VARIABLES
@@ -42,6 +34,18 @@ staticfiles/
 .env
 .env.*
 *.env
+
+# =====================================================
+# DJANGO SECRET / LOCAL SETTINGS
+# =====================================================
+settings_local.py
+local_settings.py
+
+# =====================================================
+# LOGS
+# =====================================================
+*.log
+logs/
 
 # =====================================================
 # IDE / EDITORS
@@ -52,7 +56,9 @@ staticfiles/
 *.swo
 *.bak
 
-# Mac / Windows system files
+# =====================================================
+# OS FILES
+# =====================================================
 .DS_Store
 Thumbs.db
 
@@ -60,15 +66,36 @@ Thumbs.db
 # NODE (caso uses frontend tools)
 # =====================================================
 node_modules/
+npm-debug.log*
+yarn-error.log*
 
 # =====================================================
-# DOCUMENTATION
+# BUILD / DISTRIBUTION
 # =====================================================
-docs/_build/
+build/
+dist/
+*.egg-info/
+.eggs/
+*.egg
 
 # =====================================================
-# AI / TORCH CACHE
+# CACHE
 # =====================================================
 .cache/
+*.cache
 torch_cache/
 huggingface/
+
+# =====================================================
+# TEST / COVERAGE
+# =====================================================
+.coverage
+htmlcov/
+.tox/
+.pytest_cache/
+
+# =====================================================
+# MIGRATIONS (opcional - cuidado!)
+# =====================================================
+# migrations/
+# !*/migrations/__init__.py
