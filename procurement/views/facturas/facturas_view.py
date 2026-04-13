@@ -131,6 +131,63 @@ def _save_dados_bancarios(factura, dado_bancario_ids):
         factura.save(update_fields=['dado_bancario_id', 'actualizado_em'])
 
 
+def _resolve_factura_quotacao(factura):
+    if getattr(factura, 'quotacao', None):
+        return factura.quotacao
+
+    po = getattr(factura, 'purchase_order', None)
+    if po and getattr(po, 'quotacao', None):
+        return po.quotacao
+
+    return None
+
+
+def _build_quotacao_import_payload(quotacao):
+    itens = [
+        {
+            'descricao': it.descricao,
+            'unidade': it.unidade.sigla if it.unidade else '',
+            'quantidade': str(it.quantidade),
+            'preco_unit': str(it.preco_unitario),
+        }
+        for it in QuotacaoItem.objects.filter(quotacao_id=quotacao.id).order_by('linha')
+    ]
+
+    if not itens:
+        itens = [{
+            'descricao': f'Fornecimento conforme Cotação {quotacao.numero}',
+            'unidade': 'un',
+            'quantidade': '1',
+            'preco_unit': str(quotacao.total or '0'),
+        }]
+
+    quot_download_url = ''
+    try:
+        quot_download_url = reverse('procurement:quotacoes_download_pdf', args=[quotacao.id])
+    except Exception:
+        pass
+
+    return {
+        'cliente_id': quotacao.cliente_id,
+        'moeda_id': quotacao.moeda_id or '',
+        'quotacao_id': quotacao.id,
+        'quotacao_numero': quotacao.numero,
+        'quotacao_valor_total': str(quotacao.total or '0'),
+        'quot_download_url': quot_download_url,
+        'dado_bancario_ids': list(quotacao.dados_bancarios.values_list('id', flat=True)),
+        'termos': quotacao.condicao_pagamento_final or quotacao.observacoes or '',
+        'itens': itens,
+    }
+
+
+def _get_quotacoes_disponiveis():
+    return (
+        Quotacao.objects
+        .select_related('cliente', 'estado', 'moeda')
+        .order_by('-id')
+    )
+
+
 
 def _get_pos_disponiveis(factura_actual=None):
     """
@@ -183,7 +240,7 @@ def _get_pos_disponiveis(factura_actual=None):
 def facturas_view(request):
     facturas = (
         Factura.objects
-        .select_related('purchase_order', 'cliente', 'moeda', 'estado')
+        .select_related('purchase_order', 'quotacao', 'cliente', 'moeda', 'estado')
         .prefetch_related('itens', 'factura_dados_bancarios__dado_bancario')
         .order_by('-id')
     )
@@ -193,6 +250,7 @@ def facturas_view(request):
     moedas = Moeda.objects.filter(estado=True).order_by('codigo')
     dados_bancarios = DadoBancario.objects.filter(activo=True).order_by('ordem', 'banco')
     pos_confirmadas = _get_pos_disponiveis()
+    quotacoes = _get_quotacoes_disponiveis()
 
     today = timezone.localdate()
 
@@ -218,6 +276,7 @@ def facturas_view(request):
         'moedas': moedas,
         'dados_bancarios': dados_bancarios,
         'pos_confirmadas': pos_confirmadas,
+        'quotacoes': quotacoes,
         'total_facturas': total_facturas,
         'total_emitidas': total_emitidas,
         'total_pagas': total_pagas,
@@ -237,6 +296,7 @@ def factura_detail_json_view(request, factura_id):
     factura = get_object_or_404(
         Factura.objects.select_related(
             'purchase_order', 'purchase_order__quotacao',
+            'quotacao',
             'cliente', 'moeda', 'estado', 'dado_bancario',
         ).prefetch_related(
             'itens',
@@ -277,9 +337,12 @@ def factura_detail_json_view(request, factura_id):
     po_download_url = ''
     quot_download_url = ''
     quotacao_numero = ''
+    quotacao_id = ''
+    quotacao_valor_total = ''
     po_valor_total = ''
     po_cliente_numero = ''
     po_numero_interno = ''
+    quotacao = _resolve_factura_quotacao(factura)
 
     if factura.purchase_order:
         po = factura.purchase_order
@@ -293,9 +356,11 @@ def factura_detail_json_view(request, factura_id):
         if po_anexo:
             po_download_url = reverse('procurement:po_anexo_download', args=[po_anexo.id])
 
-        if po.quotacao:
-            quotacao_numero = po.quotacao.numero
-            quot_download_url = reverse('procurement:quotacoes_download_pdf', args=[po.quotacao_id])
+    if quotacao:
+        quotacao_id = quotacao.id
+        quotacao_numero = quotacao.numero
+        quotacao_valor_total = str(quotacao.total or '0')
+        quot_download_url = reverse('procurement:quotacoes_download_pdf', args=[quotacao.id])
 
     data = {
         'id': factura.id,
@@ -311,10 +376,12 @@ def factura_detail_json_view(request, factura_id):
         'dado_bancario_ids': conta_ids,
         'dados_bancarios': contas_bancarias,
         'purchase_order_id': factura.purchase_order_id or '',
+        'quotacao_id': quotacao_id,
         'purchase_order_numero': po_numero_interno,
         'po_cliente_numero': po_cliente_numero,
         'po_valor_total': po_valor_total,
         'quotacao_numero': quotacao_numero,
+        'quotacao_valor_total': quotacao_valor_total,
         'po_download_url': po_download_url,
         'quot_download_url': quot_download_url,
         'data_emissao': factura.data_emissao.isoformat() if factura.data_emissao else '',
@@ -341,6 +408,7 @@ def factura_create_view(request):
 
     try:
         po_id = request.POST.get('purchase_order_id') or None
+        quotacao_id = request.POST.get('quotacao_id') or None
         cliente_id = request.POST.get('cliente_id')
         moeda_id = request.POST.get('moeda_id') or None
         dado_bancario_ids = request.POST.getlist('dado_bancario_ids[]') or request.POST.getlist('dado_bancario_ids')
@@ -367,9 +435,10 @@ def factura_create_view(request):
         else:
             estado = _get_estado_rascunho()
 
+        po = None
         # validação da PO
         if po_id:
-            po = get_object_or_404(PurchaseOrder, id=po_id)
+            po = get_object_or_404(PurchaseOrder.objects.select_related('quotacao'), id=po_id)
             total_facturas_pagas = (
                 Factura.objects
                 .filter(purchase_order_id=po_id, estado__codigo='paga')
@@ -381,9 +450,16 @@ def factura_create_view(request):
                     'message': 'Esta PO já possui facturas pagas na totalidade e não pode ser associada a uma nova factura.'
                 }, status=400)
 
+        resolved_quotacao_id = quotacao_id
+        if po and po.quotacao_id:
+            resolved_quotacao_id = po.quotacao_id
+        elif resolved_quotacao_id:
+            get_object_or_404(Quotacao, id=resolved_quotacao_id)
+
         factura = Factura.objects.create(
             numero=_generate_factura_number(),
             purchase_order_id=po_id,
+            quotacao_id=resolved_quotacao_id,
             estado=estado,
             cliente_id=cliente_id,
             moeda_id=moeda_id,
@@ -429,6 +505,7 @@ def factura_update_view(request, factura_id):
 
     try:
         po_id = request.POST.get('purchase_order_id') or None
+        quotacao_id = request.POST.get('quotacao_id') or None
         cliente_id = request.POST.get('cliente_id')
         moeda_id = request.POST.get('moeda_id') or None
         dado_bancario_ids = request.POST.getlist('dado_bancario_ids[]') or request.POST.getlist('dado_bancario_ids')
@@ -453,8 +530,9 @@ def factura_update_view(request, factura_id):
         if estado_id:
             factura.estado = get_object_or_404(FacturaEstado, id=estado_id)
 
+        po = None
         if po_id:
-            po = get_object_or_404(PurchaseOrder, id=po_id)
+            po = get_object_or_404(PurchaseOrder.objects.select_related('quotacao'), id=po_id)
             total_facturas_pagas = (
                 Factura.objects
                 .filter(purchase_order_id=po_id, estado__codigo='paga')
@@ -467,7 +545,14 @@ def factura_update_view(request, factura_id):
                     'message': 'Esta PO já possui facturas pagas na totalidade e não pode ser associada.'
                 }, status=400)
 
+        resolved_quotacao_id = quotacao_id
+        if po and po.quotacao_id:
+            resolved_quotacao_id = po.quotacao_id
+        elif resolved_quotacao_id:
+            get_object_or_404(Quotacao, id=resolved_quotacao_id)
+
         factura.purchase_order_id = po_id
+        factura.quotacao_id = resolved_quotacao_id
         factura.cliente_id = cliente_id
         factura.moeda_id = moeda_id
         factura.data_emissao = data_emissao
@@ -514,6 +599,7 @@ def factura_pdf_view(request, factura_id):
     factura = get_object_or_404(
         Factura.objects.select_related(
             'cliente', 'moeda', 'estado', 'dado_bancario',
+            'quotacao',
             'purchase_order', 'purchase_order__quotacao',
             'purchase_order__quotacao__condicao_pagamento',
         ).prefetch_related(
@@ -559,40 +645,33 @@ def po_itens_json_view(request, po_id):
     po = get_object_or_404(
         PurchaseOrder.objects.select_related(
             'quotacao', 'quotacao__condicao_pagamento', 'cliente', 'moeda'
-        ),
+        ).prefetch_related('quotacao__dados_bancarios'),
         id=po_id,
     )
 
-    itens = []
-    termos = ''
-    quotacao_numero = ''
-    quot_download_url = ''
     po_download_url = ''
+    data = {
+        'po_numero': po.numero,
+        'po_cliente_numero': po.po_cliente_numero or '',
+        'po_valor_total': str(po.valor_total or '0'),
+        'cliente_id': po.cliente_id,
+        'moeda_id': po.moeda_id or '',
+        'quotacao_id': '',
+        'quotacao_numero': '',
+        'quotacao_valor_total': '',
+        'quot_download_url': '',
+        'po_download_url': '',
+        'dado_bancario_ids': [],
+        'termos': '',
+        'itens': [],
+    }
 
     if po.quotacao:
-        q = po.quotacao
-        quotacao_numero = q.numero
+        data.update(_build_quotacao_import_payload(po.quotacao))
+        data['moeda_id'] = po.moeda_id or data['moeda_id']
 
-        try:
-            quot_download_url = reverse('procurement:quotacoes_download_pdf', args=[q.id])
-        except Exception:
-            pass
-
-        if q.condicao_pagamento and q.condicao_pagamento.descricao:
-            termos = q.condicao_pagamento.descricao
-        elif q.observacoes:
-            termos = q.observacoes
-
-        for it in QuotacaoItem.objects.filter(quotacao_id=q.id).order_by('linha'):
-            itens.append({
-                'descricao': it.descricao,
-                'unidade': it.unidade.sigla if it.unidade else '',
-                'quantidade': str(it.quantidade),
-                'preco_unit': str(it.preco_unitario),
-            })
-
-    if not itens:
-        itens = [{
+    if not data['itens']:
+        data['itens'] = [{
             'descricao': f'Fornecimento conforme PO {po.po_cliente_numero or po.numero}',
             'unidade': 'un',
             'quantidade': '1',
@@ -608,18 +687,20 @@ def po_itens_json_view(request, po_id):
         except Exception:
             pass
 
-    return JsonResponse({
-        'po_numero': po.numero,
-        'po_cliente_numero': po.po_cliente_numero or '',
-        'po_valor_total': str(po.valor_total or '0'),
-        'cliente_id': po.cliente_id,
-        'moeda_id': po.moeda_id or '',
-        'quotacao_numero': quotacao_numero,
-        'quot_download_url': quot_download_url,
-        'po_download_url': po_download_url,
-        'termos': termos,
-        'itens': itens,
-    })
+    data['po_download_url'] = po_download_url
+    return JsonResponse(data)
+
+
+@login_required
+@require_GET
+def quotacao_itens_json_view(request, quotacao_id):
+    quotacao = get_object_or_404(
+        Quotacao.objects.select_related(
+            'cliente', 'moeda', 'condicao_pagamento'
+        ).prefetch_related('dados_bancarios'),
+        id=quotacao_id,
+    )
+    return JsonResponse(_build_quotacao_import_payload(quotacao))
     
     
     
@@ -727,7 +808,11 @@ def factura_change_estado_com_pagamento_view(request, factura_id):
             ).first()
             if primeiro:
                 factura.purchase_order_id = primeiro.pagamento.purchase_order_id
-                factura.save(update_fields=['purchase_order_id', 'actualizado_em'])
+                if primeiro.pagamento.purchase_order and primeiro.pagamento.purchase_order.quotacao_id:
+                    factura.quotacao_id = primeiro.pagamento.purchase_order.quotacao_id
+                    factura.save(update_fields=['purchase_order_id', 'quotacao_id', 'actualizado_em'])
+                else:
+                    factura.save(update_fields=['purchase_order_id', 'actualizado_em'])
 
     return JsonResponse({
         'success': True,

@@ -51,7 +51,7 @@ from procurement.views.configuracoes.organizacao_view import (organizacao_view, 
 from procurement.views.configuracoes.condicoes_pagamento_view import (condicoes_pagamento_view, condicao_pagamento_detail_json_view, create_condicao_pagamento_view, update_condicao_pagamento_view, toggle_condicao_pagamento_status_view, delete_condicao_pagamento_view)
 from procurement.views.po.purchase_order_view import (download_purchase_order_anexo_view, purchase_orders_view, create_purchase_order_view, update_purchase_order_view, purchase_order_detail_json_view, change_estado_purchase_order_view)
 from procurement.views.pagamentos.pagamento_view import (pagamentos_view, download_po_anexo_view, pagamento_detail_json_view, update_pagamento_view, download_pagamento_anexo_view, create_pagamento_livre_view)
-from procurement.views.facturas.facturas_view import (facturas_view, factura_create_view, factura_detail_json_view, factura_update_view, factura_change_estado_view, factura_pdf_view, po_itens_json_view, factura_check_pagamento_view, factura_change_estado_com_pagamento_view)
+from procurement.views.facturas.facturas_view import (facturas_view, factura_create_view, factura_detail_json_view, factura_update_view, factura_change_estado_view, factura_pdf_view, po_itens_json_view, quotacao_itens_json_view, factura_check_pagamento_view, factura_change_estado_com_pagamento_view)
 from procurement.views.recibos.recibos_view import (recibos_view, recibo_create_view, recibo_detail_json_view, recibo_anular_view, recibo_pdf_view, factura_info_json_view)
 from procurement.views.pagamentos.pagamento_historico_view import (pagamentos_historico_view, pagamento_historico_detail_json_view)
 from procurement.views.guiaentrega.guias_entrega_view import (guia_entrega_change_estado_view, guias_entrega_view, guia_entrega_create_view, guia_entrega_update_view, guia_entrega_detail_json_view, po_itens_para_guia_json_view, factura_itens_para_guia_json_view, guia_entrega_pdf_view)
@@ -123,6 +123,7 @@ urlpatterns = [
     path('facturas/<int:factura_id>/estado/',  factura_change_estado_view, name='factura_change_estado'),
     path('facturas/<int:factura_id>/pdf/',     factura_pdf_view,           name='factura_pdf'),
     path('facturas/po/<int:po_id>/itens/',     po_itens_json_view,         name='factura_po_itens'),
+    path('facturas/quotacao/<int:quotacao_id>/itens/', quotacao_itens_json_view, name='factura_quotacao_itens'),
     path('facturas/<int:factura_id>/check-pagamento/', factura_check_pagamento_view, name='factura_check_pagamento'),
     path('facturas/<int:factura_id>/estado-pagamento/', factura_change_estado_com_pagamento_view, name='factura_change_estado_com_pagamento'),
         

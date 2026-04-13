@@ -92,6 +92,19 @@ def _get_estado_enviada():
     return estado
 
 
+def _build_condicao_pagamento_texto(condicao):
+    if not condicao:
+        return ''
+
+    nome = (condicao.nome or '').strip()
+    descricao = (condicao.descricao or '').strip()
+
+    if nome and descricao and nome.casefold() == descricao.casefold():
+        return nome
+
+    return '\n'.join([parte for parte in [nome, descricao] if parte])
+
+
 # ─── list / main view ─────────────────────────────────────────────────────────
 
 @login_required
@@ -189,6 +202,7 @@ def quotacao_detail_json_view(request, quotacao_id):
         'cambio':                str(q.cambio),
         'percentagem_iva':       str(q.percentagem_iva),
         'condicao_pagamento_id': q.condicao_pagamento_id,
+        'condicao_pagamento_texto': q.condicao_pagamento_texto or q.condicao_pagamento_final,
         'dados_bancarios_ids':   dados_bancarios_ids,
         'referencia_cliente':    q.referencia_cliente or '',
         'observacoes':           q.observacoes or '',
@@ -403,7 +417,18 @@ def _save_quotacao(request, quotacao):
 
     rfq_id            = POST.get('rfq_id', '').strip()
     condicao_id       = POST.get('condicao_pagamento_id', '').strip()
+    condicao_texto    = POST.get('condicao_pagamento_texto', '').strip()
     dados_bancarios_ids = POST.getlist('dados_bancarios[]')
+
+    condicao_obj = None
+    if condicao_id:
+        try:
+            condicao_obj = CondicaoPagamento.objects.filter(id=int(condicao_id)).first()
+        except (ValueError, TypeError):
+            condicao_obj = None
+
+    if not condicao_texto and condicao_obj:
+        condicao_texto = _build_condicao_pagamento_texto(condicao_obj)
 
     quotacao.rfq_id              = int(rfq_id) if rfq_id else None
     quotacao.cliente_id          = int(cliente_id)
@@ -418,6 +443,7 @@ def _save_quotacao(request, quotacao):
     quotacao.cambio              = _parse_decimal(POST.get('cambio', '1'), '1')
     quotacao.percentagem_iva     = pct_iva_geral
     quotacao.condicao_pagamento_id = int(condicao_id) if condicao_id else None
+    quotacao.condicao_pagamento_texto = condicao_texto or None
     quotacao.referencia_cliente  = POST.get('referencia_cliente', '').strip() or None
     quotacao.observacoes         = POST.get('observacoes', '').strip() or None
     quotacao.subtotal            = subtotal

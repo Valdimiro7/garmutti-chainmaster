@@ -103,7 +103,7 @@
                 <th>#</th>
                 <th>Número</th>
                 <th>Cliente</th>
-                <th>PO</th>
+                <th>PO / Cotação</th>
                 <th>Data Emissão</th>
                 <th>Vencimento</th>
                 <th>Total</th>
@@ -120,6 +120,8 @@
                 <td>
                   {% if f.purchase_order %}
                     <span class="fc-ref-pill">{{ f.purchase_order.numero }}</span>
+                  {% elif f.quotacao %}
+                    <span class="fc-ref-pill">{{ f.quotacao.numero }}</span>
                   {% else %}—{% endif %}
                 </td>
                 <td>{{ f.data_emissao|date:"d/m/Y" }}</td>
@@ -230,8 +232,10 @@
               <option value="">— Sem PO —</option>
               {% for po in pos_confirmadas %}
               <option value="{{ po.id }}"
+                      data-numero="{{ po.numero }}"
                       data-cliente="{{ po.cliente_id }}"
                       data-moeda="{{ po.moeda_id|default:'' }}"
+                      data-quotacao-id="{% if po.quotacao_id %}{{ po.quotacao_id }}{% endif %}"
                       data-quotacao="{% if po.quotacao %}{{ po.quotacao.numero }}{% endif %}"
                       data-valor="{{ po.valor_total|floatformat:2 }}">
                 {{ po.numero }}{% if po.po_cliente_numero %} / {{ po.po_cliente_numero }}{% endif %}
@@ -246,6 +250,30 @@
             <label class="form-label d-block">&nbsp;</label>
             <button type="button" id="btnImportarPO" class="btn btn-outline-secondary w-100 btn-import-po" disabled>
               <i class="material-symbols-rounded me-1" style="font-size:15px">download</i>Importar itens
+            </button>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Cotação Associada</label>
+            <select id="fc_quotacao_id" class="form-select modern-input">
+              <option value="">— Sem Cotação —</option>
+              {% for q in quotacoes %}
+              <option value="{{ q.id }}"
+                      data-numero="{{ q.numero }}"
+                      data-cliente="{{ q.cliente_id }}"
+                      data-moeda="{{ q.moeda_id|default:'' }}"
+                      data-valor="{{ q.total|floatformat:2 }}">
+                {{ q.numero }} — {{ q.cliente.nome }} — Total Cotação: {{ q.total|contabil }}
+              </option>
+              {% endfor %}
+            </select>
+            <small class="text-muted">Use esta opção quando ainda não existir PO.</small>
+          </div>
+
+          <div class="col-md-2">
+            <label class="form-label d-block">&nbsp;</label>
+            <button type="button" id="btnImportarQuotacao" class="btn btn-outline-primary w-100" disabled>
+              <i class="material-symbols-rounded me-1" style="font-size:15px">description</i>Importar cotação
             </button>
           </div>
 
@@ -274,11 +302,11 @@
           <div class="fc-po-info-card">
             <div class="row g-3 align-items-center">
               <div class="col-md-3">
-                <div class="fc-info-label">Valor Total PO</div>
+                <div class="fc-info-label" id="fc_valor_label">Valor Total PO</div>
                 <div class="fc-info-value fw-bold text-primary" id="fc_po_valor_display">—</div>
               </div>
               <div class="col-md-3">
-                <div class="fc-info-label">Cotação Relacionada</div>
+                <div class="fc-info-label" id="fc_quotacao_label">Cotação Relacionada</div>
                 <div class="fc-info-value" id="fc_po_quotacao_display">—</div>
               </div>
               <div class="col-md-6 d-flex gap-2 justify-content-md-end flex-wrap">
@@ -718,12 +746,15 @@ $(function(){
     editingId=null;
     $('#fcModalTitle').text('Nova Factura');$('#fcModalSub').text('Preencha os dados da factura.');
     $('#fc_numero').val('{{ default_numero }}');$('#fc_data_emissao').val('{{ today }}');
-    $('#fc_data_vencimento,#fc_cliente_id,#fc_po_id,#fc_moeda_id').val('');
+    $('#fc_data_vencimento,#fc_cliente_id,#fc_po_id,#fc_quotacao_id,#fc_moeda_id').val('');
     $('#fc_dado_bancario_ids').val(null).trigger('change');
     $('#fc_desconto').val('0');$('#fc_iva_pct').val('{{ iva_padrao }}');
     $('#fc_observacoes,#fc_termos').val('');
     $('#fcItemsBody').empty();
-    $('#btnImportarPO').prop('disabled',true);
+    $('#btnImportarPO,#btnImportarQuotacao').prop('disabled',true);
+    $('#fc_valor_label').text('Valor Total PO');
+    $('#fc_quotacao_label').text('Cotação Relacionada');
+    $('#fc_po_valor_display,#fc_po_quotacao_display').text('—');
     $('#fc_po_info_wrap').addClass('d-none');
     $('#btn_download_po,#btn_download_quot').addClass('d-none').attr('href','#');
     $('#btnGuardarFactura').data('submitting', false).prop('disabled', false).html(guardarFacturaHtml);
@@ -738,20 +769,76 @@ $(function(){
     if(!$('#fcItemsBody tr.fc-item-row').length) addItemRow(); else recalcularTotais();
   });
 
+  function aplicarDadosBancarios(ids){
+    const values=(ids||[]).map(v=>String(v));
+    $('#fc_dado_bancario_ids').val(values.length?values:null).trigger('change');
+  }
+
+  function mostrarInfoCotacao($opt){
+    const ci=$opt.data('cliente'),mi=$opt.data('moeda'),qid=$opt.val()||$opt.attr('value');
+    if(ci) $('#fc_cliente_id').val(ci);
+    if(mi) $('#fc_moeda_id').val(mi);
+    $('#fc_valor_label').text('Valor da Cotação');
+    $('#fc_quotacao_label').text('Cotação');
+    $('#fc_po_valor_display').text($opt.data('valor')||'0,00');
+    $('#fc_po_quotacao_display').text($opt.data('numero')||'—');
+    $('#btn_download_po').addClass('d-none').attr('href','#');
+    if(qid){
+      $('#btn_download_quot').attr('href',`/quotacoes/${qid}/download-pdf/`).removeClass('d-none');
+    }else{
+      $('#btn_download_quot').addClass('d-none').attr('href','#');
+    }
+    $('#fc_po_info_wrap').removeClass('d-none');
+  }
+
   /* ── PO select ── */
   $('#fc_po_id').on('change',function(){
     const o=$(this).find('option:selected'),poId=$(this).val();
     if(poId){
       $('#btnImportarPO').prop('disabled',false);
+      const qid=o.data('quotacao-id');
+      if(qid) $('#fc_quotacao_id').val(String(qid));
+      $('#btnImportarQuotacao').prop('disabled',!$('#fc_quotacao_id').val());
       const ci=o.data('cliente'),mi=o.data('moeda');
       if(ci) $('#fc_cliente_id').val(ci); if(mi) $('#fc_moeda_id').val(mi);
+      $('#fc_valor_label').text('Valor Total PO');
+      $('#fc_quotacao_label').text('Cotação Relacionada');
       $('#fc_po_valor_display').text(o.data('valor')||'0,00');
       $('#fc_po_quotacao_display').text(o.data('quotacao')||'—');
       $('#btn_download_po,#btn_download_quot').addClass('d-none').attr('href','#');
       $('#fc_po_info_wrap').removeClass('d-none');
     }else{
-      $('#btnImportarPO').prop('disabled',true);$('#fc_po_info_wrap').addClass('d-none');
-      $('#btn_download_po,#btn_download_quot').addClass('d-none').attr('href','#');
+      $('#btnImportarPO').prop('disabled',true);
+      if($('#fc_quotacao_id').val()){
+        $('#fc_quotacao_id').trigger('change');
+      }else{
+        $('#fc_po_info_wrap').addClass('d-none');
+        $('#btn_download_po,#btn_download_quot').addClass('d-none').attr('href','#');
+      }
+    }
+  });
+
+  /* ── Cotação select ── */
+  $('#fc_quotacao_id').on('change',function(){
+    const o=$(this).find('option:selected'),qid=$(this).val(),poId=$('#fc_po_id').val();
+    $('#btnImportarQuotacao').prop('disabled',!qid);
+    if(!qid){
+      if(!poId){
+        $('#fc_po_info_wrap').addClass('d-none');
+        $('#btn_download_po,#btn_download_quot').addClass('d-none').attr('href','#');
+      }
+      return;
+    }
+
+    const poQid=poId?String($('#fc_po_id option:selected').data('quotacao-id')||''):'';
+    if(poId && poQid && poQid !== String(qid)){
+      $('#fc_po_id').val('');
+      $('#btnImportarPO').prop('disabled',true);
+      $('#btn_download_po').addClass('d-none').attr('href','#');
+    }
+
+    if(!$('#fc_po_id').val()){
+      mostrarInfoCotacao(o);
     }
   });
 
@@ -763,13 +850,42 @@ $(function(){
       Swal.close();$('#fcItemsBody').empty();
       if(r.itens&&r.itens.length) r.itens.forEach(it=>addItemRow(it)); else addItemRow();
       recalcularTotais();
+      if(r.cliente_id) $('#fc_cliente_id').val(r.cliente_id);
+      if(r.moeda_id) $('#fc_moeda_id').val(r.moeda_id);
       if(r.termos) $('#fc_termos').val(r.termos);
+      if(r.dado_bancario_ids && r.dado_bancario_ids.length) aplicarDadosBancarios(r.dado_bancario_ids);
+      if(r.quotacao_id) $('#fc_quotacao_id').val(String(r.quotacao_id));
+      $('#btnImportarQuotacao').prop('disabled',!$('#fc_quotacao_id').val());
+      $('#fc_valor_label').text('Valor Total PO');
+      $('#fc_quotacao_label').text('Cotação Relacionada');
       $('#fc_po_valor_display').text(fmt(r.po_valor_total));
       $('#fc_po_quotacao_display').text(r.quotacao_numero||'—');
       if(r.po_download_url) $('#btn_download_po').attr('href',r.po_download_url).removeClass('d-none');
       if(r.quot_download_url) $('#btn_download_quot').attr('href',r.quot_download_url).removeClass('d-none');
       Swal.fire({icon:'success',title:'Itens importados!',text:r.quotacao_numero?`Da Cotação ${r.quotacao_numero}`:'Linha genérica criada.',timer:1800,showConfirmButton:false});
     }).fail(()=>Swal.fire({icon:'error',title:'Erro',text:'Não foi possível importar os itens da PO.'}));
+  });
+
+  $('#btnImportarQuotacao').on('click',function(){
+    const qid=$('#fc_quotacao_id').val(); if(!qid) return;
+    Swal.fire({title:'A importar cotação...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+    $.get(`/facturas/quotacao/${qid}/itens/`,function(r){
+      Swal.close();$('#fcItemsBody').empty();
+      if(r.itens&&r.itens.length) r.itens.forEach(it=>addItemRow(it)); else addItemRow();
+      recalcularTotais();
+      if(r.cliente_id) $('#fc_cliente_id').val(r.cliente_id);
+      if(r.moeda_id) $('#fc_moeda_id').val(r.moeda_id);
+      if(r.termos) $('#fc_termos').val(r.termos);
+      if(r.dado_bancario_ids && r.dado_bancario_ids.length) aplicarDadosBancarios(r.dado_bancario_ids);
+      $('#fc_valor_label').text('Valor da Cotação');
+      $('#fc_quotacao_label').text('Cotação');
+      $('#fc_po_valor_display').text(fmt(r.quotacao_valor_total||0));
+      $('#fc_po_quotacao_display').text(r.quotacao_numero||'—');
+      $('#btn_download_po').addClass('d-none').attr('href','#');
+      if(r.quot_download_url) $('#btn_download_quot').attr('href',r.quot_download_url).removeClass('d-none');
+      $('#fc_po_info_wrap').removeClass('d-none');
+      Swal.fire({icon:'success',title:'Cotação importada!',text:r.quotacao_numero?`Itens da ${r.quotacao_numero}`:'Itens importados.',timer:1800,showConfirmButton:false});
+    }).fail(()=>Swal.fire({icon:'error',title:'Erro',text:'Não foi possível importar os itens da cotação.'}));
   });
 
   /* ── Nova / Editar ── */
@@ -782,7 +898,7 @@ $(function(){
       $('#fcModalTitle').text('Editar Factura');$('#fcModalSub').text(`Factura: ${r.numero}`);
       $('#fc_numero').val(r.numero);$('#fc_data_emissao').val(r.data_emissao||'');
       $('#fc_data_vencimento').val(r.data_vencimento||'');$('#fc_cliente_id').val(r.cliente_id||'');
-      $('#fc_po_id').val(r.purchase_order_id||'');$('#fc_moeda_id').val(r.moeda_id||'');
+      $('#fc_po_id').val(r.purchase_order_id||'');$('#fc_quotacao_id').val(r.quotacao_id||'');$('#fc_moeda_id').val(r.moeda_id||'');
       $('#fc_dado_bancario_ids').val(r.dado_bancario_ids||[]).trigger('change');
       $('#fc_desconto').val(r.desconto||'0');$('#fc_iva_pct').val(r.iva_pct||'{{ iva_padrao }}');
       $('#fc_observacoes').val(r.observacoes||'');$('#fc_termos').val(r.termos||'');
@@ -791,12 +907,23 @@ $(function(){
       recalcularTotais();
       if(r.purchase_order_id){
         $('#btnImportarPO').prop('disabled',false);
+        $('#btnImportarQuotacao').prop('disabled',!(r.quotacao_id));
+        $('#fc_valor_label').text('Valor Total PO');
+        $('#fc_quotacao_label').text('Cotação Relacionada');
         $('#fc_po_valor_display').text(fmt(r.po_valor_total||0));$('#fc_po_quotacao_display').text(r.quotacao_numero||'—');
         if(r.po_download_url) $('#btn_download_po').attr('href',r.po_download_url).removeClass('d-none');
         if(r.quot_download_url) $('#btn_download_quot').attr('href',r.quot_download_url).removeClass('d-none');
         $('#fc_po_info_wrap').removeClass('d-none');
+      }else if(r.quotacao_id){
+        $('#btnImportarPO').prop('disabled',true);$('#btnImportarQuotacao').prop('disabled',false);
+        $('#fc_valor_label').text('Valor da Cotação');
+        $('#fc_quotacao_label').text('Cotação');
+        $('#fc_po_valor_display').text(fmt(r.quotacao_valor_total||0));$('#fc_po_quotacao_display').text(r.quotacao_numero||'—');
+        $('#btn_download_po').addClass('d-none').attr('href','#');
+        if(r.quot_download_url) $('#btn_download_quot').attr('href',r.quot_download_url).removeClass('d-none');
+        $('#fc_po_info_wrap').removeClass('d-none');
       }else{
-        $('#btnImportarPO').prop('disabled',true);$('#fc_po_info_wrap').addClass('d-none');
+        $('#btnImportarPO,#btnImportarQuotacao').prop('disabled',true);$('#fc_po_info_wrap').addClass('d-none');
         $('#btn_download_po,#btn_download_quot').addClass('d-none').attr('href','#');
       }
       fcModal.show();
@@ -817,7 +944,7 @@ $(function(){
     if(!itens.length){Swal.fire({icon:'warning',title:'Sem itens',text:'Adicione pelo menos um item à factura.'});return;}
     const p=new FormData();
     p.append('csrfmiddlewaretoken',CSRF);p.append('cliente_id',$('#fc_cliente_id').val());
-    p.append('purchase_order_id',$('#fc_po_id').val());p.append('moeda_id',$('#fc_moeda_id').val());
+    p.append('purchase_order_id',$('#fc_po_id').val());p.append('quotacao_id',$('#fc_quotacao_id').val());p.append('moeda_id',$('#fc_moeda_id').val());
     ($('#fc_dado_bancario_ids').val()||[]).forEach(id=>p.append('dado_bancario_ids[]',id));
     p.append('data_emissao',$('#fc_data_emissao').val());p.append('data_vencimento',$('#fc_data_vencimento').val());
     p.append('desconto',$('#fc_desconto').val());p.append('iva_pct',$('#fc_iva_pct').val());
@@ -865,6 +992,7 @@ $(function(){
             <div class="col-md-4"><div class="view-label">Cliente</div><div class="view-value">${r.cliente_nome||'—'}</div></div>
             <div class="col-md-4"><div class="view-label">PO Interna</div><div class="view-value">${r.purchase_order_numero||'—'}</div></div>
             <div class="col-md-4"><div class="view-label">PO Cliente</div><div class="view-value">${r.po_cliente_numero||'—'}</div></div>
+            <div class="col-md-4"><div class="view-label">Cotação</div><div class="view-value">${r.quotacao_numero||'—'}</div></div>
           </div>
           <div class="row g-4 mb-4">
             <div class="col-lg-7"><div class="view-soft-card h-100">

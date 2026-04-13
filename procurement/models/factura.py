@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from .purchaseorder import PurchaseOrder
+from .quotacao import Quotacao
 from .cliente import Cliente
 from .moeda import Moeda
 from .dadobancario import DadoBancario
@@ -15,6 +16,13 @@ class Factura(models.Model):
         null=True, blank=True,
         on_delete=models.SET_NULL,
         db_column='purchase_order_id',
+        related_name='facturas',
+    )
+    quotacao = models.ForeignKey(
+        Quotacao,
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        db_column='quotacao_id',
         related_name='facturas',
     )
     estado = models.ForeignKey(

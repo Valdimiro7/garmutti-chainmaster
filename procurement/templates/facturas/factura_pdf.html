@@ -84,6 +84,8 @@
             <th style="width:140px">Vencimento</th>
             {% if factura.purchase_order %}
               <th style="width:160px">PO do Cliente</th>
+            {% elif factura.quotacao %}
+              <th style="width:160px">Cotação</th>
             {% endif %}
             <th>Estado</th>
           </tr>
@@ -100,6 +102,8 @@
             </td>
             {% if factura.purchase_order %}
               <td>{{ factura.purchase_order.po_cliente_numero|default:factura.purchase_order.numero }}</td>
+            {% elif factura.quotacao %}
+              <td>{{ factura.quotacao.numero }}</td>
             {% endif %}
             <td>{{ factura.estado.nome|default:'—' }}</td>
           </tr>

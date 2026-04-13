@@ -46,6 +46,7 @@ class Quotacao(models.Model):
         db_column='condicao_pagamento_id',
         related_name='quotacoes',
     )
+    condicao_pagamento_texto = models.TextField(null=True, blank=True)
 
     # Dados bancários seleccionados (M2M via pivot)
     dados_bancarios = models.ManyToManyField(
@@ -99,3 +100,20 @@ class Quotacao(models.Model):
 
     def __str__(self):
         return self.numero
+
+    @property
+    def condicao_pagamento_final(self):
+        texto = (self.condicao_pagamento_texto or '').strip()
+        if texto:
+            return texto
+
+        if not self.condicao_pagamento:
+            return ''
+
+        nome = (self.condicao_pagamento.nome or '').strip()
+        descricao = (self.condicao_pagamento.descricao or '').strip()
+
+        if nome and descricao and nome.casefold() == descricao.casefold():
+            return nome
+
+        return '\n'.join([parte for parte in [nome, descricao] if parte])

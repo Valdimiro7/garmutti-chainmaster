@@ -513,15 +513,11 @@
 
   <!-- Condições de Pagamento -->
   <div class="cond z">
-    Condições de Pagamento:<span>
-      {% if quotacao.condicao_pagamento %}
-        {{ quotacao.condicao_pagamento.nome }}
-      {% else %}
-        —
-      {% endif %}
-    </span>
-    {% if quotacao.condicao_pagamento.descricao %}
-      <div class="cond-desc">{{ quotacao.condicao_pagamento.descricao }}</div>
+    Condições de Pagamento:
+    {% if quotacao.condicao_pagamento_final %}
+      <div class="cond-desc">{{ quotacao.condicao_pagamento_final|linebreaksbr }}</div>
+    {% else %}
+      <span>—</span>
     {% endif %}
   </div>
 

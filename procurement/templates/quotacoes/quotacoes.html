@@ -355,10 +355,10 @@
             </div>
             <div class="col-md-5">
               <label class="form-label d-flex align-items-center justify-content-between">
-                Condições de Pagamento
-                <button type="button" class="btn btn-link btn-sm p-0 ms-2" id="btnVerTermos"
-                        style="font-size:.75rem;color:#2E3E82;" title="Ver termos desta condição">
-                  <i class="material-symbols-rounded" style="font-size:16px;vertical-align:-4px">info</i> Ver Termos
+                Condição Base de Pagamento
+                <button type="button" class="btn btn-link btn-sm p-0 ms-2" id="btnAplicarCondicao"
+                        style="font-size:.75rem;color:#2E3E82;" title="Copiar os termos da condição seleccionada">
+                  <i class="material-symbols-rounded" style="font-size:16px;vertical-align:-4px">content_paste</i> Usar Termos
                 </button>
               </label>
               <select name="condicao_pagamento_id" id="qt_condicao_id" class="form-select modern-input">
@@ -367,9 +367,16 @@
                   <option value="{{ c.id }}" data-descricao="{{ c.descricao|default:'' }}">{{ c.nome }}</option>
                 {% endfor %}
               </select>
-              <div id="termos_preview" class="qt-termos-preview d-none mt-2">
-                <span id="termos_texto" class="text-muted" style="font-size:.82rem;white-space:pre-line;"></span>
-              </div>
+              <small class="text-muted d-block mt-2">Seleccione uma condição existente, se houver.</small>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Condição desta Cotação</label>
+              <textarea name="condicao_pagamento_texto" id="qt_condicao_texto"
+                        class="form-control modern-input" rows="4"
+                        placeholder="Escreva ou ajuste a condição específica desta cotação..."></textarea>
+              <small class="text-muted d-block mt-2">
+                Pode escrever manualmente para casos especiais. Também pode seleccionar uma condição base acima e ajustar o texto desta cotação sem alterar a configuração global.
+              </small>
             </div>
           </div>
 
@@ -838,19 +845,49 @@ $(document).ready(function(){
     updateBancoChips();
   });
 
-  function mostrarTermos(){
-    const opt   = $('#qt_condicao_id option:selected');
-    const texto = opt.data('descricao') || '';
-    if(texto){
-      $('#termos_texto').text(texto);
-      $('#termos_preview').removeClass('d-none');
-    } else {
-      $('#termos_preview').addClass('d-none');
+  function buildCondicaoTextoSelecionada(){
+    const $select = $('#qt_condicao_id');
+    const valor = $select.val();
+    if(!valor) return '';
+
+    const opt = $select.find('option:selected');
+    const nome = $.trim(opt.text());
+    const descricao = $.trim(String(opt.data('descricao') || ''));
+
+    if(nome && descricao && nome.toLowerCase() === descricao.toLowerCase()){
+      return nome;
+    }
+
+    return [nome, descricao].filter(Boolean).join('\n');
+  }
+
+  function aplicarCondicaoSelecionada(force = false){
+    const texto = buildCondicaoTextoSelecionada();
+
+    if(!texto){
+      if(force){
+        Swal.fire({
+          icon:'info',
+          title:'Sem condição seleccionada',
+          text:'Seleccione primeiro uma condição base para preencher os termos.',
+          confirmButtonColor:'#2E3E82'
+        });
+      }
+      return;
+    }
+
+    const $campo = $('#qt_condicao_texto');
+    if(force || !$campo.val().trim()){
+      $campo.val(texto);
     }
   }
 
-  $('#qt_condicao_id').on('change', mostrarTermos);
-  $('#btnVerTermos').on('click', mostrarTermos);
+  $('#qt_condicao_id').on('change', function(){
+    aplicarCondicaoSelecionada(false);
+  });
+  $('#btnAplicarCondicao').on('click', function(){
+    aplicarCondicaoSelecionada(true);
+  });
 
   function recalcularTotais(){
     let subtotal = 0;
@@ -1053,7 +1090,7 @@ $(document).ready(function(){
     $('#qt_iva').val('16');
     $('#qt_cambio').val('1.000000');
     $('#qtItemsBody').html('');
-    $('#termos_preview').addClass('d-none');
+    $('#qt_condicao_texto').val('');
     resetDadosBancarios();
     addItemRow({});
     recalcularTotais();
@@ -1158,7 +1195,8 @@ $(document).ready(function(){
       $('#qt_moeda_id').val(r.moeda_id || '');
       $('#qt_cambio').val(r.cambio);
       $('#qt_iva').val(r.percentagem_iva);
-      $('#qt_condicao_id').val(r.condicao_pagamento_id || '').trigger('change');
+      $('#qt_condicao_id').val(r.condicao_pagamento_id || '');
+      $('#qt_condicao_texto').val(r.condicao_pagamento_texto || '');
       $('#qt_ref_cliente').val(r.referencia_cliente);
       $('#qt_observacoes').val(r.observacoes);
 

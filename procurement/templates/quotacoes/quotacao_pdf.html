@@ -246,15 +246,11 @@
       </div>
 
       <div class="cond">
-        Condições de Pagamento:<span>
-          {% if quotacao.condicao_pagamento %}
-            {{ quotacao.condicao_pagamento.nome }}
-          {% else %}
-            —
-          {% endif %}
-        </span>
-        {% if quotacao.condicao_pagamento.descricao %}
-          <div class="cdesc">{{ quotacao.condicao_pagamento.descricao }}</div>
+        Condições de Pagamento:
+        {% if quotacao.condicao_pagamento_final %}
+          <div class="cdesc">{{ quotacao.condicao_pagamento_final|linebreaksbr }}</div>
+        {% else %}
+          <span>—</span>
         {% endif %}
       </div>
 
